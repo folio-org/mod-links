@@ -21,16 +21,4 @@ public abstract class BaseException extends RuntimeException {
     super(message);
     this.errorCode = errorCode;
   }
-
-  /**
-   * Initialize exception with provided message, cause exception and error code.
-   *
-   * @param message   exception message
-   * @param cause     exception cause {@link Throwable}
-   * @param errorCode exception code {@link ErrorCode}
-   */
-  protected BaseException(String message, Throwable cause, ErrorCode errorCode) {
-    super(message, cause);
-    this.errorCode = errorCode;
-  }
 }
