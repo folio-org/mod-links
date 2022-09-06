@@ -56,6 +56,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   }
 
   @Test
+  @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_saveIncomingLinks_whenAnyExist() {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
@@ -66,6 +67,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   }
 
   @Test
+  @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_deleteAllLinks_whenIncomingIsEmpty() {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
@@ -79,6 +81,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   }
 
   @Test
+  @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_deleteAllExistedAndSaveAllIncomingLinks() {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
@@ -101,6 +104,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   }
 
   @Test
+  @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_saveOnlyNewLinks() {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
@@ -121,6 +125,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   }
 
   @Test
+  @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_deleteAndSaveLinks_whenHaveDifference() {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
