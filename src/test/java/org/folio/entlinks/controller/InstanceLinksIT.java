@@ -17,6 +17,7 @@ import org.folio.entlinks.model.type.ErrorCode;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.support.TestUtils.Link;
 import org.folio.support.base.IntegrationTestBase;
+import org.folio.support.types.IntegrationTest;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.test.web.servlet.ResultMatcher;
 
+@IntegrationTest
 class InstanceLinksIT extends IntegrationTestBase {
 
   public static Stream<Arguments> requiredFieldMissingProvider() {
