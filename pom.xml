@@ -20,6 +20,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <mod-entities-links.yaml.file>${project.basedir}/src/main/resources/swagger.api/mod-entities-links.yaml</mod-entities-links.yaml.file>
+    <sonar.exclusions>
+      src/main/java/org/folio/entlinks/EntityLinksApplication.java,
+      src/main/java/org/folio/entlinks/model/**
+    </sonar.exclusions>
 
     <folio-spring-base.version>4.1.0</folio-spring-base.version>
     <mapstruct.version>1.5.2.Final</mapstruct.version>
