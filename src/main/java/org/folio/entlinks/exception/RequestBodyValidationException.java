@@ -11,7 +11,7 @@ import org.folio.tenant.domain.dto.Parameter;
 @Getter
 public class RequestBodyValidationException extends BaseException {
 
-  private final List<Parameter> invalidParameters;
+  private final transient List<Parameter> invalidParameters;
 
   /**
    * Initialize exception with provided message, error code and invalid parameters.
