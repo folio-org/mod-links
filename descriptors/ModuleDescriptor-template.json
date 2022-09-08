@@ -3,6 +3,22 @@
   "name": "Entities Links",
   "provides": [
     {
+      "id": "instance-links",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/links/instances/{instanceId}",
+          "permissionsRequired": [ "entities-links.instances.collection.get" ]
+        },
+        {
+          "methods": [ "PUT" ],
+          "pathPattern": "/links/instances/{instanceId}",
+          "permissionsRequired": [ "entities-links.instances.collection.put" ]
+        }
+      ]
+    },
+    {
       "id": "_tenant",
       "version": "2.0",
       "interfaceType": "system",

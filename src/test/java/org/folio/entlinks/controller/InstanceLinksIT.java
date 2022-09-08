@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.folio.support.TestUtils.linksDto;
 import static org.folio.support.TestUtils.linksDtoCollection;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,6 +28,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 
 @IntegrationTest
 class InstanceLinksIT extends IntegrationTestBase {
+
+  private static final String INSTANCE_LINKS_ENDPOINT_PATH = "/links/instances/{id}";
 
   public static Stream<Arguments> requiredFieldMissingProvider() {
     return Stream.of(
@@ -57,15 +60,40 @@ class InstanceLinksIT extends IntegrationTestBase {
     return jsonPath("$.total_records", is(errorTotal));
   }
 
+  private static ResultMatcher totalRecordsMatch(int recordsTotal) {
+    return jsonPath("$.totalRecords", is(recordsTotal));
+  }
+
+  private static ResultMatcher linksMatch(Matcher matcher) {
+    return jsonPath("$.links", matcher);
+  }
+
+  @Test
+  void getInstanceLinks_noLinksFound() throws Exception {
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, randomUUID())
+      .andExpect(linksMatch(empty()))
+      .andExpect(totalRecordsMatch(0));
+  }
+
+  @Test
+  void getInstanceLinks_negative_invalidId() throws Exception {
+    tryGet(INSTANCE_LINKS_ENDPOINT_PATH, "not a uuid")
+      .andExpect(status().isBadRequest())
+      .andExpect(errorTotalMatch(1))
+      .andExpect(errorTypeMatch(is("MethodArgumentTypeMismatchException")))
+      .andExpect(errorCodeMatch(is(ErrorCode.VALIDATION_ERROR.getValue())))
+      .andExpect(errorMessageMatch(containsString("Invalid UUID string")));
+  }
+
   @Test
   @SuppressWarnings("java:S2699")
   void updateInstanceLinks_positive_saveIncomingLinks_whenAnyExist() {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0), Link.of(1, 1)));
-    doPut("/links/instances/{id}", incomingLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
 
-//    doGet("/links/instances/{id}", instanceId); TODO: uncomment and add body checks when GET endpoint implemented
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId);
   }
 
   @Test
@@ -74,12 +102,12 @@ class InstanceLinksIT extends IntegrationTestBase {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0), Link.of(1, 1)));
-    doPut("/links/instances/{id}", existedLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(emptyList());
-    doPut("/links/instances/{id}", incomingLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
 
-//    doGet("/links/instances/{id}", instanceId); TODO: uncomment and add body checks when GET endpoint implemented
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId);
   }
 
   @Test
@@ -92,7 +120,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut("/links/instances/{id}", existedLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 1),
@@ -100,9 +128,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 3),
       Link.of(3, 2)
     ));
-    doPut("/links/instances/{id}", incomingLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
 
-//    doGet("/links/instances/{id}", instanceId); TODO: uncomment and add body checks when GET endpoint implemented
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId);
   }
 
   @Test
@@ -113,7 +141,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(0, 0),
       Link.of(1, 1)
     ));
-    doPut("/links/instances/{id}", existedLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0),
@@ -121,9 +149,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut("/links/instances/{id}", incomingLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
 
-//    doGet("/links/instances/{id}", instanceId); TODO: uncomment and add body checks when GET endpoint implemented
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId);
   }
 
   @Test
@@ -136,7 +164,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut("/links/instances/{id}", existedLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0),
@@ -144,9 +172,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 3),
       Link.of(3, 2)
     ));
-    doPut("/links/instances/{id}", incomingLinks, instanceId);
+    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
 
-//    doGet("/links/instances/{id}", instanceId); TODO: uncomment and add body checks when GET endpoint implemented
+    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId);
   }
 
   @Test
@@ -160,7 +188,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(3, 2)
     ));
 
-    tryPut("/links/instances/{id}", incomingLinks, instanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("RequestBodyValidationException")))
@@ -174,7 +202,7 @@ class InstanceLinksIT extends IntegrationTestBase {
     var invalidInstanceId = "1111";
     var incomingLinks = linksDtoCollection(emptyList());
 
-    tryPut("/links/instances/{id}", incomingLinks, invalidInstanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, invalidInstanceId)
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentTypeMismatchException")))
@@ -187,7 +215,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   void updateInstanceLinks_negative_whenBodyIsEmpty() {
     var instanceId = randomUUID();
 
-    tryPut("/links/instances/{id}", null, instanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, null, instanceId)
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("HttpMessageNotReadableException")))
@@ -205,7 +233,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       .authorityNaturalId("id").bibRecordTag("100")
     ));
 
-    tryPut("/links/instances/{id}", incomingLinks, instanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentNotValidException")))
@@ -225,7 +253,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       .bibRecordSubfields(List.of("aa", "bb", "11"))
     ));
 
-    tryPut("/links/instances/{id}", incomingLinks, instanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("RequestBodyValidationException")))
@@ -241,7 +269,7 @@ class InstanceLinksIT extends IntegrationTestBase {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(List.of(invalidLink));
 
-    tryPut("/links/instances/{id}", incomingLinks, instanceId)
+    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentNotValidException")))
