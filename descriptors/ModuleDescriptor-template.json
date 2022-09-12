@@ -3,18 +3,26 @@
   "name": "Entities Links",
   "provides": [
     {
-      "id": "instance-links",
+      "id": "instance-authority-links",
       "version": "1.0",
       "handlers": [
         {
-          "methods": [ "GET" ],
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/links/instances/{instanceId}",
-          "permissionsRequired": [ "entities-links.instances.collection.get" ]
+          "permissionsRequired": [
+            "instance-authority-links.collection.get"
+          ]
         },
         {
-          "methods": [ "PUT" ],
+          "methods": [
+            "PUT"
+          ],
           "pathPattern": "/links/instances/{instanceId}",
-          "permissionsRequired": [ "entities-links.instances.collection.put" ]
+          "permissionsRequired": [
+            "instance-authority-links.collection.put"
+          ]
         }
       ]
     },
@@ -24,12 +32,17 @@
       "interfaceType": "system",
       "handlers": [
         {
-          "methods": ["POST"],
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/_/tenant",
           "permissionsRequired": []
         },
         {
-          "methods": ["GET", "DELETE"],
+          "methods": [
+            "GET",
+            "DELETE"
+          ],
           "pathPattern": "/_/tenant/{id}",
           "permissionsRequired": []
         }
@@ -37,7 +50,21 @@
     }
   ],
   "permissionSets": [
-
+    {
+      "permissionName": "instance-authority-links.instances.collection.get",
+      "displayName": "Entities Links - get instance-authority links",
+      "description": "Get instance-authority links collection"
+    },
+    {
+      "permissionName": "instance-authority-links.instances.collection.put",
+      "displayName": "Entities Links - update instance-authority links",
+      "description": "Update instance-authority links collection"
+    },
+    {
+      "permissionName": "instance-authority-links.instances.all",
+      "displayName": "Entities Links - all instance-authority links permissions",
+      "description": "Entire set of permissions needed to use instance-links operations"
+    }
   ],
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",
