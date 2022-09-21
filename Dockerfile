@@ -7,5 +7,10 @@ ARG JAR_FILE=./target/*.jar
 # - copy
 COPY ${JAR_FILE} ${JAVA_APP_DIR}/${APP_FILE}
 
+RUN apk upgrade \
+ && apk add \
+      ipptools \
+ && rm -rf /var/cache/apk/*
+
 # Expose this port locally in the container.
 EXPOSE 8081
