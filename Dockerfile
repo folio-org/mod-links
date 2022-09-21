@@ -7,11 +7,8 @@ ARG JAR_FILE=./target/*.jar
 # - copy
 COPY ${JAR_FILE} ${JAVA_APP_DIR}/${APP_FILE}
 
-USER root
-RUN apk upgrade \
- && apk add \
-      ipptools \
- && rm -rf /var/cache/apk/*
+# Install latest patch versions of packages: https://pythonspeed.com/articles/security-updates-in-docker/
+RUN apk upgrade --no-cache
 
 # Expose this port locally in the container.
 EXPOSE 8081
