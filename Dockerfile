@@ -7,6 +7,7 @@ ARG JAR_FILE=./target/*.jar
 # - copy
 COPY ${JAR_FILE} ${JAVA_APP_DIR}/${APP_FILE}
 
+USER root
 RUN apk upgrade \
  && apk add \
       ipptools \
