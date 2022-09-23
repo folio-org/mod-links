@@ -63,7 +63,7 @@ paths:
   /links/authorities/bulk/count:
     post:
       description: Retrieve number of links by authority IDs
-      operationId: countNumberOfTitles
+      operationId: countLinksByAuthorityIds
       tags:
         - instance-links
       requestBody:

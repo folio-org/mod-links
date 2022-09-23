@@ -29,7 +29,7 @@ public class InstanceLinksController implements InstanceLinksApi {
   }
 
   @Override
-  public ResponseEntity<LinksCountDtoCollection> countNumberOfTitles(UuidCollection authorityIdCollection){
+  public ResponseEntity<LinksCountDtoCollection> countLinksByAuthorityIds(UuidCollection authorityIdCollection){
     var linkCountMapDtoCollection = instanceLinkService.countLinksByAuthorityIds(authorityIdCollection);
     return ResponseEntity.ok(linkCountMapDtoCollection);
   }
