@@ -10,9 +10,7 @@ import static org.folio.support.TestUtils.linksDtoCollection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +23,7 @@ import org.folio.entlinks.model.entity.InstanceLink;
 import org.folio.entlinks.model.projection.LinkCountView;
 import org.folio.entlinks.repository.InstanceLinkRepository;
 import org.folio.qm.domain.dto.InstanceLinkDto;
-import org.folio.qm.domain.dto.LinkCountMapDto;
+import org.folio.qm.domain.dto.LinksCountDto;
 import org.folio.qm.domain.dto.UuidCollection;
 import org.folio.support.TestUtils.Link;
 import org.folio.support.types.UnitTest;
@@ -263,16 +261,16 @@ class InstanceLinkServiceTest {
     var resultSet = List.of(
         linkCountView(authorityId1, 10),
         linkCountView(authorityId2, 15));
-    when(repository.countNumberOfTitlesByAuthorityIds(anyList())).thenReturn(resultSet);
+    when(repository.countLinksByAuthorityIds(anyList())).thenReturn(resultSet);
 
     var requestBody = new UuidCollection().ids(List.of(authorityId1, authorityId2, authorityId3));
-    var result = service.countNumberOfTitles(requestBody);
+    var result = service.countLinksByAuthorityIds(requestBody);
 
     assertThat(result.getLinks()).hasSize(3);
     assertThat(result.getLinks()).contains(
-        new LinkCountMapDto().id(authorityId1).totalLinks(10L),
-        new LinkCountMapDto().id(authorityId2).totalLinks(15L),
-        new LinkCountMapDto().id(authorityId3).totalLinks(0L));
+        new LinksCountDto().id(authorityId1).totalLinks(10L),
+        new LinksCountDto().id(authorityId2).totalLinks(15L),
+        new LinksCountDto().id(authorityId3).totalLinks(0L));
   }
 
   private ArgumentCaptor<List<InstanceLink>> linksCaptor() {

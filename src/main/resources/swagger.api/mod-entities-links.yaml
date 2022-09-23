@@ -78,7 +78,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/linkCountMapDtoCollection"
+                $ref: "#/components/schemas/linksCountDtoCollection"
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '500':
@@ -147,7 +147,7 @@ components:
       required:
         - ids
 
-    linkCountMapDtoCollection:
+    linksCountDtoCollection:
       type: object
       title: Collection of links count map for authorities
       description: Collection of links count map for authorities
@@ -155,11 +155,11 @@ components:
         links:
           type: array
           items:
-            $ref: '#/components/schemas/linkCountMapDto'
+            $ref: '#/components/schemas/linksCountDto'
       required:
         - links
 
-    linkCountMapDto:
+    linksCountDto:
       type: object
       title: Total links count map for one authority
       description: Total links count map for one authority
