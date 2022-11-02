@@ -92,7 +92,7 @@ paths:
         - linking-rules
       parameters:
         - name: recordType
-          in: path
+          in: query
           required: false
           schema:
             $ref: "#/components/schemas/recordType"
@@ -102,7 +102,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/linkingRulesCollection"
+                type: string
+                description: Array of field to filed linking rules
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '500':
@@ -195,17 +196,6 @@ components:
           type: integer
           format: int64
           description: Number of titles linked to the authority
-
-    linkingRulesCollection:
-      type: object
-      title: Array of linking rules
-      description: Array of linking rules
-      properties:
-        rules:
-          type: array
-          items:
-            type: string
-            description: Field to filed linking rule
 
     recordType:
       type: string
