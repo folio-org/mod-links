@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "instance-authority-links",
-      "version": "1.0",
+      "version": "1.1",
       "handlers": [
         {
           "methods": [
@@ -31,6 +31,14 @@
           "pathPattern": "/links/authorities/bulk/count",
           "permissionsRequired": [
             "instance-authority-links.authorities.bulk.post"
+          ]
+        },   {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/links/linking-rules",
+          "permissionsRequired": [
+            "instance-authority-links.rules.collection.get"
           ]
         }
       ]
@@ -75,13 +83,19 @@
       "description": "Count instance-authority links for each authority"
     },
     {
+      "permissionName": "instance-authority-links.rules.collection.get",
+      "displayName": "Entities Links - get instance-authority linking rules",
+      "description": "Get instance-authority linking rules"
+    },
+    {
       "permissionName": "instance-authority-links.instances.all",
       "displayName": "Entities Links - all instance-authority links permissions",
       "description": "Entire set of permissions needed to use instance-links operations",
       "subPermissions": [
         "instance-authority-links.instances.collection.get",
         "instance-authority-links.instances.collection.put",
-        "instance-authority-links.authorities.bulk.post"
+        "instance-authority-links.authorities.bulk.post",
+        "instance-authority-links.rules.collection.get"
       ]
     }
   ],
