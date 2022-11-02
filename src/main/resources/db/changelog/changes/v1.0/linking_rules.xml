@@ -1,0 +1,29 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="MODELINKS-24@@create-linking-rules-table" author="Shans_Kaluhin">
+    <preConditions>
+      <not>
+        <tableExists tableName="linking_rules"/>
+      </not>
+    </preConditions>
+
+    <comment>Create linking_rules table</comment>
+
+    <createTable tableName="linking_rules">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="pk_linking_rules"/>
+        </column>
+        <column name="record_type" type="VARCHAR(20)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="rules" type="VARCHAR">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>

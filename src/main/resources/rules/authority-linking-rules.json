@@ -1,0 +1,38 @@
+[
+  {
+    "bibField": "100",
+    "authorityField": "100",
+    "subfields": ["a", "b", "c", "d", "j", "q"],
+    "validation": {}
+  },
+  {
+    "bibField": "110",
+    "authorityField": "110",
+    "subfields": ["a", "b", "c"],
+    "validation": {}
+  },
+  {
+    "bibField": "111",
+    "authorityField": "111",
+    "subfields": ["a", "c", "e", "q"],
+    "validation": {}
+  },
+  {
+    "bibField": "700",
+    "authorityField": "100",
+    "subfields": ["a", "b", "c", "d", "j", "q", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "validation": {}
+  },
+  {
+    "bibField": "710",
+    "authorityField": "110",
+    "subfields": ["a", "b", "c", "u", "4", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n"],
+    "validation": {}
+  },
+  {
+    "bibField": "711",
+    "authorityField": "111",
+    "subfields": ["a", "b", "c", "d", "j", "q", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "validation": {}
+  }
+]
