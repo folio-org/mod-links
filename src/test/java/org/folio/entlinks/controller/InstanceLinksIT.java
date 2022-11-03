@@ -400,11 +400,13 @@ class InstanceLinksIT extends IntegrationTestBase {
     return jsonPath("$.links", containsInAnyOrder(linkMatchers));
   }
 
-  private static class LinkMatcher extends BaseMatcher<InstanceLinkDto> {
+  private static final class LinkMatcher extends BaseMatcher<InstanceLinkDto> {
 
     private final InstanceLinkDto expectedLink;
 
-    private LinkMatcher(InstanceLinkDto expectedLink) { this.expectedLink = expectedLink; }
+    private LinkMatcher(InstanceLinkDto expectedLink) {
+      this.expectedLink = expectedLink;
+    }
 
     static LinkMatcher linkMatch(InstanceLinkDto expectedLink) {
       return new LinkMatcher(expectedLink);
@@ -414,11 +416,11 @@ class InstanceLinksIT extends IntegrationTestBase {
     @SuppressWarnings("rawtypes")
     public boolean matches(Object actual) {
       if (actual instanceof LinkedHashMap actualLink) {
-        return Objects.equals(expectedLink.getAuthorityId().toString(), actualLink.get("authorityId")) &&
-          Objects.equals(expectedLink.getAuthorityNaturalId(), actualLink.get("authorityNaturalId")) &&
-          Objects.equals(expectedLink.getInstanceId().toString(), actualLink.get("instanceId")) &&
-          Objects.equals(expectedLink.getBibRecordTag(), actualLink.get("bibRecordTag")) &&
-          Objects.equals(expectedLink.getBibRecordSubfields(), actualLink.get("bibRecordSubfields"));
+        return Objects.equals(expectedLink.getAuthorityId().toString(), actualLink.get("authorityId"))
+          && Objects.equals(expectedLink.getAuthorityNaturalId(), actualLink.get("authorityNaturalId"))
+          && Objects.equals(expectedLink.getInstanceId().toString(), actualLink.get("instanceId"))
+          && Objects.equals(expectedLink.getBibRecordTag(), actualLink.get("bibRecordTag"))
+          && Objects.equals(expectedLink.getBibRecordSubfields(), actualLink.get("bibRecordSubfields"));
       }
 
       return false;
