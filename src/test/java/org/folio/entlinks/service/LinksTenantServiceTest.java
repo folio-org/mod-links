@@ -5,8 +5,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.folio.qm.domain.dto.RecordType;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.tools.kafka.KafkaAdminService;
+import org.folio.qm.domain.dto.RecordType;
 import org.folio.support.types.UnitTest;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.junit.jupiter.api.Test;
@@ -24,16 +25,22 @@ class LinksTenantServiceTest {
   @Mock
   private FolioExecutionContext context;
   @Mock
+  private KafkaAdminService kafkaAdminService;
+  @Mock
   private LinkingRulesService rulesService;
 
   @Test
   void initializeTenant_positive() {
     when(context.getTenantId()).thenReturn(TENANT_ID);
     doNothing().when(rulesService).saveDefaultRules(RecordType.AUTHORITY);
+    doNothing().when(kafkaAdminService).createTopics(TENANT_ID);
+    doNothing().when(kafkaAdminService).restartEventListeners();
 
     tenantService.afterTenantUpdate(tenantAttributes());
 
     verify(rulesService).saveDefaultRules(RecordType.AUTHORITY);
+    verify(kafkaAdminService).createTopics(TENANT_ID);
+    verify(kafkaAdminService).restartEventListeners();
   }
 
   private TenantAttributes tenantAttributes() {

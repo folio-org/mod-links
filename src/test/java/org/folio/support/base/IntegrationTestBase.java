@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import lombok.SneakyThrows;
 import org.folio.spring.integration.XOkapiHeaders;
+import org.folio.support.extension.EnableKafka;
 import org.folio.support.extension.EnablePostgres;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.hamcrest.Matcher;
@@ -29,6 +30,7 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.Map;
 
+@EnableKafka
 @EnablePostgres
 @SpringBootTest
 @ActiveProfiles("test")

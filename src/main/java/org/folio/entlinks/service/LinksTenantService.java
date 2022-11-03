@@ -4,6 +4,7 @@ import org.folio.qm.domain.dto.RecordType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
+import org.folio.spring.tools.kafka.KafkaAdminService;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,13 +14,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class LinksTenantService extends TenantService {
 
+  private final FolioExecutionContext folioExecutionContext;
+  private final KafkaAdminService kafkaAdminService;
   private final LinkingRulesService rulesService;
 
   public LinksTenantService(JdbcTemplate jdbcTemplate,
                             FolioExecutionContext context,
-                            LinkingRulesService rulesService,
-                            FolioSpringLiquibase folioSpringLiquibase) {
+                            FolioSpringLiquibase folioSpringLiquibase,
+                            KafkaAdminService kafkaAdminService,
+                            LinkingRulesService rulesService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
+    this.folioExecutionContext = context;
+    this.kafkaAdminService = kafkaAdminService;
     this.rulesService = rulesService;
   }
 
@@ -27,6 +33,8 @@ public class LinksTenantService extends TenantService {
   protected void afterTenantUpdate(TenantAttributes tenantAttributes) {
     super.afterTenantUpdate(tenantAttributes);
     rulesService.saveDefaultRules(RecordType.AUTHORITY);
+    kafkaAdminService.createTopics(folioExecutionContext.getTenantId());
+    kafkaAdminService.restartEventListeners();
   }
 
 }
