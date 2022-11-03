@@ -2,37 +2,97 @@
   {
     "bibField": "100",
     "authorityField": "100",
-    "subfields": ["a", "b", "c", "d", "j", "q"],
+    "bibSubfields": ["a", "b", "c", "d", "j", "q"],
+    "authoritySubfields": ["a", "b", "c", "d", "j", "q"],
+    "subfieldModifications": [],
     "validation": {}
   },
   {
     "bibField": "110",
     "authorityField": "110",
-    "subfields": ["a", "b", "c"],
+    "bibSubfields": ["a", "b", "c"],
+    "authoritySubfields": ["a", "b", "c"],
+    "subfieldModifications": [],
     "validation": {}
   },
   {
     "bibField": "111",
     "authorityField": "111",
-    "subfields": ["a", "c", "e", "q"],
+    "bibSubfields": ["a", "c", "e", "q"],
+    "authoritySubfields": ["a", "c", "e", "q"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "600",
+    "authorityField": "100",
+    "bibSubfields": ["a", "b", "c", "d", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t"],
+    "authoritySubfields": ["a", "b", "c", "d", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t", "g"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "610",
+    "authorityField": "110",
+    "bibSubfields": ["a", "b", "c", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g"],
+    "authoritySubfields": ["a", "b", "c", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n", "v", "x", "y"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "611",
+    "authorityField": "111",
+    "bibSubfields": ["a", "c", "e", "q", "f", "h", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "authoritySubfields": ["a", "c", "e", "q", "f", "h", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "subfieldModifications": [],
     "validation": {}
   },
   {
     "bibField": "700",
     "authorityField": "100",
-    "subfields": ["a", "b", "c", "d", "j", "q", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "bibSubfields": ["a", "b", "c", "d", "j", "q", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "authoritySubfields": ["a", "b", "c", "d", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t", "g"],
+    "subfieldModifications": [],
     "validation": {}
   },
   {
     "bibField": "710",
     "authorityField": "110",
-    "subfields": ["a", "b", "c", "u", "4", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n"],
+    "bibSubfields": ["a", "b", "c", "u", "4", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n"],
+    "authoritySubfields": ["a", "b", "c", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n"],
+    "subfieldModifications": [],
     "validation": {}
   },
   {
     "bibField": "711",
     "authorityField": "111",
-    "subfields": ["a", "b", "c", "d", "j", "q", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "bibSubfields": ["a", "c", "e", "q", "u", "4", "f", "h", "i", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "authoritySubfields": ["a", "c", "e", "q", "f", "h", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "800",
+    "authorityField": "100",
+    "bibSubfields": ["a", "b", "c", "d", "j", "q", "u", "4", "f", "h", "i", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "g"],
+    "authoritySubfields": ["a", "b", "c", "d", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t", "g"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "810",
+    "authorityField": "110",
+    "bibSubfields": ["a", "b", "c", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g"],
+    "authoritySubfields": ["a", "b", "c", "f", "h", "k", "l", "m", "o", "p", "r", "s", "t", "d", "g", "n"],
+    "subfieldModifications": [],
+    "validation": {}
+  },
+  {
+    "bibField": "811",
+    "authorityField": "111",
+    "bibSubfields": ["a", "c", "e", "q", "u", "4", "f", "h", "i", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "authoritySubfields": ["a", "c", "e", "q", "f", "h", "k", "l", "p", "s", "t", "d", "g", "n"],
+    "subfieldModifications": [],
     "validation": {}
   }
 ]
