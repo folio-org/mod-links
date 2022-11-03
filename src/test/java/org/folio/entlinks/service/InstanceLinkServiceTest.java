@@ -45,7 +45,7 @@ class InstanceLinkServiceTest {
   private InstanceLinkService service;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
     service = new InstanceLinkService(repository, new InstanceLinkMapperImpl());
   }
 
