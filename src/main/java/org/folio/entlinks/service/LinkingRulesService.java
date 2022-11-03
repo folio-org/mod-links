@@ -2,6 +2,7 @@ package org.folio.entlinks.service;
 
 import com.google.common.io.Resources;
 import lombok.RequiredArgsConstructor;
+import org.folio.entlinks.exception.RulesNotFoundException;
 import org.folio.entlinks.model.entity.LinkingRules;
 import org.folio.entlinks.repository.LinkingRulesRepository;
 import org.folio.qm.domain.dto.RecordType;
@@ -27,21 +28,21 @@ public class LinkingRulesService {
   public void saveDefaultRules(RecordType recordTypeEnum) {
     final var recordType = recordTypeEnum.getValue();
     var rulePath = String.format(LINKING_RULES_PATH_PATTERN, recordType);
-    var rules = readResourceFromPath(rulePath);
-    rules.ifPresent(s -> repository.save(
-        LinkingRules.builder()
+
+    readRulesFromResources(rulePath).ifPresent(rules ->
+        repository.save(LinkingRules.builder()
             .recordType(recordType)
-            .rules(s)
+            .rules(rules)
             .build())
     );
   }
 
-  private Optional<String> readResourceFromPath(String path) {
+  private Optional<String> readRulesFromResources(String rulePath) {
     try {
-      URL url = Resources.getResource(path);
+      URL url = Resources.getResource(rulePath);
       return Optional.of(Resources.toString(url, StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      return Optional.empty();
+    } catch (IllegalArgumentException | IOException e) {
+      throw new RulesNotFoundException(rulePath);
     }
   }
 }

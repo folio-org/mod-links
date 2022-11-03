@@ -50,6 +50,8 @@ public class LinkingRules {
     if (this == o) { return true; }
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) { return false; }
     LinkingRules instanceLink = (LinkingRules) o;
-    return id != null && Objects.equals(id, instanceLink.id);
+    return Objects.equals(id, instanceLink.id)
+        && Objects.equals(recordType, instanceLink.recordType)
+        && Objects.equals(rules, instanceLink.rules);
   }
 }
