@@ -1,5 +1,7 @@
 package org.folio.support.base;
 
+import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.folio.support.TestUtils.asJson;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
@@ -10,7 +12,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.SneakyThrows;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.EnableKafka;
 import org.folio.spring.test.extension.EnableOkapi;
@@ -19,13 +24,22 @@ import org.folio.spring.test.extension.impl.OkapiConfiguration;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 @EnableKafka
 @EnableOkapi
@@ -33,15 +47,16 @@ import org.springframework.test.web.servlet.ResultActions;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@Import(IntegrationTestBase.KafkaTemplateTestConfiguration.class)
 public class IntegrationTestBase {
 
   protected static MockMvc mockMvc;
   protected static OkapiConfiguration okapi;
-  protected static KafkaTemplate<String, Object> kafkaTemplate;
+  protected static KafkaTemplate<String, String> kafkaTemplate;
 
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
-                    @Autowired KafkaTemplate<String, Object> kafkaTemplate) {
+                    @Autowired KafkaTemplate<String, String> kafkaTemplate) {
     System.setProperty("env", "folio-test");
     IntegrationTestBase.mockMvc = mockMvc;
     IntegrationTestBase.kafkaTemplate = kafkaTemplate;
@@ -96,5 +111,29 @@ public class IntegrationTestBase {
   @SneakyThrows
   protected static ResultActions doPost(String uri, Object body, Object... args) {
     return tryPost(uri, body, args).andExpect(status().is2xxSuccessful());
+  }
+
+  @SneakyThrows
+  protected static void sendKafkaMessage(String topic, Object event) {
+    kafkaTemplate.send(topic, new ObjectMapper().writeValueAsString(event));
+  }
+
+  @TestConfiguration
+  public static class KafkaTemplateTestConfiguration {
+
+    @Bean
+    @Primary
+    public ProducerFactory<String, String> producerStringFactory(KafkaProperties kafkaProperties) {
+      Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
+      configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    @Primary
+    public KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> producerFactory) {
+      return new KafkaTemplate<>(producerFactory);
+    }
   }
 }

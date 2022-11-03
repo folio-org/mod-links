@@ -5,6 +5,8 @@ import static java.util.UUID.randomUUID;
 import static org.folio.support.TestUtils.Link.TAGS;
 import static org.folio.support.TestUtils.linksDto;
 import static org.folio.support.TestUtils.linksDtoCollection;
+import static org.folio.support.base.TestConstants.authoritiesLinksCountEndpoint;
+import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -39,9 +41,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 @IntegrationTest
 class InstanceLinksIT extends IntegrationTestBase {
 
-  private static final String INSTANCE_LINKS_ENDPOINT_PATH = "/links/instances/{id}";
-  private static final String AUTHORITY_LINKS_COUNT_ENDPOINT_PATH = "/links/authorities/bulk/count";
-
   public static Stream<Arguments> requiredFieldMissingProvider() {
     return Stream.of(
       arguments("instanceId",
@@ -69,14 +68,14 @@ class InstanceLinksIT extends IntegrationTestBase {
 
   @Test
   void getInstanceLinks_positive_noLinksFound() throws Exception {
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, randomUUID())
+    doGet(linksInstanceEndpoint(), randomUUID())
       .andExpect(linksMatch(empty()))
       .andExpect(totalRecordsMatch(0));
   }
 
   @Test
   void getInstanceLinks_negative_invalidId() throws Exception {
-    tryGet(INSTANCE_LINKS_ENDPOINT_PATH, "not a uuid")
+    tryGet(linksInstanceEndpoint(), "not a uuid")
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentTypeMismatchException")))
@@ -90,9 +89,9 @@ class InstanceLinksIT extends IntegrationTestBase {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0), Link.of(1, 1)));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(2)))
       .andExpect(linksMatch(incomingLinks))
       .andExpect(totalRecordsMatch(2));
@@ -104,12 +103,12 @@ class InstanceLinksIT extends IntegrationTestBase {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0), Link.of(1, 1)));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
+    doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(emptyList());
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(0)))
       .andExpect(totalRecordsMatch(0));
   }
@@ -124,7 +123,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
+    doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 1),
@@ -132,9 +131,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 3),
       Link.of(3, 2)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(4)))
       .andExpect(linksMatch(incomingLinks))
       .andExpect(totalRecordsMatch(4));
@@ -148,7 +147,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(0, 0),
       Link.of(1, 1)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
+    doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0),
@@ -156,9 +155,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(4)))
       .andExpect(linksMatch(incomingLinks))
       .andExpect(totalRecordsMatch(4));
@@ -172,15 +171,15 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(0, 0, "12345", List.of("a", "b")),
       Link.of(1, 1, "7890", List.of("c"))
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
+    doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0, "12345-updated", List.of("x")),
       Link.of(1, 1, "7890-updated", List.of("c"))
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(2)))
       .andExpect(linksMatch(incomingLinks))
       .andExpect(totalRecordsMatch(2));
@@ -196,7 +195,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 2),
       Link.of(3, 3)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, existedLinks, instanceId);
+    doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
       Link.of(0, 0),
@@ -204,9 +203,9 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(2, 3),
       Link.of(3, 2)
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId);
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    doGet(INSTANCE_LINKS_ENDPOINT_PATH, instanceId)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(linksMatch(hasSize(4)))
       .andExpect(linksMatch(incomingLinks))
       .andExpect(totalRecordsMatch(4));
@@ -223,7 +222,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       Link.of(3, 2)
     ));
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
+    tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("RequestBodyValidationException")))
@@ -237,7 +236,7 @@ class InstanceLinksIT extends IntegrationTestBase {
     var invalidInstanceId = "1111";
     var incomingLinks = linksDtoCollection(emptyList());
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, invalidInstanceId)
+    tryPut(linksInstanceEndpoint(), incomingLinks, invalidInstanceId)
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentTypeMismatchException")))
@@ -250,7 +249,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   void updateInstanceLinks_negative_whenBodyIsEmpty() {
     var instanceId = randomUUID();
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, null, instanceId)
+    tryPut(linksInstanceEndpoint(), null, instanceId)
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("HttpMessageNotReadableException")))
@@ -268,7 +267,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       .authorityNaturalId("id").bibRecordTag("100")
     ));
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
+    tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentNotValidException")))
@@ -288,7 +287,7 @@ class InstanceLinksIT extends IntegrationTestBase {
       .bibRecordSubfields(List.of("aa", "bb", "11"))
     ));
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
+    tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("RequestBodyValidationException")))
@@ -304,7 +303,7 @@ class InstanceLinksIT extends IntegrationTestBase {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(List.of(invalidLink));
 
-    tryPut(INSTANCE_LINKS_ENDPOINT_PATH, incomingLinks, instanceId)
+    tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("MethodArgumentNotValidException")))
@@ -323,10 +322,10 @@ class InstanceLinksIT extends IntegrationTestBase {
       new Link(authorityId, TAGS[1]),
       new Link(authorityId, TAGS[2])
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, links, instanceId);
+    doPut(linksInstanceEndpoint(), links, instanceId);
 
     var requestBody = new UuidCollection().ids(List.of(authorityId));
-    doPost(AUTHORITY_LINKS_COUNT_ENDPOINT_PATH, requestBody)
+    doPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(linksMatch(hasSize(1)))
       .andExpect(jsonPath("$.links.[0].id", is(authorityId.toString())))
@@ -337,7 +336,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   @SneakyThrows
   void countNumberOfTitles_positive_whenInstanceLinksNotExistThenReturnZeroCount() {
     var requestBody = new UuidCollection().ids(List.of(randomUUID(), randomUUID()));
-    doPost(AUTHORITY_LINKS_COUNT_ENDPOINT_PATH, requestBody)
+    doPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(linksMatch(hasSize(2)))
       .andExpect(jsonPath("$.links.[0].totalLinks", is(0)))
@@ -348,7 +347,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   @SneakyThrows
   void countNumberOfTitles_positive_whenRequestBodyIsEmptyThenReturnEmptyList() {
     var requestBody = new UuidCollection().ids(List.of());
-    doPost(AUTHORITY_LINKS_COUNT_ENDPOINT_PATH, requestBody)
+    doPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(linksMatch(hasSize(0)));
   }
@@ -357,7 +356,7 @@ class InstanceLinksIT extends IntegrationTestBase {
   @SneakyThrows
   void countNumberOfTitles_negative_whenRequestBodyInvalidThenThrowsValidationException() {
     var requestBody = List.of("not uuid collection object");
-    tryPost(AUTHORITY_LINKS_COUNT_ENDPOINT_PATH, requestBody)
+    tryPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isBadRequest())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("HttpMessageNotReadableException")))

@@ -1,6 +1,7 @@
 package org.folio.support;
 
 import static java.util.UUID.randomUUID;
+import static org.folio.support.base.TestConstants.TENANT_ID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -10,8 +11,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.model.entity.InstanceLink;
+import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
+import org.folio.qm.domain.dto.InventoryEvent;
+import org.folio.qm.domain.dto.InventoryEventType;
 
 public class TestUtils {
 
@@ -23,6 +27,16 @@ public class TestUtils {
   @SneakyThrows
   public static String asJson(Object value) {
     return OBJECT_MAPPER.writeValueAsString(value);
+  }
+
+  public static InventoryEvent inventoryEvent(UUID id, String resource, String type,
+                                              AuthorityInventoryRecord n, AuthorityInventoryRecord o) {
+    return new InventoryEvent().id(id).type(type).resourceName(resource).tenant(TENANT_ID)._new(n).old(o);
+  }
+
+  public static InventoryEvent authorityEvent(String type, AuthorityInventoryRecord n,
+                                              AuthorityInventoryRecord o) {
+    return inventoryEvent(n.getId(), "authority", type, n, o);
   }
 
   public static List<InstanceLinkDto> linksDto(UUID instanceId, Link... links) {

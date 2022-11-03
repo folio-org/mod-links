@@ -1,6 +1,20 @@
 {
   "id": "@artifactId@-@version@",
   "name": "Entities Links",
+  "requires": [
+    {
+      "id": "login",
+      "version": "7.0"
+    },
+    {
+      "id": "permissions",
+      "version": "5.5"
+    },
+    {
+      "id": "users",
+      "version": "16.0"
+    }
+  ],
   "provides": [
     {
       "id": "instance-authority-links",

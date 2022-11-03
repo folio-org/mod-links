@@ -1,0 +1,32 @@
+package org.folio.entlinks.integration;
+
+import lombok.extern.log4j.Log4j2;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.qm.domain.dto.InventoryEvent;
+import org.folio.qm.domain.dto.InventoryEventType;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
+
+@Log4j2
+public class AuthorityChangeFilterStrategy implements RecordFilterStrategy<String, InventoryEvent> {
+
+  @Override
+  public boolean filter(@NotNull ConsumerRecord<String, InventoryEvent> consumerRecord) {
+    var inventoryEvent = consumerRecord.value();
+    InventoryEventType eventType;
+    try {
+      eventType = InventoryEventType.valueOf(inventoryEvent.getType());
+    } catch (IllegalArgumentException e) {
+      log.debug("Skip message. Unsupported parameter [type: {}]", inventoryEvent.getType());
+      return true;
+    }
+    if (InventoryEventType.UPDATE == eventType
+      && inventoryEvent.getOld() != null
+      && inventoryEvent.getNew() != null
+      && !inventoryEvent.getOld().equals(inventoryEvent.getNew())) {
+      log.debug("Skip message. No significant changes in authority record");
+      return false;
+    }
+    return InventoryEventType.DELETE != eventType;
+  }
+}
