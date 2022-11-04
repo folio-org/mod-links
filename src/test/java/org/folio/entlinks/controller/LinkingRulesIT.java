@@ -2,8 +2,8 @@ package org.folio.entlinks.controller;
 
 import lombok.SneakyThrows;
 import org.folio.entlinks.model.type.ErrorCode;
+import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.base.IntegrationTestBase;
-import org.folio.support.types.IntegrationTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

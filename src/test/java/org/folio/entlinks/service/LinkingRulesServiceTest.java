@@ -5,7 +5,7 @@ import org.folio.entlinks.exception.RulesNotFoundException;
 import org.folio.entlinks.model.entity.LinkingRules;
 import org.folio.entlinks.repository.LinkingRulesRepository;
 import org.folio.qm.domain.dto.RecordType;
-import org.folio.support.types.UnitTest;
+import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

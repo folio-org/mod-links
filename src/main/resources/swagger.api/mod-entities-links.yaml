@@ -84,18 +84,12 @@ paths:
         '500':
           $ref: '#/components/responses/serverErrorResponse'
 
-  /links/linking-rules:
+  /linking-rules/instance-authority:
     get:
-      description: Retrieve authority linking rules
-      operationId: getAuthorityLinkingRules
+      description: Retrieve instance-authority linking rules
+      operationId: getInstanceAuthorityLinkingRules
       tags:
         - linking-rules
-      parameters:
-        - name: recordType
-          in: query
-          required: false
-          schema:
-            $ref: "#/components/schemas/recordType"
       responses:
         "200":
           description: The authority linking rules collection
