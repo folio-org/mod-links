@@ -14,13 +14,10 @@
     <comment>Create linking_rules table</comment>
 
     <createTable tableName="linking_rules">
-        <column autoIncrement="true" name="id" type="BIGINT">
+        <column name="linking_records" type="VARCHAR(20)">
             <constraints nullable="false" primaryKey="true" primaryKeyName="pk_linking_rules"/>
         </column>
-        <column name="record_type" type="VARCHAR(20)">
-            <constraints nullable="false"/>
-        </column>
-        <column name="rules" type="VARCHAR">
+        <column name="data" type="TEXT">
             <constraints nullable="false"/>
         </column>
     </createTable>

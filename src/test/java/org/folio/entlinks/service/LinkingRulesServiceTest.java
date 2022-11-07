@@ -1,10 +1,11 @@
 package org.folio.entlinks.service;
 
 import lombok.SneakyThrows;
+import org.folio.entlinks.LinkingRecords;
 import org.folio.entlinks.exception.RulesNotFoundException;
+import org.folio.entlinks.model.converter.LinkingRulesMapperImpl;
 import org.folio.entlinks.model.entity.LinkingRules;
 import org.folio.entlinks.repository.LinkingRulesRepository;
-import org.folio.qm.domain.dto.RecordType;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.util.ResourceUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.qm.domain.dto.RecordType.AUTHORITY;
+import static org.folio.entlinks.LinkingRecords.INSTANCE_AUTHORITY;
 import static org.folio.support.TestUtils.convertFile;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -28,17 +30,16 @@ import static org.springframework.util.ResourceUtils.getFile;
 @ExtendWith(MockitoExtension.class)
 class LinkingRulesServiceTest {
 
-  private static final String AUTHORITY_RULES_PATH = "classpath:rules/authority-linking-rules.json";
+  private static final String AUTHORITY_RULES_PATH = "classpath:linking-rules/instance-authority.json";
 
   @Mock
   private LinkingRulesRepository repository;
 
   private LinkingRulesService service;
 
-
   @BeforeEach
   void setUp() {
-    service = new LinkingRulesService(repository);
+    service = new LinkingRulesService(repository, new LinkingRulesMapperImpl());
   }
 
   @Test
@@ -46,13 +47,13 @@ class LinkingRulesServiceTest {
   void saveDefaultRules_positive_saveByRecordType() {
     var expectedFile = getFile(AUTHORITY_RULES_PATH);
     var expectedSavedRule = LinkingRules.builder()
-        .recordType(AUTHORITY.getValue())
-        .rules(convertFile(expectedFile))
+        .linkingRecords(INSTANCE_AUTHORITY.name())
+        .data(convertFile(expectedFile))
         .build();
 
     try (var mockedFiles = mockStatic(ResourceUtils.class)) {
       mockedFiles.when(() -> getFile(anyString())).thenReturn(expectedFile);
-      service.saveDefaultRules(AUTHORITY);
+      service.saveDefaultRules(INSTANCE_AUTHORITY);
     }
 
     verify(repository).save(expectedSavedRule);
@@ -60,14 +61,30 @@ class LinkingRulesServiceTest {
 
   @Test
   void saveDefaultRules_negative_notFoundRulesFile() {
-    var mockedRecordType = mock(RecordType.class);
+    var mockedRecordType = mock(LinkingRecords.class);
 
-    when(mockedRecordType.getValue()).thenReturn("INVALID");
+    when(mockedRecordType.value()).thenReturn("INVALID");
 
     var exception = Assertions.assertThrows(RulesNotFoundException.class,
         () -> service.saveDefaultRules(mockedRecordType));
 
     assertThat(exception)
-        .hasMessage("Failed to read rules for \"INVALID\" record type");
+        .hasMessage("Failed to read rules for \"INVALID\" linking records");
+  }
+
+  @Test
+  void getInstanceAuthorityRules_negative_invalidJsonFormat() {
+    var invalidRules = LinkingRules.builder()
+        .linkingRecords(INSTANCE_AUTHORITY.name())
+        .data("invalid json")
+        .build();
+
+    when(repository.findByLinkingRecords(INSTANCE_AUTHORITY.name())).thenReturn(invalidRules);
+
+    var exception = Assertions.assertThrows(JsonParseException.class,
+        () -> service.getLinkingRules(INSTANCE_AUTHORITY));
+
+    assertThat(exception)
+        .hasMessage("Cannot parse JSON");
   }
 }

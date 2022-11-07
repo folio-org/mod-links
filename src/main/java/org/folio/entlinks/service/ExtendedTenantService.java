@@ -1,7 +1,7 @@
 package org.folio.entlinks.service;
 
 import lombok.extern.log4j.Log4j2;
-import org.folio.qm.domain.dto.RecordType;
+import org.folio.entlinks.LinkingRecords;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
@@ -42,6 +42,6 @@ public class ExtendedTenantService extends TenantService {
     kafkaAdminService.createTopics(folioExecutionContext.getTenantId());
     kafkaAdminService.restartEventListeners();
     prepareSystemUserService.setupSystemUser();
-    rulesService.saveDefaultRules(RecordType.AUTHORITY);
+    rulesService.saveDefaultRules(LinkingRecords.INSTANCE_AUTHORITY);
   }
 }

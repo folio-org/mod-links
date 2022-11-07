@@ -30,9 +30,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.util.LinkedMultiValueMap;
-
-import java.util.Map;
 
 @EnableKafka
 @EnableOkapi
@@ -76,20 +73,8 @@ public class IntegrationTestBase {
   }
 
   @SneakyThrows
-  protected static ResultActions tryGet(String uri, Map<String, String> params, Object... args) {
-    var requestParams = new LinkedMultiValueMap<String, String>();
-    requestParams.setAll(params);
-    return mockMvc.perform(get(uri, args).params(requestParams).headers(defaultHeaders()).accept(APPLICATION_JSON));
-  }
-
-  @SneakyThrows
   protected static ResultActions tryGet(String uri, Object... args) {
     return mockMvc.perform(get(uri, args).headers(defaultHeaders()).accept(APPLICATION_JSON));
-  }
-
-  @SneakyThrows
-  protected static ResultActions doGet(String uri, Map<String, String> params, Object... args) {
-    return tryGet(uri, params, args).andExpect(status().isOk());
   }
 
   @SneakyThrows

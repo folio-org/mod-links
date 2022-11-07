@@ -10,8 +10,6 @@ import org.hibernate.Hibernate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -28,17 +26,12 @@ import java.util.Objects;
 public class LinkingRules {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", nullable = false)
-  private Long id;
+  @Column(name = "linking_records", unique = true)
+  private String linkingRecords;
 
   @NotNull
-  @Column(name = "record_type", nullable = false)
-  private String recordType;
-
-  @NotNull
-  @Column(name = "rules", columnDefinition = "jsonb", nullable = false)
-  private String rules;
+  @Column(name = "data", nullable = false)
+  private String data;
 
   @Override
   public int hashCode() {
@@ -50,8 +43,7 @@ public class LinkingRules {
     if (this == o) { return true; }
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) { return false; }
     LinkingRules instanceLink = (LinkingRules) o;
-    return Objects.equals(id, instanceLink.id)
-        && Objects.equals(recordType, instanceLink.recordType)
-        && Objects.equals(rules, instanceLink.rules);
+    return Objects.equals(linkingRecords, instanceLink.linkingRecords)
+        && Objects.equals(data, instanceLink.data);
   }
 }

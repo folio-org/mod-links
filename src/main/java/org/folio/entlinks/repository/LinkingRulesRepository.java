@@ -3,7 +3,7 @@ package org.folio.entlinks.repository;
 import org.folio.entlinks.model.entity.LinkingRules;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface LinkingRulesRepository extends JpaRepository<LinkingRules, Long> {
+public interface LinkingRulesRepository extends JpaRepository<LinkingRules, String> {
 
-  LinkingRules findByRecordType(String recordType);
+  LinkingRules findByLinkingRecords(String linkingRecords);
 }

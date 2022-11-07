@@ -96,8 +96,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                description: Array of field to filed linking rules
+                type: array
+                title: Collection of linking rules
+                description: Collection of linking rules
+                items:
+                  $ref: '#/components/schemas/linkingRuleDto'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '500':
@@ -191,14 +194,59 @@ components:
           format: int64
           description: Number of titles linked to the authority
 
-    recordType:
-      type: string
-      enum: [ AUTHORITY ]
-      default: AUTHORITY
+    linkingRuleDto:
+      type: object
+      title: Field to filed linking rule
+      description: Field to filed linking rule
+      properties:
+        bibField:
+          type: string
+        authorityField:
+          type: string
+        subfields:
+          type: array
+          items:
+            $ref: '#/components/schemas/char'
+        subfieldModifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/subfieldModification'
+        validation:
+          $ref: '#/components/schemas/subfieldValidation'
+
+    subfieldModification:
+      type: object
+      title: Subfield modification.
+      description: Subfield modification to link source and target subfields.
+      properties:
+        source:
+          type: string
+          description: Authority subfield.
+        target:
+          type: string
+          description: Instance subfields.
+
+    subfieldValidation:
+      type: object
+      title: Subfield validation.
+      description: Subfield validation before linking.
+      properties:
+        existence:
+          type: array
+          description: Specify if subfield should exist or not.
+          items:
+            type: string
+            additionalProperties:
+              type: boolean
 
     uuid:
       type: string
       format: uuid
+
+    char:
+      type: string
+      minLength: 1
+      maxLength: 1
 
     errorResponse:
       type: object

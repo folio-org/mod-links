@@ -1,13 +1,13 @@
 package org.folio.entlinks.exception;
 
+import org.folio.entlinks.LinkingRecords;
 import org.folio.entlinks.model.type.ErrorCode;
-import org.folio.qm.domain.dto.RecordType;
 
 public class RulesNotFoundException extends BaseException {
 
-  private static final String MESSAGE = "Failed to read rules for \"%s\" record type";
+  private static final String MESSAGE = "Failed to read rules for \"%s\" linking records";
 
-  public RulesNotFoundException(RecordType recordType) {
-    super(String.format(MESSAGE, recordType.getValue()), ErrorCode.NOT_FOUND_ERROR);
+  public RulesNotFoundException(LinkingRecords recordType) {
+    super(String.format(MESSAGE, recordType.value()), ErrorCode.NOT_FOUND_ERROR);
   }
 }

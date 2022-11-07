@@ -1,44 +1,47 @@
 package org.folio.entlinks.service;
 
 import lombok.RequiredArgsConstructor;
+import org.folio.entlinks.LinkingRecords;
 import org.folio.entlinks.exception.RulesNotFoundException;
-import org.folio.entlinks.model.entity.LinkingRules;
+import org.folio.entlinks.model.converter.LinkingRulesMapper;
 import org.folio.entlinks.repository.LinkingRulesRepository;
-import org.folio.qm.domain.dto.RecordType;
+import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class LinkingRulesService {
 
-  private static final String LINKING_RULES_PATH_PATTERN = "classpath:rules/%s-linking-rules.json";
+  private static final String LINKING_RULES_PATH_PATTERN = "classpath:linking-rules/%s.json";
+
   private final LinkingRulesRepository repository;
+  private final LinkingRulesMapper mapper;
 
-  public String getLinkingRules(RecordType recordType) {
-    var jsonRules = repository.findByRecordType(recordType.getValue());
-    return jsonRules.getRules();
+  public List<LinkingRuleDto> getLinkingRules(LinkingRecords recordType) {
+    var jsonRules = repository.findByLinkingRecords(recordType.name());
+    return mapper.convert(jsonRules);
   }
 
-  public void saveDefaultRules(RecordType recordType) {
-    var rules = readRulesFromResources(recordType);
+  public void saveDefaultRules(LinkingRecords linkedRecords) {
+    var jsonRules = readRulesFromResources(linkedRecords);
+    var rules = mapper.convert(linkedRecords, jsonRules);
 
-    repository.save(LinkingRules.builder()
-        .recordType(recordType.getValue())
-        .rules(rules)
-        .build());
+    repository.save(rules);
   }
 
-  private String readRulesFromResources(RecordType recordType) {
-    var rulePath = String.format(LINKING_RULES_PATH_PATTERN, recordType);
+  private String readRulesFromResources(LinkingRecords linkingRecords) {
     try {
-      var file = ResourceUtils.getFile(rulePath);
-      return new String(Files.readAllBytes(file.toPath()));
+      var rulePath = String.format(LINKING_RULES_PATH_PATTERN, linkingRecords.value());
+      var filePath = ResourceUtils.getFile(rulePath).toPath();
+
+      return Files.readString(filePath);
     } catch (IOException e) {
-      throw new RulesNotFoundException(recordType);
+      throw new RulesNotFoundException(linkingRecords);
     }
   }
 }
