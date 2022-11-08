@@ -203,7 +203,7 @@ components:
           type: string
         authorityField:
           type: string
-        subfields:
+        authoritySubfields:
           type: array
           items:
             $ref: '#/components/schemas/char'
