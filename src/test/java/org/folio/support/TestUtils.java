@@ -15,7 +15,6 @@ import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
 import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.InventoryEventType;
 
 public class TestUtils {
 
