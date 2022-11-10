@@ -8,11 +8,15 @@
     },
     {
       "id": "permissions",
-      "version": "5.5"
+      "version": "5.3"
     },
     {
       "id": "users",
       "version": "16.0"
+    },
+    {
+      "id": "source-manager-parsed-records",
+      "version": "3.0"
     }
   ],
   "provides": [
