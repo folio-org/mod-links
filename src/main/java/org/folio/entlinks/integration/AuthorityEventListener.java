@@ -77,7 +77,7 @@ public class AuthorityEventListener {
     }
 
     log.warn(() -> new FormattedMessageFactory()
-      .newMessage("Failed to process authority event [eventType: {}, type: {}, id: {}, tenant: {}]",
-        event.getType(), event.getType(), event.getId(), event.getTenant()), e);
+      .newMessage("Failed to process authority event [eventType: {}, id: {}, tenant: {}]",
+        event.getType(), event.getId(), event.getTenant()), e);
   }
 }
