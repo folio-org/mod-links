@@ -1,19 +1,18 @@
 package org.folio.entlinks.model.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.folio.entlinks.LinkingPairType;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Objects;
@@ -25,15 +24,15 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 @Entity
+@TypeDef(name = "json", typeClass = JsonType.class)
 @Table(name = "linking_rules")
 public class LinkingRules {
 
   @Id
-  @Enumerated(EnumType.STRING)
   @Column(name = "linking_pair_type", unique = true)
-  private LinkingPairType linkingPairType;
+  private String linkingPairType;
 
-  @Type(type = "jsonb")
+  @Type(type = "json")
   @Column(name = "data", columnDefinition = "jsonb", nullable = false)
   private String data;
 

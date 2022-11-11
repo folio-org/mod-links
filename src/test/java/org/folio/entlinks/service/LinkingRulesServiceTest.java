@@ -47,7 +47,7 @@ class LinkingRulesServiceTest {
   void saveDefaultRules_positive_saveByRecordType() {
     var expectedFile = getFile(AUTHORITY_RULES_PATH);
     var expectedSavedRule = LinkingRules.builder()
-        .linkingPairType(INSTANCE_AUTHORITY)
+        .linkingPairType(INSTANCE_AUTHORITY.name())
         .data(convertFile(expectedFile))
         .build();
 
@@ -75,11 +75,11 @@ class LinkingRulesServiceTest {
   @Test
   void getInstanceAuthorityRules_negative_invalidJsonFormat() {
     var invalidRules = LinkingRules.builder()
-        .linkingPairType(INSTANCE_AUTHORITY)
+        .linkingPairType(INSTANCE_AUTHORITY.name())
         .data("invalid json")
         .build();
 
-    when(repository.findByLinkingPairType(INSTANCE_AUTHORITY)).thenReturn(invalidRules);
+    when(repository.findByLinkingPairType(INSTANCE_AUTHORITY.name())).thenReturn(invalidRules);
 
     var exception = Assertions.assertThrows(JsonParseException.class,
         () -> service.getLinkingRules(INSTANCE_AUTHORITY));

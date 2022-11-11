@@ -23,7 +23,7 @@ public class LinkingRulesService {
   private final LinkingRulesMapper mapper;
 
   public List<LinkingRuleDto> getLinkingRules(LinkingPairType linkingPairType) {
-    var jsonRules = repository.findByLinkingPairType(linkingPairType);
+    var jsonRules = repository.findByLinkingPairType(linkingPairType.name());
     return mapper.convert(jsonRules);
   }
 
