@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthorityChangeHandlingService {
 
-  public int processAuthoritiesChanges(List<InventoryEvent> events) {
+  public int handleAuthoritiesChanges(List<InventoryEvent> events) {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 }

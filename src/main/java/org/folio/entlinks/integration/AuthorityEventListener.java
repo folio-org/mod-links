@@ -49,7 +49,7 @@ public class AuthorityEventListener {
       var batch = retainAuthoritiesWithLinks(events);
       log.info("Triggering updates for authority records [number of records: {}]", batch.size());
       messageBatchProcessor.consumeBatchWithFallback(batch, DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
-        authorityChangeHandlingService::processAuthoritiesChanges, this::logFailedEvent);
+        authorityChangeHandlingService::handleAuthoritiesChanges, this::logFailedEvent);
       return null;
     });
   }
