@@ -21,9 +21,11 @@
       "type": "string"
     },
     "new": {
+      "description": "New authority record",
       "$ref": "authorityInventoryRecord.json"
     },
     "old": {
+      "description": "Old authority record",
       "$ref": "authorityInventoryRecord.json"
     }
   }
