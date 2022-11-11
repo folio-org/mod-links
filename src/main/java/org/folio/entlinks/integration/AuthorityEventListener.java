@@ -47,14 +47,14 @@ public class AuthorityEventListener {
   private void handleAuthorityEventsForTenant(String tenant, List<InventoryEvent> events) {
     executionService.executeSystemUserScoped(tenant, () -> {
       var batch = retainAuthoritiesWithLinks(events);
-      log.info("Triggering updates for authority records [number of records: {}]", events.size());
+      log.info("Triggering updates for authority records [number of records: {}]", batch.size());
       messageBatchProcessor.consumeBatchWithFallback(batch, DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
         authorityChangeHandlingService::processAuthoritiesChanges, this::logFailedEvent);
       return null;
     });
   }
 
-  private ArrayList<InventoryEvent> retainAuthoritiesWithLinks(List<InventoryEvent> inventoryEvents) {
+  private List<InventoryEvent> retainAuthoritiesWithLinks(List<InventoryEvent> inventoryEvents) {
     var events = new ArrayList<>(inventoryEvents);
     var incomingAuthorityIds = events.stream()
       .map(InventoryEvent::getId)

@@ -42,6 +42,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       new AuthorityInventoryRecord().id(link.authorityId()).naturalId("12345"));
     sendKafkaMessage(inventoryAuthorityTopic(), event);
 
+    //TODO change to verifying out-coming Kafka message
     await().atMost(ONE_MINUTE).pollInterval(ONE_SECOND).untilAsserted(() ->
       verify(authorityChangeHandlingService).processAuthoritiesChanges(List.of(event)));
   }
@@ -55,6 +56,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       new AuthorityInventoryRecord().id(authorityId).naturalId("12345"));
     sendKafkaMessage(inventoryAuthorityTopic(), event);
 
+    //TODO change to verifying out-coming Kafka message
     await().atMost(ONE_MINUTE).pollInterval(ONE_SECOND).untilAsserted(() ->
       verify(authorityChangeHandlingService, never()).processAuthoritiesChanges(List.of(event)));
   }
@@ -68,6 +70,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       new AuthorityInventoryRecord().id(authorityId).naturalId("12345"));
     sendKafkaMessage(inventoryAuthorityTopic(), event);
 
+    //TODO change to verifying out-coming Kafka message
     await().atMost(ONE_MINUTE).pollInterval(ONE_SECOND).untilAsserted(() ->
       verify(authorityChangeHandlingService, never()).processAuthoritiesChanges(List.of(event)));
   }
@@ -80,6 +83,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       new AuthorityInventoryRecord().id(authorityId));
     sendKafkaMessage(inventoryAuthorityTopic(), event);
 
+    //TODO change to verifying out-coming Kafka message
     await().atMost(ONE_MINUTE).pollInterval(ONE_HUNDRED_MILLISECONDS).untilAsserted(() ->
       verify(authorityChangeHandlingService, never()).processAuthoritiesChanges(List.of(event)));
   }
