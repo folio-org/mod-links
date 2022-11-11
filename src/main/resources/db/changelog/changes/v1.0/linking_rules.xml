@@ -17,7 +17,7 @@
         <column name="linking_pair_type" type="VARCHAR(20)">
             <constraints nullable="false" primaryKey="true" primaryKeyName="pk_linking_rules"/>
         </column>
-        <column name="data" type="TEXT">
+        <column name="data" type="JSONB">
             <constraints nullable="false"/>
         </column>
     </createTable>

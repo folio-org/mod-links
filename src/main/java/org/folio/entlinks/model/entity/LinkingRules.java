@@ -6,13 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.folio.entlinks.LinkingPairType;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Getter
@@ -26,11 +29,12 @@ import java.util.Objects;
 public class LinkingRules {
 
   @Id
+  @Enumerated(EnumType.STRING)
   @Column(name = "linking_pair_type", unique = true)
-  private String linkingPairType;
+  private LinkingPairType linkingPairType;
 
-  @NotNull
-  @Column(name = "data", nullable = false)
+  @Type(type = "jsonb")
+  @Column(name = "data", columnDefinition = "jsonb", nullable = false)
   private String data;
 
   @Override

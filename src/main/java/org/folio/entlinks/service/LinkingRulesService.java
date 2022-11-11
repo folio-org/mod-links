@@ -22,8 +22,8 @@ public class LinkingRulesService {
   private final LinkingRulesRepository repository;
   private final LinkingRulesMapper mapper;
 
-  public List<LinkingRuleDto> getLinkingRules(LinkingPairType recordType) {
-    var jsonRules = repository.findByLinkingRecords(recordType.name());
+  public List<LinkingRuleDto> getLinkingRules(LinkingPairType linkingPairType) {
+    var jsonRules = repository.findByLinkingPairType(linkingPairType);
     return mapper.convert(jsonRules);
   }
 

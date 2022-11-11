@@ -34,7 +34,7 @@ public interface LinkingRulesMapper {
     try {
       mapper.readTree(jsonRules);
       return LinkingRules.builder()
-          .linkingPairType(linkingPairType.name())
+          .linkingPairType(linkingPairType)
           .data(jsonRules)
           .build();
     } catch (JsonProcessingException e) {
