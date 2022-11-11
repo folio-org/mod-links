@@ -63,7 +63,7 @@
           ],
           "pathPattern": "/linking-rules/instance-authority",
           "permissionsRequired": [
-            "instance-authority.linking-rules.get"
+            "instance-authority.linking-rules.collection.get"
           ]
         }
       ]
@@ -117,7 +117,7 @@
       "description": "Count instance-authority links for each authority"
     },
     {
-      "permissionName": "instance-authority.linking-rules.get",
+      "permissionName": "instance-authority.linking-rules.collection.get",
       "displayName": "Entities Links - get instance-authority linking rules",
       "description": "Get instance-authority linking rules"
     },
@@ -129,7 +129,7 @@
         "instance-authority-links.instances.collection.get",
         "instance-authority-links.instances.collection.put",
         "instance-authority-links.authorities.bulk.post",
-        "instance-authority.linking-rules.get"
+        "instance-authority.linking-rules.collection.get"
       ]
     }
   ],

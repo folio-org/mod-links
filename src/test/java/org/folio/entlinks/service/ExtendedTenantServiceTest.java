@@ -5,7 +5,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.folio.entlinks.LinkingRecords;
+import org.folio.entlinks.LinkingPairType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.spring.tools.kafka.KafkaAdminService;
@@ -38,14 +38,14 @@ class ExtendedTenantServiceTest {
     doNothing().when(prepareSystemUserService).setupSystemUser();
     doNothing().when(kafkaAdminService).createTopics(TENANT_ID);
     doNothing().when(kafkaAdminService).restartEventListeners();
-    doNothing().when(rulesService).saveDefaultRules(LinkingRecords.INSTANCE_AUTHORITY);
+    doNothing().when(rulesService).saveDefaultRules(LinkingPairType.INSTANCE_AUTHORITY);
 
     tenantService.afterTenantUpdate(tenantAttributes());
 
     verify(prepareSystemUserService).setupSystemUser();
     verify(kafkaAdminService).createTopics(TENANT_ID);
     verify(kafkaAdminService).restartEventListeners();
-    verify(rulesService).saveDefaultRules(LinkingRecords.INSTANCE_AUTHORITY);
+    verify(rulesService).saveDefaultRules(LinkingPairType.INSTANCE_AUTHORITY);
   }
 
   private TenantAttributes tenantAttributes() {

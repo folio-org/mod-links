@@ -1,7 +1,7 @@
 package org.folio.entlinks.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.folio.entlinks.LinkingRecords;
+import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.service.LinkingRulesService;
 import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.folio.qm.rest.resource.LinkingRulesApi;
@@ -18,7 +18,7 @@ public class LinkingRulesController implements LinkingRulesApi {
 
   @Override
   public ResponseEntity<List<LinkingRuleDto>> getInstanceAuthorityLinkingRules() {
-    var rules = linkingRulesService.getLinkingRules(LinkingRecords.INSTANCE_AUTHORITY);
+    var rules = linkingRulesService.getLinkingRules(LinkingPairType.INSTANCE_AUTHORITY);
     return ResponseEntity.ok(rules);
   }
 }

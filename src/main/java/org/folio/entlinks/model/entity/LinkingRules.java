@@ -26,8 +26,8 @@ import java.util.Objects;
 public class LinkingRules {
 
   @Id
-  @Column(name = "linking_records", unique = true)
-  private String linkingRecords;
+  @Column(name = "linking_pair_type", unique = true)
+  private String linkingPairType;
 
   @NotNull
   @Column(name = "data", nullable = false)
@@ -43,7 +43,7 @@ public class LinkingRules {
     if (this == o) { return true; }
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) { return false; }
     LinkingRules instanceLink = (LinkingRules) o;
-    return Objects.equals(linkingRecords, instanceLink.linkingRecords)
+    return Objects.equals(linkingPairType, instanceLink.linkingPairType)
         && Objects.equals(data, instanceLink.data);
   }
 }

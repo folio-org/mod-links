@@ -220,11 +220,11 @@ components:
       description: Subfield modification to link source and target subfields.
       properties:
         source:
-          type: string
           description: Authority subfield.
+          $ref: '#/components/schemas/char'
         target:
-          type: string
           description: Instance subfields.
+          $ref: '#/components/schemas/char'
 
     subfieldValidation:
       type: object

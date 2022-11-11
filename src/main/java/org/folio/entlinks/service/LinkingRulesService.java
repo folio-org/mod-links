@@ -1,7 +1,7 @@
 package org.folio.entlinks.service;
 
 import lombok.RequiredArgsConstructor;
-import org.folio.entlinks.LinkingRecords;
+import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.exception.RulesNotFoundException;
 import org.folio.entlinks.model.converter.LinkingRulesMapper;
 import org.folio.entlinks.repository.LinkingRulesRepository;
@@ -22,26 +22,26 @@ public class LinkingRulesService {
   private final LinkingRulesRepository repository;
   private final LinkingRulesMapper mapper;
 
-  public List<LinkingRuleDto> getLinkingRules(LinkingRecords recordType) {
+  public List<LinkingRuleDto> getLinkingRules(LinkingPairType recordType) {
     var jsonRules = repository.findByLinkingRecords(recordType.name());
     return mapper.convert(jsonRules);
   }
 
-  public void saveDefaultRules(LinkingRecords linkedRecords) {
-    var jsonRules = readRulesFromResources(linkedRecords);
-    var rules = mapper.convert(linkedRecords, jsonRules);
+  public void saveDefaultRules(LinkingPairType linkingPairType) {
+    var jsonRules = readRulesFromResources(linkingPairType);
+    var rules = mapper.convert(linkingPairType, jsonRules);
 
     repository.save(rules);
   }
 
-  private String readRulesFromResources(LinkingRecords linkingRecords) {
+  private String readRulesFromResources(LinkingPairType linkingPairType) {
     try {
-      var rulePath = String.format(LINKING_RULES_PATH_PATTERN, linkingRecords.value());
+      var rulePath = String.format(LINKING_RULES_PATH_PATTERN, linkingPairType.value());
       var filePath = ResourceUtils.getFile(rulePath).toPath();
 
       return Files.readString(filePath);
     } catch (IOException e) {
-      throw new RulesNotFoundException(linkingRecords);
+      throw new RulesNotFoundException(linkingPairType);
     }
   }
 }

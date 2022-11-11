@@ -1,7 +1,7 @@
 package org.folio.entlinks.service;
 
 import lombok.SneakyThrows;
-import org.folio.entlinks.LinkingRecords;
+import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.exception.RulesNotFoundException;
 import org.folio.entlinks.model.converter.LinkingRulesMapperImpl;
 import org.folio.entlinks.model.entity.LinkingRules;
@@ -17,7 +17,7 @@ import org.springframework.boot.json.JsonParseException;
 import org.springframework.util.ResourceUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.LinkingRecords.INSTANCE_AUTHORITY;
+import static org.folio.entlinks.LinkingPairType.INSTANCE_AUTHORITY;
 import static org.folio.support.TestUtils.convertFile;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -47,7 +47,7 @@ class LinkingRulesServiceTest {
   void saveDefaultRules_positive_saveByRecordType() {
     var expectedFile = getFile(AUTHORITY_RULES_PATH);
     var expectedSavedRule = LinkingRules.builder()
-        .linkingRecords(INSTANCE_AUTHORITY.name())
+        .linkingPairType(INSTANCE_AUTHORITY.name())
         .data(convertFile(expectedFile))
         .build();
 
@@ -61,7 +61,7 @@ class LinkingRulesServiceTest {
 
   @Test
   void saveDefaultRules_negative_notFoundRulesFile() {
-    var mockedRecordType = mock(LinkingRecords.class);
+    var mockedRecordType = mock(LinkingPairType.class);
 
     when(mockedRecordType.value()).thenReturn("INVALID");
 
@@ -75,7 +75,7 @@ class LinkingRulesServiceTest {
   @Test
   void getInstanceAuthorityRules_negative_invalidJsonFormat() {
     var invalidRules = LinkingRules.builder()
-        .linkingRecords(INSTANCE_AUTHORITY.name())
+        .linkingPairType(INSTANCE_AUTHORITY.name())
         .data("invalid json")
         .build();
 
