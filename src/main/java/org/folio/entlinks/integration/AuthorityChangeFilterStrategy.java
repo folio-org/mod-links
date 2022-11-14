@@ -20,13 +20,24 @@ public class AuthorityChangeFilterStrategy implements RecordFilterStrategy<Strin
       log.debug("Skip message. Unsupported parameter [type: {}]", inventoryEvent.getType());
       return true;
     }
-    if (InventoryEventType.UPDATE == eventType
-      && inventoryEvent.getOld() != null
-      && inventoryEvent.getNew() != null
-      && !inventoryEvent.getOld().equals(inventoryEvent.getNew())) {
-      log.debug("Skip message. No significant changes in authority record");
-      return false;
-    }
-    return InventoryEventType.DELETE != eventType;
+
+    return switch (eventType) {
+      case UPDATE -> {
+        if (authorityHasChanges(inventoryEvent)) {
+          yield false;
+        } else {
+          log.debug("Skip message. No significant changes in authority record");
+          yield true;
+        }
+      }
+      case DELETE -> false;
+    };
   }
+
+  private boolean authorityHasChanges(InventoryEvent inventoryEvent) {
+    return inventoryEvent.getOld() != null
+      && inventoryEvent.getNew() != null
+      && !inventoryEvent.getOld().equals(inventoryEvent.getNew());
+  }
+
 }
