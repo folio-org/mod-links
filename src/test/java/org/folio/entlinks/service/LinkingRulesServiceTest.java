@@ -1,5 +1,15 @@
 package org.folio.entlinks.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.LinkingPairType.INSTANCE_AUTHORITY;
+import static org.folio.support.TestUtils.convertFile;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.util.ResourceUtils.getFile;
+
 import lombok.SneakyThrows;
 import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.exception.RulesNotFoundException;
@@ -15,16 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.json.JsonParseException;
 import org.springframework.util.ResourceUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.LinkingPairType.INSTANCE_AUTHORITY;
-import static org.folio.support.TestUtils.convertFile;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.util.ResourceUtils.getFile;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -47,9 +47,9 @@ class LinkingRulesServiceTest {
   void saveDefaultRules_positive_saveByRecordType() {
     var expectedFile = getFile(AUTHORITY_RULES_PATH);
     var expectedSavedRule = LinkingRules.builder()
-        .linkingPairType(INSTANCE_AUTHORITY.name())
-        .data(convertFile(expectedFile))
-        .build();
+      .linkingPairType(INSTANCE_AUTHORITY.name())
+      .data(convertFile(expectedFile))
+      .build();
 
     try (var mockedFiles = mockStatic(ResourceUtils.class)) {
       mockedFiles.when(() -> getFile(anyString())).thenReturn(expectedFile);
@@ -66,25 +66,25 @@ class LinkingRulesServiceTest {
     when(mockedRecordType.value()).thenReturn("INVALID");
 
     var exception = Assertions.assertThrows(RulesNotFoundException.class,
-        () -> service.saveDefaultRules(mockedRecordType));
+      () -> service.saveDefaultRules(mockedRecordType));
 
     assertThat(exception)
-        .hasMessage("Failed to read rules for \"INVALID\" linking records");
+      .hasMessage("Failed to read rules for \"INVALID\" linking records");
   }
 
   @Test
   void getInstanceAuthorityRules_negative_invalidJsonFormat() {
     var invalidRules = LinkingRules.builder()
-        .linkingPairType(INSTANCE_AUTHORITY.name())
-        .data("invalid json")
-        .build();
+      .linkingPairType(INSTANCE_AUTHORITY.name())
+      .data("invalid json")
+      .build();
 
     when(repository.findByLinkingPairType(INSTANCE_AUTHORITY.name())).thenReturn(invalidRules);
 
     var exception = Assertions.assertThrows(JsonParseException.class,
-        () -> service.getLinkingRules(INSTANCE_AUTHORITY));
+      () -> service.getLinkingRules(INSTANCE_AUTHORITY));
 
     assertThat(exception)
-        .hasMessage("Cannot parse JSON");
+      .hasMessage("Cannot parse JSON");
   }
 }

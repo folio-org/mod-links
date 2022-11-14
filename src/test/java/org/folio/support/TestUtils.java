@@ -6,7 +6,6 @@ import static org.folio.support.base.TestConstants.TENANT_ID;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;

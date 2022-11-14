@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,8 +43,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-
 
 @EnableKafka
 @EnableOkapi
@@ -57,12 +56,15 @@ public class IntegrationTestBase {
   protected static MockMvc mockMvc;
   protected static OkapiConfiguration okapi;
   protected static KafkaTemplate<String, String> kafkaTemplate;
+  protected static ObjectMapper objectMapper;
 
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
+                    @Autowired ObjectMapper objectMapper,
                     @Autowired KafkaTemplate<String, String> kafkaTemplate) {
     System.setProperty("env", "folio-test");
     IntegrationTestBase.mockMvc = mockMvc;
+    IntegrationTestBase.objectMapper = objectMapper;
     IntegrationTestBase.kafkaTemplate = kafkaTemplate;
     setUpTenant();
   }
@@ -121,8 +123,8 @@ public class IntegrationTestBase {
   protected static void sendKafkaMessage(String topic, Object event) {
     kafkaTemplate.send(topic, new ObjectMapper().writeValueAsString(event));
   }
-  
-    protected ResultMatcher errorParameterMatch(Matcher<String> errorMessageMatcher) {
+
+  protected ResultMatcher errorParameterMatch(Matcher<String> errorMessageMatcher) {
     return jsonPath("$.errors.[0].parameters.[0].key", errorMessageMatcher);
   }
 

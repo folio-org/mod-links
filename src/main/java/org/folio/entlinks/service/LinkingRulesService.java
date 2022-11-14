@@ -1,5 +1,8 @@
 package org.folio.entlinks.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.exception.RulesNotFoundException;
@@ -8,10 +11,6 @@ import org.folio.entlinks.repository.LinkingRulesRepository;
 import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
