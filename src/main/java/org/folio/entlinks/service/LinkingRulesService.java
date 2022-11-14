@@ -1,13 +1,12 @@
 package org.folio.entlinks.service;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.LinkingPairType;
 import org.folio.entlinks.model.converter.LinkingRulesMapper;
 import org.folio.entlinks.repository.LinkingRulesRepository;
 import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

@@ -1,13 +1,12 @@
 package org.folio.entlinks.model.converter;
 
+import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.entlinks.model.entity.LinkingRules;
 import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.mapstruct.Mapper;
 import org.springframework.boot.json.JsonParseException;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface LinkingRulesMapper {
