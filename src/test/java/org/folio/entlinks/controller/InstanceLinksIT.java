@@ -324,19 +324,18 @@ class InstanceLinksIT extends IntegrationTestBase {
     ));
     doPut(linksInstanceEndpoint(), links, instanceId);
 
-
     var secondInstanceId = randomUUID();
     var secondAuthorityId = randomUUID();
     var secondLinks = linksDtoCollection(linksDto(secondInstanceId,
-        new Link(authorityId, TAGS[0]),
-        new Link(authorityId, TAGS[1]),
-        new Link(secondAuthorityId, TAGS[0]),
-        new Link(secondAuthorityId, TAGS[1])
+      new Link(authorityId, TAGS[0]),
+      new Link(authorityId, TAGS[1]),
+      new Link(secondAuthorityId, TAGS[0]),
+      new Link(secondAuthorityId, TAGS[1])
     ));
-    doPut(INSTANCE_LINKS_ENDPOINT_PATH, secondLinks, secondInstanceId);
+    doPut(linksInstanceEndpoint(), secondLinks, secondInstanceId);
 
     var requestBody = new UuidCollection().ids(List.of(authorityId, secondAuthorityId));
-    doPost(AUTHORITY_LINKS_COUNT_ENDPOINT_PATH, requestBody)
+    doPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(linksMatch(hasSize(2)))
       .andExpect(jsonPath("$.links.[0].id", is(authorityId.toString())))
