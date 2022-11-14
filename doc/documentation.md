@@ -3,12 +3,18 @@
 ## Table of contents
 
 <!-- TOC -->
+* [Entities-Links Documentation](#entities-links-documentation)
+  * [Table of contents](#table-of-contents)
   * [Deploying the module](#deploying-the-module)
     * [Environment variables](#environment-variables)
+  * [Integration](#integration)
+    * [Folio modules communication](#folio-modules-communication)
+    * [Consuming Kafka messages](#consuming-kafka-messages)
   * [API](#api)
     * [instance-links API](#instance-links-api)
     * [linking-rules API](#linking-rules-api)
   * [Linking rules](#linking-rules)
+    * [Instance to Authority linking rule parameters](#instance-to-authority-linking-rule-parameters)
 <!-- TOC -->
 
 ## Deploying the module
@@ -36,6 +42,24 @@
 | KAFKA_INSTANCE_AUTHORITY_TOPIC_REPLICATION_FACTOR | -                  | Replication factor for `links.instance-authority` topic.                                                                                                                              |
 | KAFKA_AUTHORITIES_CONSUMER_CONCURRENCY            | -                  | Number of kafka concurrent threads for `inventory.authority` message consuming                                                                                                        |
 | KAFKA_AUTHORITIES_CONSUMER_CONCURRENCY            | -                  | Subscription pattern for `inventory.authority` message consumers.                                                                                                                     |
+
+## Integration
+
+### Folio modules communication
+
+| Module name     | Interface   | Notes                                       |
+|-----------------|-------------|---------------------------------------------|
+| mod-login       | login       | For system user creation and authentication |
+| mod-permissions | permissions | For system user creation                    |
+| mod-users       | users       | For system user creation                    |
+
+
+### Consuming Kafka messages
+
+| Topic name                         | Group ID                                   | Notes                                                     |
+|------------------------------------|--------------------------------------------|-----------------------------------------------------------|
+| {ENV}.[tenant].inventory.authority | {ENV}-mod-entities-links-authorities-group | Filtrating messages that have type UPDATE and DELETE only |
+
 
 ## API
 
@@ -155,4 +179,4 @@ Response:
   * `source` - Authority subfield, which would be linked to `target`
   * `target` - Instance subfield, which would be controlled by `source`
 * `validation` - Linking rule validations that should be verified before linking
-  * `existence` - Map <char, boolean>. Validate if subfield exists or not
+  * `existence` - Map <char, boolean>. Validate if subfield have to exist or not
