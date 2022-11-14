@@ -5,10 +5,12 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 import static org.folio.support.TestUtils.asJson;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -22,6 +24,7 @@ import org.folio.spring.test.extension.EnableOkapi;
 import org.folio.spring.test.extension.EnablePostgres;
 import org.folio.spring.test.extension.impl.OkapiConfiguration;
 import org.folio.tenant.domain.dto.TenantAttributes;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -38,7 +41,9 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @EnableKafka
 @EnableOkapi
@@ -115,6 +120,26 @@ public class IntegrationTestBase {
   @SneakyThrows
   protected static void sendKafkaMessage(String topic, Object event) {
     kafkaTemplate.send(topic, new ObjectMapper().writeValueAsString(event));
+  }
+  
+    protected ResultMatcher errorParameterMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].parameters.[0].key", errorMessageMatcher);
+  }
+
+  protected ResultMatcher errorTypeMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].type", errorMessageMatcher);
+  }
+
+  protected ResultMatcher errorCodeMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].code", errorMessageMatcher);
+  }
+
+  protected ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].message", errorMessageMatcher);
+  }
+
+  protected ResultMatcher errorTotalMatch(int errorTotal) {
+    return jsonPath("$.total_records", is(errorTotal));
   }
 
   @TestConfiguration
