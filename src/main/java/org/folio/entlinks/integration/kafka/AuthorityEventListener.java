@@ -1,4 +1,4 @@
-package org.folio.entlinks.integration;
+package org.folio.entlinks.integration.kafka;
 
 import static org.folio.spring.tools.config.RetryTemplateConfiguration.DEFAULT_KAFKA_RETRY_TEMPLATE_NAME;
 
@@ -12,7 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.message.FormattedMessageFactory;
 import org.folio.entlinks.model.projection.LinkCountView;
 import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.AuthorityChangeHandlingService;
+import org.folio.entlinks.service.authority.AuthorityInstanceLinkUpdateService;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.tools.batch.MessageBatchProcessor;
 import org.folio.spring.tools.systemuser.SystemUserScopedExecutionService;
@@ -26,7 +26,7 @@ public class AuthorityEventListener {
 
   private final InstanceLinkRepository repository;
   private final SystemUserScopedExecutionService executionService;
-  private final AuthorityChangeHandlingService authorityChangeHandlingService;
+  private final AuthorityInstanceLinkUpdateService authorityInstanceLinkUpdateService;
   private final MessageBatchProcessor messageBatchProcessor;
 
   @KafkaListener(id = "mod-entities-links-authority-listener",
@@ -50,7 +50,7 @@ public class AuthorityEventListener {
       var batch = retainAuthoritiesWithLinks(events);
       log.info("Triggering updates for authority records [number of records: {}, tenant: {}]", batch.size(), tenant);
       messageBatchProcessor.consumeBatchWithFallback(batch, DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
-        authorityChangeHandlingService::handleAuthoritiesChanges, this::logFailedEvent);
+        authorityInstanceLinkUpdateService::handleAuthoritiesChanges, this::logFailedEvent);
       return null;
     });
   }

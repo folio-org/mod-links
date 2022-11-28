@@ -19,4 +19,17 @@ public class LinkingRulesService {
     var jsonRules = repository.findByLinkingPairType(linkingPairType.name());
     return mapper.convert(jsonRules);
   }
+
+  public List<LinkingRuleDto> getLinkingRuleForAuthorityField(String authorityField) {
+    return getLinkingRules(LinkingPairType.INSTANCE_AUTHORITY).stream()
+      .filter(linkingRuleDto -> linkingRuleDto.getAuthorityField().equals(authorityField))
+      .toList();
+  }
+
+  public LinkingRuleDto getLinkingRuleForBibField(String bibField) {
+    return getLinkingRules(LinkingPairType.INSTANCE_AUTHORITY).stream()
+      .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(bibField))
+      .findFirst()
+      .orElseThrow(() -> new IllegalArgumentException("No linking rules for [bib field: " + bibField + "]"));
+  }
 }

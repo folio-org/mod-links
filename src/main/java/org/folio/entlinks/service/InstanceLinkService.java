@@ -55,6 +55,21 @@ public class InstanceLinkService {
     return new LinksCountDtoCollection().links(linkCountMap);
   }
 
+  @Transactional
+  public void updateNaturalId(String naturalId, UUID authorityId) {
+    repository.updateNaturalId(naturalId, authorityId);
+  }
+
+  @Transactional
+  public void updateSubfieldsAndNaturalId(List<String> subfields, String naturalId, UUID authorityId, String tag) {
+    repository.updateSubfieldsAndNaturalId(subfields.toArray(new String[0]), naturalId, authorityId, tag);
+  }
+
+  @Transactional
+  public void deleteByAuthorityIdIn(List<UUID> authorityIds) {
+    repository.deleteByAuthorityIdIn(authorityIds);
+  }
+
   private List<InstanceLink> getLinksToSave(List<InstanceLink> incomingLinks, List<InstanceLink> existedLinks,
                                             List<InstanceLink> linksToDelete) {
     var linksToCreate = subtract(incomingLinks, existedLinks);

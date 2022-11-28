@@ -124,6 +124,11 @@ public class IntegrationTestBase {
     kafkaTemplate.send(topic, new ObjectMapper().writeValueAsString(event));
   }
 
+  @SneakyThrows
+  protected static void sendKafkaMessage(String topic, String key, Object event) {
+    kafkaTemplate.send(topic, key, new ObjectMapper().writeValueAsString(event));
+  }
+
   protected ResultMatcher errorParameterMatch(Matcher<String> errorMessageMatcher) {
     return jsonPath("$.errors.[0].parameters.[0].key", errorMessageMatcher);
   }

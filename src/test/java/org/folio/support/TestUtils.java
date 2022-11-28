@@ -30,14 +30,13 @@ public class TestUtils {
     return OBJECT_MAPPER.writeValueAsString(value);
   }
 
-  public static InventoryEvent inventoryEvent(UUID id, String resource, String type,
+  public static InventoryEvent inventoryEvent(String resource, String type,
                                               AuthorityInventoryRecord n, AuthorityInventoryRecord o) {
-    return new InventoryEvent().id(id).type(type).resourceName(resource).tenant(TENANT_ID)._new(n).old(o);
+    return new InventoryEvent().type(type).resourceName(resource).tenant(TENANT_ID)._new(n).old(o);
   }
 
-  public static InventoryEvent authorityEvent(String type, AuthorityInventoryRecord n,
-                                              AuthorityInventoryRecord o) {
-    return inventoryEvent(n.getId(), "authority", type, n, o);
+  public static InventoryEvent authorityEvent(String type, AuthorityInventoryRecord n, AuthorityInventoryRecord o) {
+    return inventoryEvent("authority", type, n, o);
   }
 
   public static List<InstanceLinkDto> linksDto(UUID instanceId, Link... links) {

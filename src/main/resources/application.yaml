@@ -20,7 +20,7 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
     consumer:
-      max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:200}
+      max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:50}
     security:
       protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
     ssl:
@@ -34,6 +34,13 @@ spring:
         enable.idempotence: true
         max.in.flight.requests.per.connection: 5
         retries: 5
+  cache:
+    cache-names:
+      - authority-source-files-cache
+      - authority-mapping-rules-cache
+      - authority-tag-to-field-cache
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=3600s
 
 folio:
   environment: ${ENV:folio}

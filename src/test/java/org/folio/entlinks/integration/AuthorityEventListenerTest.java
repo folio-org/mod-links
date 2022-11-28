@@ -14,9 +14,10 @@ import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.entlinks.integration.kafka.AuthorityEventListener;
 import org.folio.entlinks.model.projection.LinkCountView;
 import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.AuthorityChangeHandlingService;
+import org.folio.entlinks.service.authority.AuthorityInstanceLinkUpdateService;
 import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.test.type.UnitTest;
@@ -41,7 +42,7 @@ class AuthorityEventListenerTest {
   @Mock
   private SystemUserScopedExecutionService executionService;
   @Mock
-  private AuthorityChangeHandlingService authorityChangeHandlingService;
+  private AuthorityInstanceLinkUpdateService authorityInstanceLinkUpdateService;
   @Mock
   private MessageBatchProcessor messageBatchProcessor;
 
@@ -94,7 +95,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityChangeHandlingService).handleAuthoritiesChanges(singletonList(event));
+    verify(authorityInstanceLinkUpdateService).handleAuthoritiesChanges(singletonList(event));
   }
 
   @ValueSource(strings = {"UPDATE", "DELETE"})
@@ -112,7 +113,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityChangeHandlingService, never()).handleAuthoritiesChanges(singletonList(event));
+    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
   }
 
   @Test
@@ -129,7 +130,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityChangeHandlingService, never()).handleAuthoritiesChanges(singletonList(event));
+    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
   }
 
 

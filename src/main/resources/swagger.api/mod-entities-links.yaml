@@ -206,7 +206,7 @@ components:
         authoritySubfields:
           type: array
           items:
-            $ref: '#/components/schemas/char'
+            $ref: '#/components/schemas/charString'
         subfieldModifications:
           type: array
           items:
@@ -221,10 +221,10 @@ components:
       properties:
         source:
           description: Authority subfield.
-          $ref: '#/components/schemas/char'
+          $ref: '#/components/schemas/charString'
         target:
           description: Instance subfield.
-          $ref: '#/components/schemas/char'
+          $ref: '#/components/schemas/charString'
 
     subfieldValidation:
       type: object
@@ -243,7 +243,7 @@ components:
       type: string
       format: uuid
 
-    char:
+    charString:
       type: string
       minLength: 1
       maxLength: 1
@@ -269,6 +269,12 @@ components:
 
     authorityInventoryRecord:
       $ref: schemas/authorityInventoryRecord.json
+
+    sourceRecord:
+      $ref: schemas/sourceRecord.json
+
+    linksEvent:
+      $ref: schemas/linksEvent.json
 
   responses:
     badRequestResponse:

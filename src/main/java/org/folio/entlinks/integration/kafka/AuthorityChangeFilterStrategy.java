@@ -1,4 +1,4 @@
-package org.folio.entlinks.integration;
+package org.folio.entlinks.integration.kafka;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
