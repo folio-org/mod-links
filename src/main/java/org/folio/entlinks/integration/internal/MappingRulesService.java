@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.client.MappingRulesClient;
+import org.folio.entlinks.exception.FolioIntegrationException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +21,17 @@ public class MappingRulesService {
              key = "@folioExecutionContext.tenantId",
              unless = "#result.isEmpty()")
   public Map<String, List<String>> getFieldTargetsMappingRelations() {
-    var mappingRules = client.fetchAuthorityMappingRules();
+    var mappingRules = fetchMappingRules();
     return mappingRules.entrySet().stream()
       .collect(Collectors.toMap(Map.Entry::getKey, stringListEntry ->
         stringListEntry.getValue().stream().map(MappingRulesClient.MappingRule::target).toList()));
+  }
+
+  private Map<String, List<MappingRulesClient.MappingRule>> fetchMappingRules() {
+    try {
+      return client.fetchAuthorityMappingRules();
+    } catch (Exception e) {
+      throw new FolioIntegrationException("Failed to fetch authority mapping rules", e);
+    }
   }
 }

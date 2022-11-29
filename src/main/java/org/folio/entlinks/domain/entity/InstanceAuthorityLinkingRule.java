@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.folio.entlinks.integration.converter.StringToCharArrayConverter;
+import org.folio.entlinks.domain.entity.converter.StringToCharArrayConverter;
 import org.folio.qm.domain.dto.SubfieldModification;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;

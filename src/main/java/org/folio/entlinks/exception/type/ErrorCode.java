@@ -1,4 +1,4 @@
-package org.folio.entlinks.domain.type;
+package org.folio.entlinks.exception.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

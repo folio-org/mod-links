@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
-import org.folio.entlinks.domain.type.ErrorCode;
+import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
 import org.folio.qm.domain.dto.UuidCollection;

@@ -2,6 +2,7 @@ package org.folio.entlinks.integration.internal;
 
 import static org.folio.entlinks.config.constants.CacheNames.AUTHORITY_SOURCE_FILES_CACHE;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,14 +23,19 @@ public class AuthoritySourceFilesService {
              key = "@folioExecutionContext.tenantId",
              unless = "#result.isEmpty()")
   public Map<UUID, String> fetchAuthoritySourceUrls() {
-    try {
-      var authoritySourceFiles = client.fetchAuthoritySourceFiles().authoritySourceFiles();
-      if (authoritySourceFiles.isEmpty()) {
-        throw new FolioIntegrationException("Authority source files are empty.");
-      }
+    var authoritySourceFiles = fetchAuthoritySourceFiles();
+    if (authoritySourceFiles.isEmpty()) {
+      throw new FolioIntegrationException("Authority source files are empty.");
+    }
 
-      return authoritySourceFiles.stream()
-        .collect(Collectors.toMap(AuthoritySourceFile::id, AuthoritySourceFile::baseUrl));
+    return authoritySourceFiles.stream()
+      .collect(Collectors.toMap(AuthoritySourceFile::id, AuthoritySourceFile::baseUrl));
+
+  }
+
+  private List<AuthoritySourceFile> fetchAuthoritySourceFiles() {
+    try {
+      return client.fetchAuthoritySourceFiles().authoritySourceFiles();
     } catch (Exception e) {
       throw new FolioIntegrationException("Failed to fetch authority source files", e);
     }

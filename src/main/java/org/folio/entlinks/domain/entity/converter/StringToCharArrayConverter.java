@@ -1,4 +1,4 @@
-package org.folio.entlinks.integration.converter;
+package org.folio.entlinks.domain.entity.converter;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -8,11 +8,11 @@ public class StringToCharArrayConverter implements AttributeConverter<char[], St
 
   @Override
   public String convertToDatabaseColumn(char[] attribute) {
-    return String.valueOf(attribute);
+    return attribute == null ? "" : String.valueOf(attribute);
   }
 
   @Override
   public char[] convertToEntityAttribute(String dbData) {
-    return dbData.toCharArray();
+    return dbData == null || dbData.isBlank() ? null : dbData.toCharArray();
   }
 }
