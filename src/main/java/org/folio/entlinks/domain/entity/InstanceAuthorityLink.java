@@ -1,4 +1,4 @@
-package org.folio.entlinks.model.entity;
+package org.folio.entlinks.domain.entity;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -31,7 +31,7 @@ import org.hibernate.Hibernate;
   @Index(name = "idx_instancelink_authority_id", columnList = "authority_id"),
   @Index(name = "idx_instancelink_instance_id", columnList = "instance_id")
 })
-public class InstanceLink {
+public class InstanceAuthorityLink {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,11 +70,11 @@ public class InstanceLink {
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
       return false;
     }
-    InstanceLink instanceLink = (InstanceLink) o;
+    InstanceAuthorityLink instanceLink = (InstanceAuthorityLink) o;
     return id != null && Objects.equals(id, instanceLink.id);
   }
 
-  public boolean isSameLink(InstanceLink link) {
+  public boolean isSameLink(InstanceAuthorityLink link) {
     return authorityId.equals(link.authorityId)
       && instanceId.equals(link.instanceId)
       && bibRecordTag.equals(link.bibRecordTag);

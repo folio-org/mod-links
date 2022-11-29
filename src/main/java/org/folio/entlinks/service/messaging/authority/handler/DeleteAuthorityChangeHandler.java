@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority.handler;
 
 import com.google.common.collect.Lists;
 import java.util.Collection;
@@ -9,9 +9,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.config.properties.AuthorityChangeProperties;
-import org.folio.entlinks.model.entity.InstanceLink;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.InstanceLinkService;
+import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.qm.domain.dto.LinksEvent;
 import org.folio.qm.domain.dto.LinksEventUpdateTargets;
@@ -19,11 +19,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AuthorityDeleteHandler implements AuthorityChangeHandler {
+public class DeleteAuthorityChangeHandler implements AuthorityChangeHandler {
 
   private final AuthorityChangeProperties authorityChangeProperties;
   private final InstanceLinkRepository linkRepository;
-  private final InstanceLinkService linkService;
+  private final InstanceAuthorityLinkingService linkService;
 
   @Override
   public List<LinksEvent> handle(List<InventoryEvent> events) {
@@ -44,25 +44,25 @@ public class AuthorityDeleteHandler implements AuthorityChangeHandler {
     return linksEvents;
   }
 
-  private Map<UUID, List<InstanceLink>> getLinksMap(List<InventoryEvent> events) {
+  private Map<UUID, List<InstanceAuthorityLink>> getLinksMap(List<InventoryEvent> events) {
     if (events == null || events.isEmpty()) {
       return Collections.emptyMap();
     }
     var authorityIds = events.stream().map(InventoryEvent::getId).toList();
     var links = linkRepository.findByAuthorityIdIn(authorityIds);
-    return links.stream().collect(Collectors.groupingBy(InstanceLink::getAuthorityId));
+    return links.stream().collect(Collectors.groupingBy(InstanceAuthorityLink::getAuthorityId));
   }
 
-  private List<LinksEventUpdateTargets> toEventMarcBibs(List<InstanceLink> partition) {
+  private List<LinksEventUpdateTargets> toEventMarcBibs(List<InstanceAuthorityLink> partition) {
     return partition.stream()
-      .collect(Collectors.groupingBy(InstanceLink::getBibRecordTag))
+      .collect(Collectors.groupingBy(InstanceAuthorityLink::getBibRecordTag))
       .entrySet().stream()
       .map(e -> new LinksEventUpdateTargets().field(e.getKey())
-        .instanceIds(e.getValue().stream().map(InstanceLink::getInstanceId).toList()))
+        .instanceIds(e.getValue().stream().map(InstanceAuthorityLink::getInstanceId).toList()))
       .toList();
   }
 
-  private LinksEvent constructBaseEvent(UUID authorityId, List<InstanceLink> partition) {
+  private LinksEvent constructBaseEvent(UUID authorityId, List<InstanceAuthorityLink> partition) {
     return new LinksEvent().jobId(UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e"))
       .type(LinksEvent.TypeEnum.DELETE)
       .authorityId(authorityId)

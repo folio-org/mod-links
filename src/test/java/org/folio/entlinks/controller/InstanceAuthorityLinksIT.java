@@ -22,10 +22,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
-import org.folio.entlinks.model.type.ErrorCode;
+import org.folio.entlinks.domain.type.ErrorCode;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
 import org.folio.qm.domain.dto.UuidCollection;
+import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.TestUtils.Link;
 import org.folio.support.base.IntegrationTestBase;
@@ -39,7 +40,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 @IntegrationTest
-class InstanceLinksIT extends IntegrationTestBase {
+@DatabaseCleanup(tables = "instance_link")
+class InstanceAuthorityLinksIT extends IntegrationTestBase {
 
   public static Stream<Arguments> requiredFieldMissingProvider() {
     return Stream.of(

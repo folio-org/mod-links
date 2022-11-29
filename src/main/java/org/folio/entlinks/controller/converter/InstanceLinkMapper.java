@@ -1,8 +1,9 @@
 package org.folio.entlinks.controller.converter;
 
 import java.util.List;
-import org.folio.entlinks.model.entity.InstanceLink;
-import org.folio.entlinks.model.projection.LinkCountView;
+import java.util.Map;
+import java.util.UUID;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
 import org.folio.qm.domain.dto.LinksCountDto;
@@ -11,11 +12,11 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface InstanceLinkMapper {
 
-  InstanceLinkDto convert(InstanceLink source);
+  InstanceLinkDto convert(InstanceAuthorityLink source);
 
-  InstanceLink convert(InstanceLinkDto source);
+  InstanceAuthorityLink convert(InstanceLinkDto source);
 
-  default InstanceLinkDtoCollection convert(List<InstanceLink> source) {
+  default InstanceLinkDtoCollection convert(List<InstanceAuthorityLink> source) {
     var convertedLinks = source.stream().map(this::convert).toList();
 
     return new InstanceLinkDtoCollection()
@@ -23,5 +24,9 @@ public interface InstanceLinkMapper {
       .totalRecords(source.size());
   }
 
-  LinksCountDto convert(LinkCountView source);
+  default List<LinksCountDto> convert(Map<UUID, Long> source) {
+    return source.entrySet().stream()
+      .map(e -> new LinksCountDto().id(e.getKey()).totalLinks(e.getValue()))
+      .toList();
+  }
 }

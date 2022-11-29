@@ -1,9 +1,10 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import org.folio.entlinks.model.entity.InstanceAuthorityLinkingRule;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
+import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
 import org.folio.qm.domain.dto.LinksEventSubfields;
 import org.folio.qm.domain.dto.SubfieldModification;
 import org.junit.jupiter.api.Test;

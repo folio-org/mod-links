@@ -1,4 +1,4 @@
-package org.folio.entlinks.model.entity;
+package org.folio.entlinks.domain.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority.handler;
 
 import java.util.List;
 import org.folio.qm.domain.dto.InventoryEvent;

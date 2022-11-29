@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
 
@@ -15,14 +15,18 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.config.properties.AuthorityChangeProperties;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
-import org.folio.entlinks.model.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.model.entity.InstanceLink;
 import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.InstanceLinkService;
-import org.folio.entlinks.service.LinkingRulesService;
+import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
+import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
+import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProcessingService;
+import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
+import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
+import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.qm.domain.dto.LinksEvent;
 import org.folio.qm.domain.dto.LinksEventSubfields;
@@ -36,15 +40,15 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class AuthorityUpdateHandler implements AuthorityChangeHandler {
+public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
 
   private final InstanceLinkRepository linkRepository;
   private final AuthorityChangeProperties authorityChangeProperties;
   private final AuthoritySourceFilesService sourceFilesService;
-  private final MappingRulesProcessingService mappingRulesProcessingService;
+  private final AuthorityMappingRulesProcessingService authorityMappingRulesProcessingService;
   private final AuthoritySourceRecordService authoritySourceRecordService;
-  private final LinkingRulesService linkingRulesService;
-  private final InstanceLinkService linkService;
+  private final InstanceAuthorityLinkingRulesService instanceAuthorityLinkingRulesService;
+  private final InstanceAuthorityLinkingService linkService;
 
   @Override
   public List<LinksEvent> handle(List<InventoryEvent> events) {
@@ -88,8 +92,8 @@ public class AuthorityUpdateHandler implements AuthorityChangeHandler {
     var subfield0Change = getSubfield0Change(changeHolder, naturalId, naturalIdChanged);
 
     var authoritySourceRecord = authoritySourceRecordService.getAuthoritySourceRecordById(authorityId);
-    var changedTag = mappingRulesProcessingService.getTagByAuthorityChange(changeHolder.getFieldChange());
-    var linkingRuleForField = linkingRulesService.getLinkingRuleForAuthorityField(changedTag);
+    var changedTag = authorityMappingRulesProcessingService.getTagByAuthorityChange(changeHolder.getFieldChange());
+    var linkingRuleForField = instanceAuthorityLinkingRulesService.getLinkingRulesByAuthorityField(changedTag);
 
     var dataField = authoritySourceRecord.content().getDataFields().stream()
       .filter(field -> field.getTag().equals(changedTag))
@@ -150,7 +154,7 @@ public class AuthorityUpdateHandler implements AuthorityChangeHandler {
       var instanceLinks = linksPage.getContent();
 
       var subfieldsChanges = instanceLinks.stream()
-        .map(InstanceLink::getBibRecordTag)
+        .map(InstanceAuthorityLink::getBibRecordTag)
         .distinct()
         .map(tag -> new LinksEventSubfieldsChanges().field(tag).subfields(singletonList(subfield0Change)))
         .toList();
@@ -173,16 +177,16 @@ public class AuthorityUpdateHandler implements AuthorityChangeHandler {
     return new LinksEventSubfields().code("0").value(subfield0Value + naturalId);
   }
 
-  private List<LinksEventUpdateTargets> toEventMarcBibs(List<InstanceLink> partition) {
+  private List<LinksEventUpdateTargets> toEventMarcBibs(List<InstanceAuthorityLink> partition) {
     return partition.stream()
-      .collect(Collectors.groupingBy(InstanceLink::getBibRecordTag))
+      .collect(Collectors.groupingBy(InstanceAuthorityLink::getBibRecordTag))
       .entrySet().stream()
       .map(e -> new LinksEventUpdateTargets().field(e.getKey())
-        .instanceIds(e.getValue().stream().map(InstanceLink::getInstanceId).toList()))
+        .instanceIds(e.getValue().stream().map(InstanceAuthorityLink::getInstanceId).toList()))
       .toList();
   }
 
-  private LinksEvent constructBaseEvent(UUID authorityId, List<InstanceLink> partition,
+  private LinksEvent constructBaseEvent(UUID authorityId, List<InstanceAuthorityLink> partition,
                                         List<LinksEventSubfieldsChanges> subfieldChanges) {
     return new LinksEvent().jobId(UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e"))
       .type(LinksEvent.TypeEnum.UPDATE)

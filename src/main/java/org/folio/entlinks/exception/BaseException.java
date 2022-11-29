@@ -1,7 +1,7 @@
 package org.folio.entlinks.exception;
 
 import lombok.Getter;
-import org.folio.entlinks.model.type.ErrorCode;
+import org.folio.entlinks.domain.type.ErrorCode;
 
 /**
  * Base exception class that is used for all exceptional situations.

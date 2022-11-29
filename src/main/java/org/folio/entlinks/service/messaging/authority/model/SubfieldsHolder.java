@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority.model;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.bouncycastle.util.Arrays;
-import org.folio.entlinks.model.entity.InstanceAuthorityLinkingRule;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.qm.domain.dto.LinksEventSubfields;
 import org.folio.qm.domain.dto.SubfieldModification;
 import org.marc4j.marc.DataField;

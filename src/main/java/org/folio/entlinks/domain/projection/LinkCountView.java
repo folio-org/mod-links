@@ -1,4 +1,4 @@
-package org.folio.entlinks.model.projection;
+package org.folio.entlinks.domain.projection;
 
 import java.util.UUID;
 

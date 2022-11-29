@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
-import org.folio.entlinks.model.entity.InstanceLink;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InstanceLinkDto;
 import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
@@ -48,7 +48,7 @@ public class TestUtils {
     return new InstanceLinkDtoCollection().links(links).totalRecords(links.size());
   }
 
-  public static List<InstanceLink> links(UUID instanceId, Link... links) {
+  public static List<InstanceAuthorityLink> links(UUID instanceId, Link... links) {
     return Arrays.stream(links).map(link -> link.toEntity(instanceId)).toList();
   }
 
@@ -91,8 +91,8 @@ public class TestUtils {
       return result;
     }
 
-    public InstanceLink toEntity(UUID instanceId) {
-      return InstanceLink.builder()
+    public InstanceAuthorityLink toEntity(UUID instanceId) {
+      return InstanceAuthorityLink.builder()
         .instanceId(instanceId)
         .authorityId(authorityId)
         .authorityNaturalId(naturalId)

@@ -10,9 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.message.FormattedMessageFactory;
-import org.folio.entlinks.model.projection.LinkCountView;
-import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.authority.AuthorityInstanceLinkUpdateService;
+import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
+import org.folio.entlinks.service.messaging.authority.AuthorityInstanceLinkUpdateService;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.tools.batch.MessageBatchProcessor;
 import org.folio.spring.tools.systemuser.SystemUserScopedExecutionService;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthorityEventListener {
 
-  private final InstanceLinkRepository repository;
+  private final InstanceAuthorityLinkingService linkingService;
   private final SystemUserScopedExecutionService executionService;
   private final AuthorityInstanceLinkUpdateService authorityInstanceLinkUpdateService;
   private final MessageBatchProcessor messageBatchProcessor;
@@ -59,11 +58,9 @@ public class AuthorityEventListener {
     var events = new ArrayList<>(inventoryEvents);
     var incomingAuthorityIds = events.stream()
       .map(InventoryEvent::getId)
-      .toList();
+      .collect(Collectors.toSet());
 
-    var authorityWithLinksIds = repository.countLinksByAuthorityIds(incomingAuthorityIds).stream()
-      .map(LinkCountView::getId)
-      .toList();
+    var authorityWithLinksIds = linkingService.countLinksByAuthorityIds(incomingAuthorityIds).keySet();
     var iterator = events.iterator();
 
     while (iterator.hasNext()) {

@@ -1,6 +1,6 @@
 package org.folio.entlinks.integration;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -9,15 +9,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.entlinks.domain.projection.LinkCountView;
 import org.folio.entlinks.integration.kafka.AuthorityEventListener;
-import org.folio.entlinks.model.projection.LinkCountView;
-import org.folio.entlinks.repository.InstanceLinkRepository;
-import org.folio.entlinks.service.authority.AuthorityInstanceLinkUpdateService;
+import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
+import org.folio.entlinks.service.messaging.authority.AuthorityInstanceLinkUpdateService;
 import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.test.type.UnitTest;
@@ -38,7 +40,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthorityEventListenerTest {
 
   @Mock
-  private InstanceLinkRepository repository;
+  private InstanceAuthorityLinkingService linkingService;
   @Mock
   private SystemUserScopedExecutionService executionService;
   @Mock
@@ -60,6 +62,59 @@ class AuthorityEventListenerTest {
     });
   }
 
+  @ValueSource(strings = {"UPDATE", "DELETE"})
+  @ParameterizedTest
+  void shouldHandleEvent_positive_whenLinksExists(String type) {
+    var authId = UUID.randomUUID();
+    var newRecord = new AuthorityInventoryRecord().id(authId);
+    var oldRecord = new AuthorityInventoryRecord().id(authId);
+    var event = TestUtils.authorityEvent(type, newRecord, oldRecord);
+
+    mockSuccessHandling();
+    when(consumerRecord.key()).thenReturn(authId.toString());
+    when(consumerRecord.value()).thenReturn(event);
+    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(Map.of(authId, 1L));
+
+    listener.handleEvents(singletonList(consumerRecord));
+
+    verify(authorityInstanceLinkUpdateService).handleAuthoritiesChanges(singletonList(event));
+  }
+
+  @ValueSource(strings = {"UPDATE", "DELETE"})
+  @ParameterizedTest
+  void shouldNotHandleEvent_positive_whenNoLinksExists(String type) {
+    var authId = UUID.randomUUID();
+    var newRecord = new AuthorityInventoryRecord().id(authId);
+    var oldRecord = new AuthorityInventoryRecord().id(authId);
+    var event = TestUtils.authorityEvent(type, newRecord, oldRecord);
+
+    mockSuccessHandling();
+    when(consumerRecord.key()).thenReturn(authId.toString());
+    when(consumerRecord.value()).thenReturn(event);
+    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(emptyMap());
+
+    listener.handleEvents(singletonList(consumerRecord));
+
+    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
+  }
+
+  @Test
+  void shouldNotHandleEvent_negative_whenExceptionOccurred() {
+    var authId = UUID.randomUUID();
+    var newRecord = new AuthorityInventoryRecord().id(authId);
+    var oldRecord = new AuthorityInventoryRecord().id(authId);
+    var event = TestUtils.authorityEvent("UPDATE", newRecord, oldRecord);
+
+    mockFailedHandling(new RuntimeException("test message"));
+    when(consumerRecord.key()).thenReturn(authId.toString());
+    when(consumerRecord.value()).thenReturn(event);
+    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(Map.of(authId, 1L));
+
+    listener.handleEvents(singletonList(consumerRecord));
+
+    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
+  }
+
   @SuppressWarnings("unchecked")
   private void mockSuccessHandling() {
     doAnswer(invocation -> {
@@ -79,60 +134,6 @@ class AuthorityEventListenerTest {
       return null;
     }).when(messageBatchProcessor).consumeBatchWithFallback(any(), any(), any(), any());
   }
-
-  @ValueSource(strings = {"UPDATE", "DELETE"})
-  @ParameterizedTest
-  void shouldHandleEvent_positive_whenLinksExists(String type) {
-    var authId = UUID.randomUUID();
-    var newRecord = new AuthorityInventoryRecord().id(authId);
-    var oldRecord = new AuthorityInventoryRecord().id(authId);
-    var event = TestUtils.authorityEvent(type, newRecord, oldRecord);
-
-    mockSuccessHandling();
-    when(consumerRecord.key()).thenReturn(authId.toString());
-    when(consumerRecord.value()).thenReturn(event);
-    when(repository.countLinksByAuthorityIds(List.of(authId))).thenReturn(singletonList(new LinksCount(authId, 1L)));
-
-    listener.handleEvents(singletonList(consumerRecord));
-
-    verify(authorityInstanceLinkUpdateService).handleAuthoritiesChanges(singletonList(event));
-  }
-
-  @ValueSource(strings = {"UPDATE", "DELETE"})
-  @ParameterizedTest
-  void shouldNotHandleEvent_positive_whenNoLinksExists(String type) {
-    var authId = UUID.randomUUID();
-    var newRecord = new AuthorityInventoryRecord().id(authId);
-    var oldRecord = new AuthorityInventoryRecord().id(authId);
-    var event = TestUtils.authorityEvent(type, newRecord, oldRecord);
-
-    mockSuccessHandling();
-    when(consumerRecord.key()).thenReturn(authId.toString());
-    when(consumerRecord.value()).thenReturn(event);
-    when(repository.countLinksByAuthorityIds(List.of(authId))).thenReturn(emptyList());
-
-    listener.handleEvents(singletonList(consumerRecord));
-
-    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
-  }
-
-  @Test
-  void shouldNotHandleEvent_negative_whenExceptionOccurred() {
-    var authId = UUID.randomUUID();
-    var newRecord = new AuthorityInventoryRecord().id(authId);
-    var oldRecord = new AuthorityInventoryRecord().id(authId);
-    var event = TestUtils.authorityEvent("UPDATE", newRecord, oldRecord);
-
-    mockFailedHandling(new RuntimeException("test message"));
-    when(consumerRecord.key()).thenReturn(authId.toString());
-    when(consumerRecord.value()).thenReturn(event);
-    when(repository.countLinksByAuthorityIds(List.of(authId))).thenReturn(singletonList(new LinksCount(authId, 1L)));
-
-    listener.handleEvents(singletonList(consumerRecord));
-
-    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
-  }
-
 
   record LinksCount(UUID id, Long totalLinks) implements LinkCountView {
 

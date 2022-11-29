@@ -1,4 +1,4 @@
-package org.folio.entlinks.service;
+package org.folio.entlinks.service.tenant;
 
 import lombok.extern.log4j.Log4j2;
 import org.folio.spring.FolioExecutionContext;

@@ -1,4 +1,4 @@
-package org.folio.entlinks.model.dto;
+package org.folio.entlinks.integration.dto;
 
 import java.util.UUID;
 import org.marc4j.marc.Record;

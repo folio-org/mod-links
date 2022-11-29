@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.exception.FolioIntegrationException;
-import org.folio.entlinks.model.dto.AuthoritySourceRecord;
+import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.qm.domain.dto.SourceRecordParsedRecord;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.Record;

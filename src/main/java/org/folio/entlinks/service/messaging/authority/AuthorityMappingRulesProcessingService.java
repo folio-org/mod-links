@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority;
 
 import static org.folio.entlinks.config.constants.CacheNames.AUTHORITY_TAG_TO_FIELD_CACHE;
 import static org.folio.entlinks.utils.CollectionsUtils.containsIgnoreCase;
@@ -7,12 +7,13 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.internal.MappingRulesService;
+import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MappingRulesProcessingService {
+public class AuthorityMappingRulesProcessingService {
 
   private final MappingRulesService mappingRulesService;
 

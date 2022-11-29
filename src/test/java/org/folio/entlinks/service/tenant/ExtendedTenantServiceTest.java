@@ -1,4 +1,4 @@
-package org.folio.entlinks.service;
+package org.folio.entlinks.service.tenant;
 
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.mockito.Mockito.doNothing;

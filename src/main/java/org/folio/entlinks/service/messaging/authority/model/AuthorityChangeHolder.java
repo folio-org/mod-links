@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.authority;
+package org.folio.entlinks.service.messaging.authority.model;
 
 import java.util.ArrayList;
 import java.util.List;
