@@ -86,7 +86,7 @@ VALUES ('INSTANCE_AUTHORITY', '
   {
     "bibField": "600",
     "authorityField": "100",
-    "authoritySubfields": ["a", "b", "c", "d", "g", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "y"],
+    "authoritySubfields": ["a", "b", "c", "d", "g", "j", "q", "f", "h", "k", "l", "m", "n", "o", "p", "r", "s", "t", "v", "x", "y", "z"],
     "subfieldModifications": [],
     "validation": {}
   },
