@@ -168,14 +168,14 @@ class InstanceLinksIT extends IntegrationTestBase {
   void updateInstanceLinks_positive_updateExistedLinks() {
     var instanceId = randomUUID();
     var existedLinks = linksDtoCollection(linksDto(instanceId,
-      Link.of(0, 0, "12345", List.of("a", "b")),
-      Link.of(1, 1, "7890", List.of("c"))
+      Link.of(0, 0, "12345", new char[] {'a', 'b'}),
+      Link.of(1, 1, "7890", new char[] {'c'})
     ));
     doPut(linksInstanceEndpoint(), existedLinks, instanceId);
 
     var incomingLinks = linksDtoCollection(linksDto(instanceId,
-      Link.of(0, 0, "12345-updated", List.of("x")),
-      Link.of(1, 1, "7890-updated", List.of("c"))
+      Link.of(0, 0, "12345-updated", new char[] {'x'}),
+      Link.of(1, 1, "7890-updated", new char[] {'c'})
     ));
     doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 

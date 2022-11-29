@@ -206,9 +206,9 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
     var instanceId1 = UUID.randomUUID();
     var instanceId2 = UUID.randomUUID();
     var instanceId3 = UUID.randomUUID();
-    var link1 = new TestUtils.Link(authorityId, "100", "naturalId", List.of("a", "b", "c"));
-    var link2 = new TestUtils.Link(authorityId, "240", "naturalId", List.of("a", "b", "c"));
-    var link3 = new TestUtils.Link(authorityId, "100", "naturalId", List.of("a", "b", "c"));
+    var link1 = new TestUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
+    var link2 = new TestUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
+    var link3 = new TestUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
@@ -290,44 +290,6 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
   private ConsumerRecord<String, LinksEvent> getReceivedEvent() {
     return consumerRecords.poll(10, TimeUnit.SECONDS);
   }
-
-//  @ValueSource(strings = {"DELETE", "UPDATE"})
-//  @ParameterizedTest
-//  void shouldNotHandleEvent_positive_whenAuthorityLinksNotExist(String eventType) {
-//    var authorityId = UUID.randomUUID();
-//    var event = TestUtils.authorityEvent(eventType,
-//      new AuthorityInventoryRecord().id(authorityId),
-//      new AuthorityInventoryRecord().id(authorityId).naturalId("12345"));
-//    sendKafkaMessage(inventoryAuthorityTopic(), event);
-//
-//    //TODO change to verifying out-coming Kafka message
-//    await().atLeast(ONE_MINUTE).untilAsserted(Assertions::fail);
-//  }
-//
-//  @ValueSource(strings = {"CREATE", "REINDEX", "ITERATE"})
-//  @ParameterizedTest
-//  void shouldNotHandleEvent_positive_whenEventIsNotRelatedToChanges(String eventType) {
-//    var authorityId = UUID.randomUUID();
-//    var event = TestUtils.authorityEvent(eventType,
-//      new AuthorityInventoryRecord().id(authorityId),
-//      new AuthorityInventoryRecord().id(authorityId).naturalId("12345"));
-//    sendKafkaMessage(inventoryAuthorityTopic(), event);
-//
-//    //TODO change to verifying out-coming Kafka message
-//    assertTrue(true);
-//  }
-//
-//  @Test
-//  void shouldNotHandleEvent_positive_whenUpdateEventWithEqualOldAndNew() {
-//    var authorityId = UUID.randomUUID();
-//    var event = TestUtils.authorityEvent("UPDATE",
-//      new AuthorityInventoryRecord().id(authorityId),
-//      new AuthorityInventoryRecord().id(authorityId));
-//    sendKafkaMessage(inventoryAuthorityTopic(), event);
-//
-//    //TODO change to verifying out-coming Kafka message
-//    assertTrue(true);
-//  }
 
   private LinksEventUpdateTargets updateTarget(String tag, UUID... instanceIds) {
     return new LinksEventUpdateTargets().field(tag).instanceIds(Arrays.asList(instanceIds));

@@ -10,7 +10,6 @@
       "j",
       "q"
     ],
-    "subfieldModifications": [],
     "validation": {
       "existence": [
         {
@@ -27,7 +26,6 @@
       "b",
       "c"
     ],
-    "subfieldModifications": [],
     "validation": {
       "existence": [
         {
@@ -45,7 +43,6 @@
       "e",
       "q"
     ],
-    "subfieldModifications": [],
     "validation": {
       "existence": [
         {
@@ -72,9 +69,7 @@
       "r",
       "s",
       "t"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "240",
@@ -208,9 +203,7 @@
       "r",
       "s",
       "t"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "610",
@@ -245,9 +238,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "611",
@@ -280,9 +271,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "630",
@@ -316,9 +305,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "650",
@@ -337,9 +324,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "651",
@@ -357,9 +342,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "655",
@@ -377,9 +360,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "700",
@@ -412,9 +393,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "710",
@@ -445,9 +424,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "711",
@@ -477,9 +454,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "730",
@@ -509,9 +484,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "800",
@@ -544,9 +517,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "810",
@@ -569,9 +540,7 @@
       "d",
       "g",
       "n"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "811",
@@ -600,9 +569,7 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   },
   {
     "bibField": "830",
@@ -632,8 +599,6 @@
       "6",
       "7",
       "8"
-    ],
-    "subfieldModifications": [],
-    "validation": {}
+    ]
   }
 ]

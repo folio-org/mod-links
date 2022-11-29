@@ -6,8 +6,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.folio.entlinks.controller.converter.InstanceLinkMapper;
 import org.folio.entlinks.exception.RequestBodyValidationException;
-import org.folio.entlinks.model.converter.InstanceLinkMapper;
 import org.folio.entlinks.model.entity.InstanceLink;
 import org.folio.entlinks.repository.InstanceLinkRepository;
 import org.folio.qm.domain.dto.InstanceLinkDto;
@@ -61,8 +61,8 @@ public class InstanceLinkService {
   }
 
   @Transactional
-  public void updateSubfieldsAndNaturalId(List<String> subfields, String naturalId, UUID authorityId, String tag) {
-    repository.updateSubfieldsAndNaturalId(subfields.toArray(new String[0]), naturalId, authorityId, tag);
+  public void updateSubfieldsAndNaturalId(char[] subfields, String naturalId, UUID authorityId, String tag) {
+    repository.updateSubfieldsAndNaturalId(subfields, naturalId, authorityId, tag);
   }
 
   @Transactional

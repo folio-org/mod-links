@@ -18,12 +18,12 @@ import org.folio.entlinks.config.properties.AuthorityChangeProperties;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
+import org.folio.entlinks.model.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.model.entity.InstanceLink;
 import org.folio.entlinks.repository.InstanceLinkRepository;
 import org.folio.entlinks.service.InstanceLinkService;
 import org.folio.entlinks.service.LinkingRulesService;
 import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.folio.qm.domain.dto.LinksEvent;
 import org.folio.qm.domain.dto.LinksEventSubfields;
 import org.folio.qm.domain.dto.LinksEventSubfieldsChanges;
@@ -97,7 +97,7 @@ public class AuthorityUpdateHandler implements AuthorityChangeHandler {
       .orElseThrow(() -> new FolioIntegrationException("Source record don't contains [tag: " + changedTag + "]"));
 
     var fieldsByBibTag = linkingRuleForField.stream()
-      .collect(Collectors.toMap(LinkingRuleDto::getBibField,
+      .collect(Collectors.toMap(InstanceAuthorityLinkingRule::getBibField,
         linkingRuleDto -> new SubfieldsHolder(dataField, linkingRuleDto)));
 
     fieldsByBibTag.forEach((tag, subfields)

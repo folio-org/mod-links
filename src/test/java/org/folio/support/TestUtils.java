@@ -2,12 +2,13 @@ package org.folio.support;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.support.base.TestConstants.TENANT_ID;
+import static org.springframework.util.ResourceUtils.getFile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -52,24 +53,24 @@ public class TestUtils {
   }
 
   @SneakyThrows
-  public static String convertFile(File file) {
-    return new String(Files.readAllBytes(file.toPath()));
+  public static String readFile(String filePath) {
+    return new String(Files.readAllBytes(getFile(filePath).toPath()));
   }
 
-  public record Link(UUID authorityId, String tag, String naturalId, List<String> subfields) {
+  public record Link(UUID authorityId, String tag, String naturalId, char[] subfields) {
 
     public static final UUID[] AUTH_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID(), randomUUID()};
     public static final String[] TAGS = new String[] {"100", "101", "700", "710"};
 
     public Link(UUID authorityId, String tag) {
-      this(authorityId, tag, authorityId.toString(), List.of("a", "b"));
+      this(authorityId, tag, authorityId.toString(), new char[]{'a', 'b'});
     }
 
     public static Link of(int authIdNum, int tagNum) {
       return new Link(AUTH_IDS[authIdNum], TAGS[tagNum]);
     }
 
-    public static Link of(int authIdNum, int tagNum, String naturalId, List<String> subfields) {
+    public static Link of(int authIdNum, int tagNum, String naturalId, char[] subfields) {
       return new Link(AUTH_IDS[authIdNum], TAGS[tagNum], naturalId, subfields);
     }
 
@@ -78,8 +79,16 @@ public class TestUtils {
         .instanceId(instanceId)
         .authorityId(authorityId)
         .authorityNaturalId(naturalId)
-        .bibRecordSubfields(subfields)
+        .bibRecordSubfields(toStringList(subfields))
         .bibRecordTag(tag);
+    }
+
+    private List<String> toStringList(char[] subfields) {
+      List<String> result = new ArrayList<>();
+      for (char subfield : subfields) {
+        result.add(Character.toString(subfield));
+      }
+      return result;
     }
 
     public InstanceLink toEntity(UUID instanceId) {

@@ -1,4 +1,4 @@
-package org.folio.entlinks.model.converter;
+package org.folio.entlinks.controller.converter;
 
 import java.util.List;
 import org.folio.entlinks.model.entity.InstanceLink;

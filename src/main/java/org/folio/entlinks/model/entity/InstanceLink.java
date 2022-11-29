@@ -1,10 +1,9 @@
 package org.folio.entlinks.model.entity;
 
-import com.vladmihalcea.hibernate.type.array.ListArrayType;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -18,9 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.folio.entlinks.integration.converter.StringToCharArrayConverter;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 @Getter
 @Setter
@@ -33,7 +31,6 @@ import org.hibernate.annotations.TypeDef;
   @Index(name = "idx_instancelink_authority_id", columnList = "authority_id"),
   @Index(name = "idx_instancelink_instance_id", columnList = "instance_id")
 })
-@TypeDef(name = "list-array", typeClass = ListArrayType.class)
 public class InstanceLink {
 
   @Id
@@ -56,9 +53,9 @@ public class InstanceLink {
   @Column(name = "bib_record_tag", length = 3)
   private String bibRecordTag;
 
-  @Type(type = "list-array")
-  @Column(name = "bib_record_subfields")
-  private List<String> bibRecordSubfields;
+  @Column(name = "bib_record_subfields", length = 30)
+  @Convert(converter = StringToCharArrayConverter.class)
+  private char[] bibRecordSubfields;
 
   @Override
   public int hashCode() {

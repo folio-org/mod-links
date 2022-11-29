@@ -22,16 +22,15 @@ public interface InstanceLinkRepository extends JpaRepository<InstanceLink, Long
   void deleteByAuthorityIdIn(List<UUID> authorityIds);
 
   @Query("SELECT il.authorityId AS id,"
-      + " COUNT(DISTINCT il.instanceId) AS totalLinks"
-      + " FROM InstanceLink il WHERE il.authorityId IN :ids"
-      + " GROUP BY id ORDER BY totalLinks DESC")
+    + " COUNT(DISTINCT il.instanceId) AS totalLinks"
+    + " FROM InstanceLink il WHERE il.authorityId IN :ids"
+    + " GROUP BY id ORDER BY totalLinks DESC")
   List<LinkCountView> countLinksByAuthorityIds(@Param("ids") List<UUID> ids);
 
   @Modifying
-  @Query(value = "UPDATE instance_link SET bib_record_subfields = ?1, "
-    + "authority_natural_id = ?2 "
-    + "WHERE authority_id = ?3 AND bib_record_tag = ?4", nativeQuery = true)
-  void updateSubfieldsAndNaturalId(String[] subfields, String naturalId, UUID authorityId, String tag);
+  @Query("UPDATE InstanceLink il SET il.authorityNaturalId = :naturalId, il.bibRecordSubfields = :subfields "
+    + "WHERE il.authorityId = :authorityId AND il.bibRecordTag = :tag")
+  void updateSubfieldsAndNaturalId(char[] subfields, String naturalId, UUID authorityId, String tag);
 
   @Modifying
   @Query("UPDATE InstanceLink il SET il.authorityNaturalId = :naturalId WHERE il.authorityId = :authorityId")
