@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.folio.entlinks.config.properties.AuthorityChangeProperties;
+import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.repository.InstanceLinkRepository;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.qm.domain.dto.InventoryEvent;
+import org.folio.qm.domain.dto.InventoryEventType;
 import org.folio.qm.domain.dto.LinksEvent;
 import org.folio.qm.domain.dto.LinksEventUpdateTargets;
 import org.springframework.stereotype.Component;
@@ -21,9 +22,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DeleteAuthorityChangeHandler implements AuthorityChangeHandler {
 
-  private final AuthorityChangeProperties authorityChangeProperties;
   private final InstanceLinkRepository linkRepository;
   private final InstanceAuthorityLinkingService linkService;
+  private final InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
 
   @Override
   public List<LinksEvent> handle(List<InventoryEvent> events) {
@@ -33,7 +34,7 @@ public class DeleteAuthorityChangeHandler implements AuthorityChangeHandler {
 
     var linksEvents = getLinksMap(events).entrySet()
       .stream()
-      .map(entry -> Lists.partition(entry.getValue(), authorityChangeProperties.getPartitionSize())
+      .map(entry -> Lists.partition(entry.getValue(), instanceAuthorityChangeProperties.getNumPartitions())
         .stream()
         .map(partition -> constructBaseEvent(entry.getKey(), partition))
         .toList())
@@ -42,6 +43,11 @@ public class DeleteAuthorityChangeHandler implements AuthorityChangeHandler {
 
     linkService.deleteByAuthorityIdIn(events.stream().map(InventoryEvent::getId).toList());
     return linksEvents;
+  }
+
+  @Override
+  public InventoryEventType supportedInventoryEventType() {
+    return InventoryEventType.DELETE;
   }
 
   private Map<UUID, List<InstanceAuthorityLink>> getLinksMap(List<InventoryEvent> events) {

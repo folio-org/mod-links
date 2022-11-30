@@ -51,7 +51,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 @IntegrationTest
 @DatabaseCleanup(tables = "instance_link")
-class AuthorityEventListenerIT extends IntegrationTestBase {
+class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
   private KafkaMessageListenerContainer<String, LinksEvent> container;
 

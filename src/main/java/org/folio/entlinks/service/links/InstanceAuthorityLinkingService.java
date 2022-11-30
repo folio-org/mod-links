@@ -2,6 +2,7 @@ package org.folio.entlinks.service.links;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,13 @@ public class InstanceAuthorityLinkingService {
   public Map<UUID, Long> countLinksByAuthorityIds(Set<UUID> authorityIds) {
     return repository.countLinksByAuthorityIds(authorityIds).stream()
       .collect(Collectors.toMap(LinkCountView::getId, LinkCountView::getTotalLinks));
+  }
+
+  public Set<UUID> retainAuthoritiesIdsWithLinks(Set<UUID> authorityIds) {
+    var authorityIdsWithLinks = repository.findAuthorityIdsWithLinks(authorityIds);
+    var result = new HashSet<>(authorityIds);
+    result.retainAll(authorityIdsWithLinks);
+    return result;
   }
 
   @Transactional

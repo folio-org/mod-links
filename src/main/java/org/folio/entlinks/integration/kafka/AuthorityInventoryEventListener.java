@@ -11,7 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.logging.log4j.message.FormattedMessageFactory;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
-import org.folio.entlinks.service.messaging.authority.AuthorityInstanceLinkUpdateService;
+import org.folio.entlinks.service.messaging.authority.InstanceAuthorityLinkUpdateService;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.tools.batch.MessageBatchProcessor;
 import org.folio.spring.tools.systemuser.SystemUserScopedExecutionService;
@@ -21,11 +21,11 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class AuthorityEventListener {
+public class AuthorityInventoryEventListener {
 
   private final InstanceAuthorityLinkingService linkingService;
+  private final InstanceAuthorityLinkUpdateService instanceAuthorityLinkUpdateService;
   private final SystemUserScopedExecutionService executionService;
-  private final AuthorityInstanceLinkUpdateService authorityInstanceLinkUpdateService;
   private final MessageBatchProcessor messageBatchProcessor;
 
   @KafkaListener(id = "mod-entities-links-authority-listener",
@@ -49,7 +49,7 @@ public class AuthorityEventListener {
       var batch = retainAuthoritiesWithLinks(events);
       log.info("Triggering updates for authority records [number of records: {}, tenant: {}]", batch.size(), tenant);
       messageBatchProcessor.consumeBatchWithFallback(batch, DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
-        authorityInstanceLinkUpdateService::handleAuthoritiesChanges, this::logFailedEvent);
+        instanceAuthorityLinkUpdateService::handleAuthoritiesChanges, this::logFailedEvent);
       return null;
     });
   }
@@ -60,7 +60,7 @@ public class AuthorityEventListener {
       .map(InventoryEvent::getId)
       .collect(Collectors.toSet());
 
-    var authorityWithLinksIds = linkingService.countLinksByAuthorityIds(incomingAuthorityIds).keySet();
+    var authorityWithLinksIds = linkingService.retainAuthoritiesIdsWithLinks(incomingAuthorityIds);
     var iterator = events.iterator();
 
     while (iterator.hasNext()) {
@@ -70,6 +70,7 @@ public class AuthorityEventListener {
         iterator.remove();
       }
     }
+    log.debug("Authority records will be processed: {}", authorityWithLinksIds);
     return events;
   }
 

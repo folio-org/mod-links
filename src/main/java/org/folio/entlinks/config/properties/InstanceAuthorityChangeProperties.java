@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties("folio.authority.change")
-public class AuthorityChangeProperties {
+@ConfigurationProperties("folio.instance-authority.change")
+public class InstanceAuthorityChangeProperties {
 
-  private int partitionSize = 100;
+  private int numPartitions = 100;
 
 }

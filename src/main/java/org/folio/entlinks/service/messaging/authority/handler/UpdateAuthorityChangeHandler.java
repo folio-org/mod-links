@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.entlinks.config.properties.AuthorityChangeProperties;
+import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.exception.FolioIntegrationException;
@@ -28,6 +28,7 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
 import org.folio.qm.domain.dto.InventoryEvent;
+import org.folio.qm.domain.dto.InventoryEventType;
 import org.folio.qm.domain.dto.LinksEvent;
 import org.folio.qm.domain.dto.LinksEventSubfields;
 import org.folio.qm.domain.dto.LinksEventSubfieldsChanges;
@@ -43,7 +44,7 @@ import org.springframework.stereotype.Component;
 public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
 
   private final InstanceLinkRepository linkRepository;
-  private final AuthorityChangeProperties authorityChangeProperties;
+  private final InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
   private final AuthoritySourceFilesService sourceFilesService;
   private final AuthorityMappingRulesProcessingService authorityMappingRulesProcessingService;
   private final AuthoritySourceRecordService authoritySourceRecordService;
@@ -82,6 +83,10 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
     return linksEvents;
   }
 
+  public InventoryEventType supportedInventoryEventType() {
+    return InventoryEventType.UPDATE;
+  }
+
   private List<LinksEvent> handleFieldChange(AuthorityChangeHolder changeHolder) {
     List<LinksEvent> linksEvents = new ArrayList<>();
 
@@ -115,7 +120,7 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
       })
       .toList();
 
-    Pageable pageable = PageRequest.of(0, authorityChangeProperties.getPartitionSize());
+    Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
     do {
       var linksPage = linkRepository.findByAuthorityId(authorityId, pageable);
       var instanceLinks = linksPage.getContent();
@@ -148,7 +153,7 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
 
     var subfield0Change = getSubfield0Value(naturalId, changeHolder.getNewSourceFileId());
 
-    Pageable pageable = PageRequest.of(0, authorityChangeProperties.getPartitionSize());
+    Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
     do {
       var linksPage = linkRepository.findByAuthorityId(authorityId, pageable);
       var instanceLinks = linksPage.getContent();

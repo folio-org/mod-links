@@ -16,10 +16,9 @@ import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.folio.entlinks.domain.projection.LinkCountView;
-import org.folio.entlinks.integration.kafka.AuthorityEventListener;
+import org.folio.entlinks.integration.kafka.AuthorityInventoryEventListener;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
-import org.folio.entlinks.service.messaging.authority.AuthorityInstanceLinkUpdateService;
+import org.folio.entlinks.service.messaging.authority.InstanceAuthorityLinkUpdateService;
 import org.folio.qm.domain.dto.AuthorityInventoryRecord;
 import org.folio.qm.domain.dto.InventoryEvent;
 import org.folio.spring.test.type.UnitTest;
@@ -37,14 +36,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-class AuthorityEventListenerTest {
+class AuthorityInventoryEventListenerTest {
 
   @Mock
   private InstanceAuthorityLinkingService linkingService;
   @Mock
   private SystemUserScopedExecutionService executionService;
   @Mock
-  private AuthorityInstanceLinkUpdateService authorityInstanceLinkUpdateService;
+  private InstanceAuthorityLinkUpdateService instanceAuthorityLinkUpdateService;
   @Mock
   private MessageBatchProcessor messageBatchProcessor;
 
@@ -52,7 +51,7 @@ class AuthorityEventListenerTest {
   private ConsumerRecord<String, InventoryEvent> consumerRecord;
 
   @InjectMocks
-  private AuthorityEventListener listener;
+  private AuthorityInventoryEventListener listener;
 
   @BeforeEach
   void setUp() {
@@ -77,7 +76,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityInstanceLinkUpdateService).handleAuthoritiesChanges(singletonList(event));
+    verify(instanceAuthorityLinkUpdateService).handleAuthoritiesChanges(singletonList(event));
   }
 
   @ValueSource(strings = {"UPDATE", "DELETE"})
@@ -95,7 +94,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
+    verify(instanceAuthorityLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
   }
 
   @Test
@@ -112,7 +111,7 @@ class AuthorityEventListenerTest {
 
     listener.handleEvents(singletonList(consumerRecord));
 
-    verify(authorityInstanceLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
+    verify(instanceAuthorityLinkUpdateService, never()).handleAuthoritiesChanges(singletonList(event));
   }
 
   @SuppressWarnings("unchecked")
@@ -135,16 +134,4 @@ class AuthorityEventListenerTest {
     }).when(messageBatchProcessor).consumeBatchWithFallback(any(), any(), any(), any());
   }
 
-  record LinksCount(UUID id, Long totalLinks) implements LinkCountView {
-
-    @Override
-    public UUID getId() {
-      return id();
-    }
-
-    @Override
-    public Long getTotalLinks() {
-      return totalLinks();
-    }
-  }
 }

@@ -60,6 +60,10 @@ folio:
         concurrency: ${KAFKA_AUTHORITIES_CONSUMER_CONCURRENCY:1}
         topic-pattern: ${KAFKA_AUTHORITIES_CONSUMER_PATTERN:(${folio.environment}\.)(.*\.)inventory\.authority}
         group-id: ${folio.environment}-mod-entities-links-authorities-group
+  instance-authority:
+    change:
+      numPartitions: ${KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS:100}
+
   retry:
     enabled: true
   tenant:
@@ -70,6 +74,7 @@ folio:
       enabled: true
     feign:
       enabled: true
+
 management:
   endpoints:
     web:

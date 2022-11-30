@@ -24,16 +24,20 @@ public interface InstanceLinkRepository extends JpaRepository<InstanceAuthorityL
 
   @Query("SELECT il.authorityId AS id,"
     + " COUNT(DISTINCT il.instanceId) AS totalLinks"
-    + " FROM InstanceAuthorityLink il WHERE il.authorityId IN :ids"
+    + " FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds"
     + " GROUP BY id ORDER BY totalLinks DESC")
-  List<LinkCountView> countLinksByAuthorityIds(@Param("ids") Set<UUID> ids);
+  List<LinkCountView> countLinksByAuthorityIds(@Param("authorityIds") Set<UUID> authorityIds);
+
+  @Query("SELECT il.authorityId WHERE IN :authorityIds")
+  Set<UUID> findAuthorityIdsWithLinks(@Param("authorityIds") Set<UUID> authorityIds);
 
   @Modifying
   @Query("UPDATE InstanceAuthorityLink il SET il.authorityNaturalId = :naturalId, il.bibRecordSubfields = :subfields "
     + "WHERE il.authorityId = :authorityId AND il.bibRecordTag = :tag")
-  void updateSubfieldsAndNaturalId(char[] subfields, String naturalId, UUID authorityId, String tag);
+  void updateSubfieldsAndNaturalId(@Param("subfields") char[] subfields, @Param("naturalId") String naturalId,
+                                   @Param("authorityId") UUID authorityId, @Param("tag") String tag);
 
   @Modifying
   @Query("UPDATE InstanceAuthorityLink il SET il.authorityNaturalId = :naturalId WHERE il.authorityId = :authorityId")
-  void updateNaturalId(String naturalId, UUID authorityId);
+  void updateNaturalId(@Param("naturalId") String naturalId, @Param("authorityId") UUID authorityId);
 }
