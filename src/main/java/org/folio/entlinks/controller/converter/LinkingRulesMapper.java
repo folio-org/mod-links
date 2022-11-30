@@ -2,9 +2,9 @@ package org.folio.entlinks.controller.converter;
 
 import java.util.List;
 import java.util.Map;
+import org.folio.entlinks.domain.dto.LinkingRuleDto;
+import org.folio.entlinks.domain.dto.SubfieldValidation;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.qm.domain.dto.LinkingRuleDto;
-import org.folio.qm.domain.dto.SubfieldValidation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

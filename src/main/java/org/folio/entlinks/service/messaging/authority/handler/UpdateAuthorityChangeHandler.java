@@ -15,6 +15,12 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
+import org.folio.entlinks.domain.dto.ChangeTarget;
+import org.folio.entlinks.domain.dto.FieldChange;
+import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.InventoryEventType;
+import org.folio.entlinks.domain.dto.LinksChangeEvent;
+import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.exception.FolioIntegrationException;
@@ -27,12 +33,6 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
-import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.InventoryEventType;
-import org.folio.qm.domain.dto.LinksEvent;
-import org.folio.qm.domain.dto.LinksEventSubfields;
-import org.folio.qm.domain.dto.LinksEventSubfieldsChanges;
-import org.folio.qm.domain.dto.LinksEventUpdateTargets;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,12 +52,12 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
   private final InstanceAuthorityLinkingService linkService;
 
   @Override
-  public List<LinksEvent> handle(List<InventoryEvent> events) {
+  public List<LinksChangeEvent> handle(List<InventoryEvent> events) {
     if (events == null || events.isEmpty()) {
       return Collections.emptyList();
     }
 
-    List<LinksEvent> linksEvents = new ArrayList<>();
+    List<LinksChangeEvent> linksEvents = new ArrayList<>();
 
     var authorityChanges = events.stream()
       .map(event -> {
@@ -87,8 +87,8 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
     return InventoryEventType.UPDATE;
   }
 
-  private List<LinksEvent> handleFieldChange(AuthorityChangeHolder changeHolder) {
-    List<LinksEvent> linksEvents = new ArrayList<>();
+  private List<LinksChangeEvent> handleFieldChange(AuthorityChangeHolder changeHolder) {
+    List<LinksChangeEvent> linksEvents = new ArrayList<>();
 
     var authorityId = changeHolder.getAuthorityId();
     var naturalId = changeHolder.getNewNaturalId();
@@ -116,7 +116,7 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
       .map(e -> {
         var subfieldsChange = e.getValue().toSubfieldsChange();
         subfield0Change.ifPresent(subfieldsChange::add);
-        return new LinksEventSubfieldsChanges().field(e.getKey()).subfields(subfieldsChange);
+        return new FieldChange().field(e.getKey()).subfields(subfieldsChange);
       })
       .toList();
 
@@ -135,17 +135,17 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
   }
 
   @NotNull
-  private Optional<LinksEventSubfields> getSubfield0Change(AuthorityChangeHolder changeHolder, String naturalId,
+  private Optional<SubfieldChange> getSubfield0Change(AuthorityChangeHolder changeHolder, String naturalId,
                                                            boolean naturalIdChanged) {
-    Optional<LinksEventSubfields> subfield0Change = Optional.empty();
+    Optional<SubfieldChange> subfield0Change = Optional.empty();
     if (naturalIdChanged) {
       subfield0Change = Optional.of(getSubfield0Value(naturalId, changeHolder.getNewSourceFileId()));
     }
     return subfield0Change;
   }
 
-  private List<LinksEvent> handleNaturalIdChange(AuthorityChangeHolder changeHolder) {
-    List<LinksEvent> linksEvents = new ArrayList<>();
+  private List<LinksChangeEvent> handleNaturalIdChange(AuthorityChangeHolder changeHolder) {
+    List<LinksChangeEvent> linksEvents = new ArrayList<>();
 
     var authorityId = changeHolder.getAuthorityId();
     var naturalId = changeHolder.getNewNaturalId();
@@ -161,7 +161,7 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
       var subfieldsChanges = instanceLinks.stream()
         .map(InstanceAuthorityLink::getBibRecordTag)
         .distinct()
-        .map(tag -> new LinksEventSubfieldsChanges().field(tag).subfields(singletonList(subfield0Change)))
+        .map(tag -> new FieldChange().field(tag).subfields(singletonList(subfield0Change)))
         .toList();
 
       var linksEvent = constructBaseEvent(authorityId, instanceLinks, subfieldsChanges);
@@ -173,28 +173,28 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
     return linksEvents;
   }
 
-  private LinksEventSubfields getSubfield0Value(String naturalId, UUID sourceFileId) {
+  private SubfieldChange getSubfield0Value(String naturalId, UUID sourceFileId) {
     String subfield0Value = "";
     if (sourceFileId != null) {
       var baseUrl = sourceFilesService.fetchAuthoritySourceUrls().get(sourceFileId);
       subfield0Value = StringUtils.appendIfMissing(baseUrl, "/");
     }
-    return new LinksEventSubfields().code("0").value(subfield0Value + naturalId);
+    return new SubfieldChange().code("0").value(subfield0Value + naturalId);
   }
 
-  private List<LinksEventUpdateTargets> toEventMarcBibs(List<InstanceAuthorityLink> partition) {
+  private List<ChangeTarget> toEventMarcBibs(List<InstanceAuthorityLink> partition) {
     return partition.stream()
       .collect(Collectors.groupingBy(InstanceAuthorityLink::getBibRecordTag))
       .entrySet().stream()
-      .map(e -> new LinksEventUpdateTargets().field(e.getKey())
+      .map(e -> new ChangeTarget().field(e.getKey())
         .instanceIds(e.getValue().stream().map(InstanceAuthorityLink::getInstanceId).toList()))
       .toList();
   }
 
-  private LinksEvent constructBaseEvent(UUID authorityId, List<InstanceAuthorityLink> partition,
-                                        List<LinksEventSubfieldsChanges> subfieldChanges) {
-    return new LinksEvent().jobId(UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e"))
-      .type(LinksEvent.TypeEnum.UPDATE)
+  private LinksChangeEvent constructBaseEvent(UUID authorityId, List<InstanceAuthorityLink> partition,
+                                        List<FieldChange> subfieldChanges) {
+    return new LinksChangeEvent().jobId(UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e"))
+      .type(LinksChangeEvent.TypeEnum.UPDATE)
       .authorityId(authorityId)
       .updateTargets(toEventMarcBibs(partition))
       .subfieldsChanges(subfieldChanges)

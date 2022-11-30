@@ -3,8 +3,8 @@ package org.folio.entlinks.controller;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.controller.delegate.LinkingRulesServiceDelegate;
-import org.folio.qm.domain.dto.LinkingRuleDto;
-import org.folio.qm.rest.resource.LinkingRulesApi;
+import org.folio.entlinks.domain.dto.LinkingRuleDto;
+import org.folio.entlinks.rest.resource.LinkingRulesApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 

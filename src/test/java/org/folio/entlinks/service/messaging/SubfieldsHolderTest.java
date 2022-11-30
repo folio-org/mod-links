@@ -3,10 +3,10 @@ package org.folio.entlinks.service.messaging;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import org.folio.entlinks.domain.dto.SubfieldChange;
+import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
-import org.folio.qm.domain.dto.LinksEventSubfields;
-import org.folio.qm.domain.dto.SubfieldModification;
 import org.junit.jupiter.api.Test;
 import org.marc4j.marc.impl.DataFieldImpl;
 import org.marc4j.marc.impl.SubfieldImpl;
@@ -30,8 +30,8 @@ class SubfieldsHolderTest {
 
     assertThat(subfieldsHolder.getBibSubfieldCodes()).contains('a', 'h');
     assertThat(subfieldsHolder.toSubfieldsChange()).contains(
-      new LinksEventSubfields().code("a").value("t-data"),
-      new LinksEventSubfields().code("h").value("h-data")
+      new SubfieldChange().code("a").value("t-data"),
+      new SubfieldChange().code("h").value("h-data")
     );
   }
 }

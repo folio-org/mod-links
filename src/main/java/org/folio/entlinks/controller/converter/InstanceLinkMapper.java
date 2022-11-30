@@ -3,10 +3,10 @@ package org.folio.entlinks.controller.converter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.folio.entlinks.domain.dto.InstanceLinkDto;
+import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
+import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
-import org.folio.qm.domain.dto.InstanceLinkDto;
-import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
-import org.folio.qm.domain.dto.LinksCountDto;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

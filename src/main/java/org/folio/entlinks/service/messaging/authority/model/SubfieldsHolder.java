@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.bouncycastle.util.Arrays;
+import org.folio.entlinks.domain.dto.SubfieldChange;
+import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.qm.domain.dto.LinksEventSubfields;
-import org.folio.qm.domain.dto.SubfieldModification;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.impl.SubfieldImpl;
@@ -33,12 +33,12 @@ public class SubfieldsHolder {
     }
   }
 
-  public List<LinksEventSubfields> toSubfieldsChange() {
+  public List<SubfieldChange> toSubfieldsChange() {
     return bibSubfields.stream()
-      .map(subfield -> new LinksEventSubfields()
+      .map(subfield -> new SubfieldChange()
         .code(Character.toString(subfield.getCode()))
         .value(subfield.getData()))
-      .sorted(Comparator.comparing(LinksEventSubfields::getCode))
+      .sorted(Comparator.comparing(SubfieldChange::getCode))
       .collect(Collectors.toCollection(ArrayList::new));
   }
 

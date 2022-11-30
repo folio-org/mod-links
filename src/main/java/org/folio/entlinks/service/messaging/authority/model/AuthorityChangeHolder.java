@@ -6,7 +6,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
-import org.folio.qm.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.jetbrains.annotations.NotNull;
 
 @Value

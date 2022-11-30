@@ -3,8 +3,8 @@ package org.folio.entlinks.controller.delegate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.controller.converter.LinkingRulesMapper;
+import org.folio.entlinks.domain.dto.LinkingRuleDto;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
-import org.folio.qm.domain.dto.LinkingRuleDto;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -13,11 +13,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
+import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
+import org.folio.entlinks.domain.dto.InstanceLinkDto;
+import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
+import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
-import org.folio.qm.domain.dto.AuthorityInventoryRecord;
-import org.folio.qm.domain.dto.InstanceLinkDto;
-import org.folio.qm.domain.dto.InstanceLinkDtoCollection;
-import org.folio.qm.domain.dto.InventoryEvent;
 
 public class TestUtils {
 

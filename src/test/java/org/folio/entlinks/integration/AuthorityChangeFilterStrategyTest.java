@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
+import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.InventoryEventType;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
-import org.folio.qm.domain.dto.AuthorityInventoryRecord;
-import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.InventoryEventType;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -26,12 +26,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.BDDSoftAssertions;
+import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
+import org.folio.entlinks.domain.dto.ChangeTarget;
+import org.folio.entlinks.domain.dto.FieldChange;
+import org.folio.entlinks.domain.dto.LinksChangeEvent;
+import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.utils.KafkaUtils;
-import org.folio.qm.domain.dto.AuthorityInventoryRecord;
-import org.folio.qm.domain.dto.LinksEvent;
-import org.folio.qm.domain.dto.LinksEventSubfields;
-import org.folio.qm.domain.dto.LinksEventSubfieldsChanges;
-import org.folio.qm.domain.dto.LinksEventUpdateTargets;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
@@ -53,9 +53,9 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 @DatabaseCleanup(tables = "instance_link")
 class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
-  private KafkaMessageListenerContainer<String, LinksEvent> container;
+  private KafkaMessageListenerContainer<String, LinksChangeEvent> container;
 
-  private BlockingQueue<ConsumerRecord<String, LinksEvent>> consumerRecords;
+  private BlockingQueue<ConsumerRecord<String, LinksChangeEvent>> consumerRecords;
 
   @Autowired
   private KafkaProperties kafkaProperties;
@@ -64,19 +64,19 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
   void setUp() {
     consumerRecords = new LinkedBlockingQueue<>();
 
-    var deserializer = new JsonDeserializer<>(LinksEvent.class);
+    var deserializer = new JsonDeserializer<>(LinksChangeEvent.class);
     kafkaProperties.getConsumer().setGroupId("test-group");
     Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
     config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     config.put(VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
 
-    DefaultKafkaConsumerFactory<String, LinksEvent> consumer =
+    DefaultKafkaConsumerFactory<String, LinksChangeEvent> consumer =
       new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
 
     var topicName = KafkaUtils.getTenantTopicName("links.instance-authority", TENANT_ID);
     ContainerProperties containerProperties = new ContainerProperties(topicName);
     container = new KafkaMessageListenerContainer<>(consumer, containerProperties);
-    container.setupMessageListener((MessageListener<String, LinksEvent>) record -> consumerRecords.add(record));
+    container.setupMessageListener((MessageListener<String, LinksChangeEvent>) record -> consumerRecords.add(record));
     container.start();
   }
 
@@ -115,7 +115,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
     var value = received.value();
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
-    assertions.then(value.getType()).as("Type").isEqualTo(LinksEvent.TypeEnum.DELETE);
+    assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
     assertions.then(value.getUpdateTargets()).as("Update targets")
       .isEqualTo(List.of(
@@ -169,7 +169,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
     var value = received.value();
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
-    assertions.then(value.getType()).as("Type").isEqualTo(LinksEvent.TypeEnum.UPDATE);
+    assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
     assertions.then(value.getUpdateTargets()).as("Update targets")
       .isEqualTo(List.of(
@@ -178,11 +178,11 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
       ));
     assertions.then(value.getSubfieldsChanges()).as("Subfield changes")
       .isEqualTo(List.of(
-        new LinksEventSubfieldsChanges()
-          .field(link1.tag()).subfields(List.of(new LinksEventSubfields().code("0")
+        new FieldChange()
+          .field(link1.tag()).subfields(List.of(new SubfieldChange().code("0")
             .value("id.loc.gov/authorities/names/newNaturalId"))),
-        new LinksEventSubfieldsChanges()
-          .field(link2.tag()).subfields(List.of(new LinksEventSubfields().code("0")
+        new FieldChange()
+          .field(link2.tag()).subfields(List.of(new SubfieldChange().code("0")
             .value("id.loc.gov/authorities/names/newNaturalId")))));
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
     assertions.then(value.getTs()).as("Timestamp").isNotNull();
@@ -234,7 +234,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
     var value = received.value();
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
-    assertions.then(value.getType()).as("Type").isEqualTo(LinksEvent.TypeEnum.UPDATE);
+    assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
     assertions.then(value.getUpdateTargets()).as("Update targets")
       .isEqualTo(List.of(
@@ -243,34 +243,34 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
       ));
     assertions.then(value.getSubfieldsChanges()).as("Subfield changes")
       .isEqualTo(List.of(
-        new LinksEventSubfieldsChanges().field("100").subfields(List.of(
-          new LinksEventSubfields().code("a").value("Lansing, John"),
-          new LinksEventSubfields().code("d").value("1756-1791."),
-          new LinksEventSubfields().code("q").value("(Jules)")
+        new FieldChange().field("100").subfields(List.of(
+          new SubfieldChange().code("a").value("Lansing, John"),
+          new SubfieldChange().code("d").value("1756-1791."),
+          new SubfieldChange().code("q").value("(Jules)")
         )),
-        new LinksEventSubfieldsChanges().field("600").subfields(List.of(
-          new LinksEventSubfields().code("a").value("Lansing, John"),
-          new LinksEventSubfields().code("d").value("1756-1791."),
-          new LinksEventSubfields().code("i").value("book"),
-          new LinksEventSubfields().code("q").value("(Jules)"),
-          new LinksEventSubfields().code("t").value("Black Eagles")
+        new FieldChange().field("600").subfields(List.of(
+          new SubfieldChange().code("a").value("Lansing, John"),
+          new SubfieldChange().code("d").value("1756-1791."),
+          new SubfieldChange().code("i").value("book"),
+          new SubfieldChange().code("q").value("(Jules)"),
+          new SubfieldChange().code("t").value("Black Eagles")
         )),
-        new LinksEventSubfieldsChanges().field("700").subfields(List.of(
-          new LinksEventSubfields().code("a").value("Lansing, John"),
-          new LinksEventSubfields().code("d").value("1756-1791."),
-          new LinksEventSubfields().code("i").value("book"),
-          new LinksEventSubfields().code("q").value("(Jules)"),
-          new LinksEventSubfields().code("t").value("Black Eagles")
+        new FieldChange().field("700").subfields(List.of(
+          new SubfieldChange().code("a").value("Lansing, John"),
+          new SubfieldChange().code("d").value("1756-1791."),
+          new SubfieldChange().code("i").value("book"),
+          new SubfieldChange().code("q").value("(Jules)"),
+          new SubfieldChange().code("t").value("Black Eagles")
         )),
-        new LinksEventSubfieldsChanges().field("800").subfields(List.of(
-          new LinksEventSubfields().code("a").value("Lansing, John"),
-          new LinksEventSubfields().code("d").value("1756-1791."),
-          new LinksEventSubfields().code("i").value("book"),
-          new LinksEventSubfields().code("q").value("(Jules)"),
-          new LinksEventSubfields().code("t").value("Black Eagles")
+        new FieldChange().field("800").subfields(List.of(
+          new SubfieldChange().code("a").value("Lansing, John"),
+          new SubfieldChange().code("d").value("1756-1791."),
+          new SubfieldChange().code("i").value("book"),
+          new SubfieldChange().code("q").value("(Jules)"),
+          new SubfieldChange().code("t").value("Black Eagles")
         )),
-        new LinksEventSubfieldsChanges().field("240").subfields(List.of(
-          new LinksEventSubfields().code("a").value("Black Eagles")
+        new FieldChange().field("240").subfields(List.of(
+          new SubfieldChange().code("a").value("Black Eagles")
         ))
       ));
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
@@ -287,12 +287,12 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
   @Nullable
   @SneakyThrows
-  private ConsumerRecord<String, LinksEvent> getReceivedEvent() {
+  private ConsumerRecord<String, LinksChangeEvent> getReceivedEvent() {
     return consumerRecords.poll(10, TimeUnit.SECONDS);
   }
 
-  private LinksEventUpdateTargets updateTarget(String tag, UUID... instanceIds) {
-    return new LinksEventUpdateTargets().field(tag).instanceIds(Arrays.asList(instanceIds));
+  private ChangeTarget updateTarget(String tag, UUID... instanceIds) {
+    return new ChangeTarget().field(tag).instanceIds(Arrays.asList(instanceIds));
   }
 
 }

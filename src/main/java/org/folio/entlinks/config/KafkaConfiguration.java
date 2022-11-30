@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
-import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.LinksEvent;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,12 +67,12 @@ public class KafkaConfiguration {
   /**
    * Creates and configures {@link org.springframework.kafka.core.ProducerFactory} as Spring bean.
    *
-   * <p>Key type - {@link String}, value - {@link LinksEvent}.</p>
+   * <p>Key type - {@link String}, value - {@link LinksChangeEvent}.</p>
    *
    * @return typed {@link org.springframework.kafka.core.ProducerFactory} object as Spring bean.
    */
   @Bean
-  public ProducerFactory<String, LinksEvent> producerFactory(KafkaProperties kafkaProperties) {
+  public ProducerFactory<String, LinksChangeEvent> producerFactory(KafkaProperties kafkaProperties) {
     Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
     configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -82,12 +82,13 @@ public class KafkaConfiguration {
   /**
    * Creates and configures {@link org.springframework.kafka.core.KafkaTemplate} as Spring bean.
    *
-   * <p>Key type - {@link String}, value - {@link LinksEvent}.</p>
+   * <p>Key type - {@link String}, value - {@link LinksChangeEvent}.</p>
    *
    * @return typed {@link org.springframework.kafka.core.KafkaTemplate} object as Spring bean.
    */
   @Bean
-  public KafkaTemplate<String, LinksEvent> linksEventKafkaTemplate(ProducerFactory<String, LinksEvent> factory) {
+  public KafkaTemplate<String, LinksChangeEvent> linksChangeKafkaTemplate(
+    ProducerFactory<String, LinksChangeEvent> factory) {
     return new KafkaTemplate<>(factory);
   }
 }

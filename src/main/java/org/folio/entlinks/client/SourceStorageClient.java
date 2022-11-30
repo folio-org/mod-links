@@ -1,7 +1,7 @@
 package org.folio.entlinks.client;
 
 import java.util.UUID;
-import org.folio.qm.domain.dto.SourceRecord;
+import org.folio.entlinks.domain.dto.SourceRecord;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,13 +1,13 @@
 package org.folio.entlinks.service.messaging.authority.handler;
 
 import java.util.List;
-import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.InventoryEventType;
-import org.folio.qm.domain.dto.LinksEvent;
+import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.InventoryEventType;
+import org.folio.entlinks.domain.dto.LinksChangeEvent;
 
 public interface AuthorityChangeHandler {
 
-  List<LinksEvent> handle(List<InventoryEvent> events);
+  List<LinksChangeEvent> handle(List<InventoryEvent> events);
 
   InventoryEventType supportedInventoryEventType();
 }

@@ -2,8 +2,8 @@ package org.folio.entlinks.integration.kafka;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.folio.qm.domain.dto.InventoryEvent;
-import org.folio.qm.domain.dto.InventoryEventType;
+import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.InventoryEventType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
 
