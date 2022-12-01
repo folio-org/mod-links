@@ -23,8 +23,8 @@ public class MappingRulesService {
   public Map<String, List<String>> getFieldTargetsMappingRelations() {
     var mappingRules = fetchMappingRules();
     return mappingRules.entrySet().stream()
-      .collect(Collectors.toMap(Map.Entry::getKey, stringListEntry ->
-        stringListEntry.getValue().stream().map(MappingRulesClient.MappingRule::target).toList()));
+      .collect(Collectors.toMap(Map.Entry::getKey, rulesList ->
+        rulesList.getValue().stream().map(MappingRulesClient.MappingRule::target).toList()));
   }
 
   private Map<String, List<MappingRulesClient.MappingRule>> fetchMappingRules() {

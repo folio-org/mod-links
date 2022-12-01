@@ -22,7 +22,7 @@ public class AuthoritySourceFilesService {
   @Cacheable(cacheNames = AUTHORITY_SOURCE_FILES_CACHE,
              key = "@folioExecutionContext.tenantId",
              unless = "#result.isEmpty()")
-  public Map<UUID, String> fetchAuthoritySourceUrls() {
+  public Map<UUID, String> fetchAuthoritySourceUrls() throws FolioIntegrationException {
     var authoritySourceFiles = fetchAuthoritySourceFiles();
     if (authoritySourceFiles.isEmpty()) {
       throw new FolioIntegrationException("Authority source files are empty.");

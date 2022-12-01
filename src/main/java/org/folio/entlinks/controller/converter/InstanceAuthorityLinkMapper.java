@@ -10,19 +10,21 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface InstanceLinkMapper {
+public interface InstanceAuthorityLinkMapper {
 
-  InstanceLinkDto convert(InstanceAuthorityLink source);
+  InstanceLinkDto convertToDto(InstanceAuthorityLink source);
 
-  InstanceAuthorityLink convert(InstanceLinkDto source);
-
-  default InstanceLinkDtoCollection convert(List<InstanceAuthorityLink> source) {
-    var convertedLinks = source.stream().map(this::convert).toList();
+  default InstanceLinkDtoCollection convertToDto(List<InstanceAuthorityLink> source) {
+    var convertedLinks = source.stream().map(this::convertToDto).toList();
 
     return new InstanceLinkDtoCollection()
       .links(convertedLinks)
       .totalRecords(source.size());
   }
+
+  InstanceAuthorityLink convertDto(InstanceLinkDto source);
+
+  List<InstanceAuthorityLink> convertDto(List<InstanceLinkDto> source);
 
   default List<LinksCountDto> convert(Map<UUID, Long> source) {
     return source.entrySet().stream()

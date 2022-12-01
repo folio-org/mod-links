@@ -27,7 +27,7 @@ public abstract class AbstractAuthorityChangeHandler implements AuthorityChangeH
     List<LinksChangeEvent> linksEvents = new ArrayList<>();
     Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
     do {
-      var linksPage = linkService.findByAuthorityId(authorityId, pageable);
+      var linksPage = linkService.getLinksByAuthorityId(authorityId, pageable);
       var instanceLinks = linksPage.getContent();
 
       linksEvents.add(function.apply(instanceLinks));

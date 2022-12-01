@@ -24,11 +24,11 @@ public class InstanceAuthorityLinkingService {
 
   private final InstanceLinkRepository repository;
 
-  public List<InstanceAuthorityLink> getLinks(UUID instanceId) {
+  public List<InstanceAuthorityLink> getLinksByInstanceId(UUID instanceId) {
     return repository.findByInstanceId(instanceId);
   }
 
-  public Page<InstanceAuthorityLink> findByAuthorityId(UUID authorityId, Pageable pageable) {
+  public Page<InstanceAuthorityLink> getLinksByAuthorityId(UUID authorityId, Pageable pageable) {
     return repository.findByAuthorityId(authorityId, pageable);
   }
 

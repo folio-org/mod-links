@@ -26,6 +26,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +40,7 @@ class InstanceAuthorityLinkingServiceTest {
   private InstanceAuthorityLinkingService service;
 
   @Test
-  void getInstanceLinks_positive_foundWhenExist() {
+  void getLinksByInstanceId_positive_foundWhenExist() {
     var instanceId = randomUUID();
     var existedLinks = links(instanceId,
       Link.of(0, 0),
@@ -49,7 +51,7 @@ class InstanceAuthorityLinkingServiceTest {
 
     when(repository.findByInstanceId(any(UUID.class))).thenReturn(existedLinks);
 
-    var result = service.getLinks(instanceId);
+    var result = service.getLinksByInstanceId(instanceId);
 
     assertThat(result)
       .hasSize(existedLinks.size())
@@ -58,19 +60,39 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void getInstanceLinks_positive_nothingFound() {
+  void getLinksByInstanceId_positive_nothingFound() {
     var instanceId = randomUUID();
     var existedLinks = Collections.<InstanceAuthorityLink>emptyList();
 
     when(repository.findByInstanceId(any(UUID.class))).thenReturn(existedLinks);
 
-    var result = service.getLinks(instanceId);
+    var result = service.getLinksByInstanceId(instanceId);
 
     assertThat(result).isEmpty();
   }
 
   @Test
-  void updateInstanceLinks_positive_saveIncomingLinks_whenAnyExist() {
+  void getLinksByAuthorityId_positive_foundWhenExist() {
+    var instanceId = randomUUID();
+    var links = links(instanceId,
+      Link.of(0, 0),
+      Link.of(1, 1)
+    );
+
+    var linkPage = new PageImpl<>(links);
+
+    when(repository.findByAuthorityId(any(UUID.class), any(Pageable.class))).thenReturn(linkPage);
+
+    var result = service.getLinksByAuthorityId(UUID.randomUUID(), Pageable.ofSize(2));
+
+    assertThat(result)
+      .hasSize(links.size())
+      .extracting(InstanceAuthorityLink::getBibRecordTag)
+      .containsOnly(Link.TAGS[0], Link.TAGS[1]);
+  }
+
+  @Test
+  void updateLinks_positive_saveIncomingLinks_whenAnyExist() {
     final var instanceId = randomUUID();
     final var existedLinks = Collections.<InstanceAuthorityLink>emptyList();
     final var incomingLinks = links(instanceId, Link.of(0, 0), Link.of(1, 1));
@@ -94,7 +116,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateInstanceLinks_positive_deleteAllLinks_whenIncomingIsEmpty() {
+  void updateLinks_positive_deleteAllLinks_whenIncomingIsEmpty() {
     final var instanceId = randomUUID();
     final var existedLinks = links(instanceId, Link.of(0, 0), Link.of(1, 1));
     final var incomingLinks = Collections.<InstanceAuthorityLink>emptyList();
@@ -118,7 +140,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateInstanceLinks_positive_deleteAllExistedAndSaveAllIncomingLinks() {
+  void updateLinks_positive_deleteAllExistedAndSaveAllIncomingLinks() {
     final var instanceId = randomUUID();
     final var existedLinks = links(instanceId,
       Link.of(0, 0),
@@ -154,7 +176,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateInstanceLinks_positive_saveOnlyNewLinks() {
+  void updateLinks_positive_saveOnlyNewLinks() {
     final var instanceId = randomUUID();
     final var existedLinks = links(instanceId,
       Link.of(0, 0),
@@ -186,7 +208,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateInstanceLinks_positive_deleteAndSaveLinks_whenHaveDifference() {
+  void updateLinks_positive_deleteAndSaveLinks_whenHaveDifference() {
     final var instanceId = randomUUID();
     final var existedLinks = links(instanceId,
       Link.of(0, 0),
@@ -222,20 +244,71 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void countNumberOfTitles_positive_whenSomeIdsNotFoundThenFillInThemWithZeros() {
+  void countLinksByAuthorityIds_positive() {
     var authorityId1 = randomUUID();
     var authorityId2 = randomUUID();
     var authorityId3 = randomUUID();
     var resultSet = List.of(
       linkCountView(authorityId1, 10),
-      linkCountView(authorityId2, 15));
+      linkCountView(authorityId2, 15)
+    );
+
     when(repository.countLinksByAuthorityIds(anySet())).thenReturn(resultSet);
 
     var authorityIds = Set.of(authorityId1, authorityId2, authorityId3);
     var result = service.countLinksByAuthorityIds(authorityIds);
 
-    assertThat(result).hasSize(2)
+    assertThat(result)
+      .hasSize(2)
       .contains(entry(authorityId1, 10L), entry(authorityId2, 15L));
+  }
+
+  @Test
+  void retainAuthoritiesIdsWithLinks_positive() {
+    var authorityId1 = randomUUID();
+    var authorityId2 = randomUUID();
+    var authorityId3 = randomUUID();
+
+    when(repository.findAuthorityIdsWithLinks(anySet())).thenReturn(Set.of(authorityId1, authorityId2));
+
+    var authorityIds = Set.of(authorityId1, authorityId2, authorityId3);
+    var result = service.retainAuthoritiesIdsWithLinks(authorityIds);
+
+    assertThat(result)
+      .hasSize(2)
+      .contains(authorityId1, authorityId2);
+  }
+
+  @Test
+  void updateNaturalId() {
+    var naturalId = "naturalId";
+    var authorityId = randomUUID();
+
+    service.updateNaturalId(naturalId, authorityId);
+
+    verify(repository).updateNaturalId(naturalId, authorityId);
+  }
+
+  @Test
+  void updateSubfieldsAndNaturalId() {
+    var subfields = new char[] {'a', 'b'};
+    var naturalId = "naturalId";
+    var authorityId = randomUUID();
+    var tag = "100";
+
+    service.updateSubfieldsAndNaturalId(subfields, naturalId, authorityId, tag);
+
+    verify(repository).updateSubfieldsAndNaturalId(subfields, naturalId, authorityId, tag);
+  }
+
+  @Test
+  void deleteByAuthorityIdIn() {
+    var authorityId = randomUUID();
+    var authorityIds = Set.of(authorityId);
+
+    service.deleteByAuthorityIdIn(authorityIds);
+
+    verify(repository).deleteByAuthorityIdIn(authorityIds);
   }
 
   private ArgumentCaptor<List<InstanceAuthorityLink>> linksCaptor() {

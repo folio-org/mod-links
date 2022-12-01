@@ -5,9 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.folio.entlinks.controller.converter.InstanceLinkMapper;
+import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
@@ -23,17 +22,17 @@ import org.springframework.stereotype.Service;
 public class LinkingServiceDelegate {
 
   private final InstanceAuthorityLinkingService linkingService;
-  private final InstanceLinkMapper mapper;
+  private final InstanceAuthorityLinkMapper mapper;
 
   public InstanceLinkDtoCollection getLinks(UUID instanceId) {
-    var links = linkingService.getLinks(instanceId);
-    return mapper.convert(links);
+    var links = linkingService.getLinksByInstanceId(instanceId);
+    return mapper.convertToDto(links);
   }
 
   public void updateLinks(UUID instanceId, @NotNull InstanceLinkDtoCollection instanceLinkCollection) {
     var links = instanceLinkCollection.getLinks();
     validateLinks(instanceId, links);
-    var incomingLinks = links.stream().map(mapper::convert).toList();
+    var incomingLinks = mapper.convertDto(links);
     linkingService.updateLinks(instanceId, incomingLinks);
   }
 
@@ -45,16 +44,11 @@ public class LinkingServiceDelegate {
   }
 
   private Map<UUID, Long> fillInMissingIdsWithZeros(Map<UUID, Long> linksCountMap, HashSet<UUID> ids) {
-    var foundIds = linksCountMap.keySet();
-    var notFoundIds =
-      ids.stream().filter(uuid -> foundIds.stream().noneMatch(uuid::equals)).collect(Collectors.toSet());
-
-    if (!notFoundIds.isEmpty()) {
-      var tempList = new HashMap<>(linksCountMap);
-      notFoundIds.forEach(uuid -> tempList.put(uuid, 0L));
-      linksCountMap = tempList;
+    Map<UUID, Long> result = new HashMap<>(linksCountMap);
+    for (UUID id : ids) {
+      result.putIfAbsent(id, 0L);
     }
-    return linksCountMap;
+    return result;
   }
 
   private void validateLinks(UUID instanceId, List<InstanceLinkDto> links) {
