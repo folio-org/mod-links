@@ -18,17 +18,17 @@ public interface InstanceLinkRepository extends JpaRepository<InstanceAuthorityL
 
   Page<InstanceAuthorityLink> findByAuthorityId(UUID instanceId, Pageable pageable);
 
-  List<InstanceAuthorityLink> findByAuthorityIdIn(List<UUID> authorityIds);
-
-  void deleteByAuthorityIdIn(List<UUID> authorityIds);
+  @Modifying
+  @Query("DELETE FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds")
+  void deleteByAuthorityIdIn(@Param("authorityIds") Set<UUID> authorityIds);
 
   @Query("SELECT il.authorityId AS id,"
     + " COUNT(DISTINCT il.instanceId) AS totalLinks"
     + " FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds"
-    + " GROUP BY id ORDER BY totalLinks DESC")
+    + " GROUP BY id")
   List<LinkCountView> countLinksByAuthorityIds(@Param("authorityIds") Set<UUID> authorityIds);
 
-  @Query("SELECT il.authorityId WHERE IN :authorityIds")
+  @Query("SELECT il.authorityId FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds")
   Set<UUID> findAuthorityIdsWithLinks(@Param("authorityIds") Set<UUID> authorityIds);
 
   @Modifying

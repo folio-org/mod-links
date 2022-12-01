@@ -3,7 +3,7 @@
     {
       "request": {
         "method": "GET",
-        "url": "/source-storage/source-records/a501dcc2-23ce-4a4a-adb4-ff683b6f325e"
+        "url": "/source-storage/source-records/a501dcc2-23ce-4a4a-adb4-ff683b6f325e?idType=AUTHORITY"
       },
       "response": {
         "status": 200,

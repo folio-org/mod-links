@@ -12,6 +12,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
   jackson:
     default-property-inclusion: non_null
     deserialization:

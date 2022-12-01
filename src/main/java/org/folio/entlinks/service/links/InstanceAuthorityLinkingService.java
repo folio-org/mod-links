@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.projection.LinkCountView;
 import org.folio.entlinks.repository.InstanceLinkRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,10 @@ public class InstanceAuthorityLinkingService {
 
   public List<InstanceAuthorityLink> getLinks(UUID instanceId) {
     return repository.findByInstanceId(instanceId);
+  }
+
+  public Page<InstanceAuthorityLink> findByAuthorityId(UUID authorityId, Pageable pageable) {
+    return repository.findByAuthorityId(authorityId, pageable);
   }
 
   @Transactional
@@ -59,7 +65,7 @@ public class InstanceAuthorityLinkingService {
   }
 
   @Transactional
-  public void deleteByAuthorityIdIn(List<UUID> authorityIds) {
+  public void deleteByAuthorityIdIn(Set<UUID> authorityIds) {
     repository.deleteByAuthorityIdIn(authorityIds);
   }
 

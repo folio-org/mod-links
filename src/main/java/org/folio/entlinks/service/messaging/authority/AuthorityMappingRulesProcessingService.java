@@ -1,7 +1,6 @@
 package org.folio.entlinks.service.messaging.authority;
 
 import static org.folio.entlinks.config.constants.CacheNames.AUTHORITY_TAG_TO_FIELD_CACHE;
-import static org.folio.entlinks.utils.CollectionsUtils.containsIgnoreCase;
 
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class AuthorityMappingRulesProcessingService {
   public String getTagByAuthorityChange(AuthorityChange authorityChange) {
     var mappingRelations = mappingRulesService.getFieldTargetsMappingRelations();
     return mappingRelations.entrySet().stream()
-      .filter(mappingRelation -> containsIgnoreCase(mappingRelation.getValue(), authorityChange.getFieldName()))
+      .filter(mappingRelation -> mappingRelation.getValue().contains(authorityChange.getFieldName()))
       .map(Map.Entry::getKey)
       .findFirst()
       .orElseThrow(() -> new FolioIntegrationException(

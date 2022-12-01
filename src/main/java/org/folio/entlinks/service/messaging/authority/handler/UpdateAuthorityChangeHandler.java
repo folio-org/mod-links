@@ -1,21 +1,19 @@
 package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
+import static org.folio.entlinks.utils.ObjectUtils.getDifference;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
-import org.folio.entlinks.domain.dto.ChangeTarget;
+import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.FieldChange;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.InventoryEventType;
@@ -23,33 +21,52 @@ import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.exception.FolioIntegrationException;
+import org.folio.entlinks.exception.AuthorityBatchProcessingException;
+import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
-import org.folio.entlinks.repository.InstanceLinkRepository;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProcessingService;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
-import org.folio.entlinks.service.messaging.authority.model.SubfieldsHolder;
+import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
-@RequiredArgsConstructor
-public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
+public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler {
 
-  private final InstanceLinkRepository linkRepository;
-  private final InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
   private final AuthoritySourceFilesService sourceFilesService;
-  private final AuthorityMappingRulesProcessingService authorityMappingRulesProcessingService;
-  private final AuthoritySourceRecordService authoritySourceRecordService;
-  private final InstanceAuthorityLinkingRulesService instanceAuthorityLinkingRulesService;
+  private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
+  private final AuthoritySourceRecordService sourceRecordService;
+  private final InstanceAuthorityLinkingRulesService linkingRulesService;
   private final InstanceAuthorityLinkingService linkService;
+
+  public UpdateAuthorityChangeHandler(InstanceAuthorityChangeProperties instanceAuthorityChangeProperties,
+                                      AuthoritySourceFilesService sourceFilesService,
+                                      AuthorityMappingRulesProcessingService mappingRulesProcessingService,
+                                      AuthoritySourceRecordService sourceRecordService,
+                                      InstanceAuthorityLinkingRulesService linkingRulesService,
+                                      InstanceAuthorityLinkingService linkService) {
+    super(instanceAuthorityChangeProperties, linkService);
+    this.sourceFilesService = sourceFilesService;
+    this.mappingRulesProcessingService = mappingRulesProcessingService;
+    this.sourceRecordService = sourceRecordService;
+    this.linkingRulesService = linkingRulesService;
+    this.linkService = linkService;
+  }
+
+  @NotNull
+  private static List<FieldChange> getFieldChangesForNaturalId(SubfieldChange subfield0Change,
+                                                               List<InstanceAuthorityLink> instanceLinks) {
+    return instanceLinks.stream()
+      .map(InstanceAuthorityLink::getBibRecordTag)
+      .distinct()
+      .map(tag -> new FieldChange().field(tag).subfields(singletonList(subfield0Change)))
+      .toList();
+  }
 
   @Override
   public List<LinksChangeEvent> handle(List<InventoryEvent> events) {
@@ -58,119 +75,114 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
     }
 
     List<LinksChangeEvent> linksEvents = new ArrayList<>();
-
-    var authorityChanges = events.stream()
-      .map(event -> {
-        var difference = getDifference(event.getNew(), event.getOld());
-        if (difference.size() > 2 || difference.size() == 2 && difference.contains(AuthorityChange.NATURAL_ID)) {
-          throw new IllegalArgumentException("Unsupported authority change");
-        }
-        return new AuthorityChangeHolder(event, difference);
-      })
-      .toList();
-
-    var authorityChangesByType =
-      authorityChanges.stream().collect(Collectors.partitioningBy(AuthorityChangeHolder::isOnlyNaturalIdChanged));
-
-    authorityChangesByType.get(true).stream()
-      .map(this::handleNaturalIdChange)
-      .forEach(linksEvents::addAll);
-
-    authorityChangesByType.get(false).stream()
-      .map(this::handleFieldChange)
-      .forEach(linksEvents::addAll);
+    for (InventoryEvent event : events) {
+      try {
+        linksEvents.addAll(handle0(event));
+      } catch (AuthorityBatchProcessingException e) {
+        log.warn("Skipping authority change processing.", e);
+      }
+    }
 
     return linksEvents;
+  }
+
+  @Override
+  public LinksChangeEvent.TypeEnum getReplyEventType() {
+    return LinksChangeEvent.TypeEnum.UPDATE;
   }
 
   public InventoryEventType supportedInventoryEventType() {
     return InventoryEventType.UPDATE;
   }
 
-  private List<LinksChangeEvent> handleFieldChange(AuthorityChangeHolder changeHolder) {
-    List<LinksChangeEvent> linksEvents = new ArrayList<>();
-
-    var authorityId = changeHolder.getAuthorityId();
-    var naturalId = changeHolder.getNewNaturalId();
-    var naturalIdChanged = changeHolder.isNaturalIdChanged();
-
-    var subfield0Change = getSubfield0Change(changeHolder, naturalId, naturalIdChanged);
-
-    var authoritySourceRecord = authoritySourceRecordService.getAuthoritySourceRecordById(authorityId);
-    var changedTag = authorityMappingRulesProcessingService.getTagByAuthorityChange(changeHolder.getFieldChange());
-    var linkingRuleForField = instanceAuthorityLinkingRulesService.getLinkingRulesByAuthorityField(changedTag);
-
-    var dataField = authoritySourceRecord.content().getDataFields().stream()
-      .filter(field -> field.getTag().equals(changedTag))
-      .findFirst()
-      .orElseThrow(() -> new FolioIntegrationException("Source record don't contains [tag: " + changedTag + "]"));
-
-    var fieldsByBibTag = linkingRuleForField.stream()
-      .collect(Collectors.toMap(InstanceAuthorityLinkingRule::getBibField,
-        linkingRuleDto -> new SubfieldsHolder(dataField, linkingRuleDto)));
-
-    fieldsByBibTag.forEach((tag, subfields)
-      -> linkService.updateSubfieldsAndNaturalId(subfields.getBibSubfieldCodes(), naturalId, authorityId, tag));
-
-    var linksEventSubfieldsChanges = fieldsByBibTag.entrySet().stream()
-      .map(e -> {
-        var subfieldsChange = e.getValue().toSubfieldsChange();
-        subfield0Change.ifPresent(subfieldsChange::add);
-        return new FieldChange().field(e.getKey()).subfields(subfieldsChange);
-      })
-      .toList();
-
-    Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
-    do {
-      var linksPage = linkRepository.findByAuthorityId(authorityId, pageable);
-      var instanceLinks = linksPage.getContent();
-
-      var linksEvent = constructBaseEvent(authorityId, instanceLinks, linksEventSubfieldsChanges);
-      linksEvents.add(linksEvent);
-
-      pageable = linksPage.nextPageable();
-    } while (pageable.isPaged());
-
-    return linksEvents;
+  private List<LinksChangeEvent> handle0(InventoryEvent event) throws AuthorityBatchProcessingException {
+    var changeHolder = toAuthorityChangeHolder(event);
+    if (changeHolder.isOnlyNaturalIdChanged()) {
+      return handleNaturalIdChange(changeHolder);
+    } else {
+      return handleFieldChange(changeHolder);
+    }
   }
 
-  @NotNull
-  private Optional<SubfieldChange> getSubfield0Change(AuthorityChangeHolder changeHolder, String naturalId,
-                                                           boolean naturalIdChanged) {
-    Optional<SubfieldChange> subfield0Change = Optional.empty();
-    if (naturalIdChanged) {
-      subfield0Change = Optional.of(getSubfield0Value(naturalId, changeHolder.getNewSourceFileId()));
+  private AuthorityChangeHolder toAuthorityChangeHolder(InventoryEvent event) throws AuthorityBatchProcessingException {
+    var difference = getAuthorityChanges(event.getNew(), event.getOld());
+    if (difference.size() > 2 || difference.size() == 2 && difference.contains(AuthorityChange.NATURAL_ID)) {
+      throw new AuthorityBatchProcessingException(event.getId(),
+        "Unsupported authority change [authorityId: " + event.getId() + ", changed fields: " + difference + "]");
     }
-    return subfield0Change;
+    return new AuthorityChangeHolder(event, difference);
   }
 
   private List<LinksChangeEvent> handleNaturalIdChange(AuthorityChangeHolder changeHolder) {
-    List<LinksChangeEvent> linksEvents = new ArrayList<>();
-
     var authorityId = changeHolder.getAuthorityId();
     var naturalId = changeHolder.getNewNaturalId();
     linkService.updateNaturalId(naturalId, authorityId);
 
     var subfield0Change = getSubfield0Value(naturalId, changeHolder.getNewSourceFileId());
 
-    Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
-    do {
-      var linksPage = linkRepository.findByAuthorityId(authorityId, pageable);
-      var instanceLinks = linksPage.getContent();
+    return handleLinksByPartitions(authorityId,
+      instanceLinks -> {
+        var fieldChanges = getFieldChangesForNaturalId(subfield0Change, instanceLinks);
+        return constructEvent(UUID.randomUUID(), authorityId, instanceLinks, fieldChanges);
+      }
+    );
 
-      var subfieldsChanges = instanceLinks.stream()
-        .map(InstanceAuthorityLink::getBibRecordTag)
-        .distinct()
-        .map(tag -> new FieldChange().field(tag).subfields(singletonList(subfield0Change)))
-        .toList();
+  }
 
-      var linksEvent = constructBaseEvent(authorityId, instanceLinks, subfieldsChanges);
-      linksEvents.add(linksEvent);
+  private List<LinksChangeEvent> handleFieldChange(AuthorityChangeHolder changeHolder)
+    throws AuthorityBatchProcessingException {
+    var authorityId = changeHolder.getAuthorityId();
 
-      pageable = linksPage.nextPageable();
-    } while (pageable.isPaged());
+    var sourceRecord = sourceRecordService.getAuthoritySourceRecordById(authorityId);
+    var changedTag = mappingRulesProcessingService.getTagByAuthorityChange(changeHolder.getFieldChange());
+    var linkingRules = linkingRulesService.getLinkingRulesByAuthorityField(changedTag);
 
-    return linksEvents;
+    var fieldChangeHolders = getFieldChangeHolders(authorityId, sourceRecord, changedTag, linkingRules);
+    getSubfield0Change(changeHolder)
+      .ifPresent(subfieldChange -> fieldChangeHolders
+        .forEach(fieldChangeHolder -> fieldChangeHolder.setSubfield0Change(subfieldChange)));
+
+    updateLinksAccordingToChange(changeHolder, authorityId, fieldChangeHolders);
+
+    var fieldChanges = fieldChangeHolders.stream()
+      .map(FieldChangeHolder::toFieldChange)
+      .toList();
+
+    return handleLinksByPartitions(authorityId,
+      instanceLinks -> constructEvent(UUID.randomUUID(), authorityId, instanceLinks, fieldChanges)
+    );
+  }
+
+  private void updateLinksAccordingToChange(AuthorityChangeHolder changeHolder, UUID authorityId,
+                                            List<FieldChangeHolder> fieldChangeHolders) {
+    fieldChangeHolders.forEach(fieldChangeHolder -> {
+      var subfieldCodes = fieldChangeHolder.getBibSubfieldCodes();
+      var naturalId = changeHolder.getNewNaturalId();
+      linkService.updateSubfieldsAndNaturalId(subfieldCodes, naturalId, authorityId, fieldChangeHolder.getBibField());
+    });
+  }
+
+  private List<FieldChangeHolder> getFieldChangeHolders(UUID authorityId,
+                                                        AuthoritySourceRecord authoritySourceRecord,
+                                                        String changedTag,
+                                                        List<InstanceAuthorityLinkingRule> linkingRuleForField)
+    throws AuthorityBatchProcessingException {
+    var dataField = authoritySourceRecord.content().getDataFields().stream()
+      .filter(field -> field.getTag().equals(changedTag))
+      .findFirst()
+      .orElseThrow(() -> new AuthorityBatchProcessingException(authorityId,
+        "Source record don't contains [authorityId: " + authorityId + ", tag: " + changedTag + "]"));
+
+    return linkingRuleForField.stream()
+      .map(linkingRule -> new FieldChangeHolder(dataField, linkingRule))
+      .toList();
+  }
+
+  private Optional<SubfieldChange> getSubfield0Change(AuthorityChangeHolder changeHolder) {
+    if (changeHolder.isNaturalIdChanged()) {
+      return Optional.of(getSubfield0Value(changeHolder.getNewNaturalId(), changeHolder.getNewSourceFileId()));
+    }
+    return Optional.empty();
   }
 
   private SubfieldChange getSubfield0Value(String naturalId, UUID sourceFileId) {
@@ -182,43 +194,19 @@ public class UpdateAuthorityChangeHandler implements AuthorityChangeHandler {
     return new SubfieldChange().code("0").value(subfield0Value + naturalId);
   }
 
-  private List<ChangeTarget> toEventMarcBibs(List<InstanceAuthorityLink> partition) {
-    return partition.stream()
-      .collect(Collectors.groupingBy(InstanceAuthorityLink::getBibRecordTag))
-      .entrySet().stream()
-      .map(e -> new ChangeTarget().field(e.getKey())
-        .instanceIds(e.getValue().stream().map(InstanceAuthorityLink::getInstanceId).toList()))
-      .toList();
-  }
-
-  private LinksChangeEvent constructBaseEvent(UUID authorityId, List<InstanceAuthorityLink> partition,
-                                        List<FieldChange> subfieldChanges) {
-    return new LinksChangeEvent().jobId(UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e"))
-      .type(LinksChangeEvent.TypeEnum.UPDATE)
-      .authorityId(authorityId)
-      .updateTargets(toEventMarcBibs(partition))
-      .subfieldsChanges(subfieldChanges)
-      .ts(String.valueOf(System.currentTimeMillis()));
-  }
-
   @SneakyThrows
-  private List<AuthorityChange> getDifference(Object s1, Object s2) {
-    List<AuthorityChange> values = new ArrayList<>();
-    for (Method method : s1.getClass().getMethods()) {
-      if (method.getName().startsWith("get")) {
-        var value1 = method.invoke(s1);
-        var value2 = method.invoke(s2);
-        if (!Objects.equals(value1, value2)) {
-          var fieldName = method.getName().substring(3);
-          try {
-            values.add(AuthorityChange.fromValue(fieldName));
-          } catch (IllegalArgumentException e) {
-            log.debug("Not supported authority change [fieldName: {}]", fieldName);
-          }
+  private List<AuthorityChange> getAuthorityChanges(AuthorityInventoryRecord s1, AuthorityInventoryRecord s2) {
+    return getDifference(s1, s2).stream()
+      .map(fieldName -> {
+        try {
+          return AuthorityChange.fromValue(fieldName);
+        } catch (IllegalArgumentException e) {
+          log.debug("Not supported authority change [fieldName: {}]", fieldName);
+          return null;
         }
-      }
-    }
-    return values;
+      })
+      .filter(Objects::nonNull)
+      .toList();
   }
 
 }

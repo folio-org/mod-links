@@ -3,6 +3,7 @@ package org.folio.entlinks.controller;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.folio.support.TestUtils.Link.TAGS;
+import static org.folio.support.TestUtils.asJson;
 import static org.folio.support.TestUtils.linksDto;
 import static org.folio.support.TestUtils.linksDtoCollection;
 import static org.folio.support.base.TestConstants.authoritiesLinksCountEndpoint;
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,6 +26,8 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
+import org.folio.entlinks.domain.dto.LinksCountDto;
+import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
 import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.spring.test.extension.DatabaseCleanup;
@@ -340,10 +344,11 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
     doPost(authoritiesLinksCountEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(linksMatch(hasSize(2)))
-      .andExpect(jsonPath("$.links.[0].id", is(authorityId.toString())))
-      .andExpect(jsonPath("$.links.[0].totalLinks", is(2)))
-      .andExpect(jsonPath("$.links.[1].id", is(secondAuthorityId.toString())))
-      .andExpect(jsonPath("$.links.[1].totalLinks", is(1)));
+      .andExpect(content().json(asJson(new LinksCountDtoCollection().links(
+        List.of(
+          new LinksCountDto().id(secondAuthorityId).totalLinks(1L),
+          new LinksCountDto().id(authorityId).totalLinks(2L)
+        )))));
   }
 
   @Test

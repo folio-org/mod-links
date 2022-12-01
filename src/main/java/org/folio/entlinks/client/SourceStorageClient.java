@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient("source-storage")
 public interface SourceStorageClient {
 
-  @GetMapping("/source-records/{id}")
+  @GetMapping("/source-records/{id}?idType=AUTHORITY")
   SourceRecord getMarcAuthorityById(@PathVariable("id") UUID id);
 }

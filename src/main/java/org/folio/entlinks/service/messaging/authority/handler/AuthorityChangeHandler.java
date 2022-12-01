@@ -9,5 +9,8 @@ public interface AuthorityChangeHandler {
 
   List<LinksChangeEvent> handle(List<InventoryEvent> events);
 
+  LinksChangeEvent.TypeEnum getReplyEventType();
+
   InventoryEventType supportedInventoryEventType();
+
 }

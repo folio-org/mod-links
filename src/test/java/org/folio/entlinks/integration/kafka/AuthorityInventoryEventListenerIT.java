@@ -1,4 +1,4 @@
-package org.folio.entlinks.integration;
+package org.folio.entlinks.integration.kafka;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
@@ -122,7 +122,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
       ));
-    assertions.then(value.getSubfieldsChanges()).as("Subfield changes").isNull();
+    assertions.then(value.getSubfieldsChanges()).as("Subfield changes").isEmpty();
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
     assertions.then(value.getTs()).as("Timestamp").isNotNull();
 
@@ -241,38 +241,37 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
       ));
-    assertions.then(value.getSubfieldsChanges()).as("Subfield changes")
-      .isEqualTo(List.of(
-        new FieldChange().field("100").subfields(List.of(
-          new SubfieldChange().code("a").value("Lansing, John"),
-          new SubfieldChange().code("d").value("1756-1791."),
-          new SubfieldChange().code("q").value("(Jules)")
-        )),
-        new FieldChange().field("600").subfields(List.of(
-          new SubfieldChange().code("a").value("Lansing, John"),
-          new SubfieldChange().code("d").value("1756-1791."),
-          new SubfieldChange().code("i").value("book"),
-          new SubfieldChange().code("q").value("(Jules)"),
-          new SubfieldChange().code("t").value("Black Eagles")
-        )),
-        new FieldChange().field("700").subfields(List.of(
-          new SubfieldChange().code("a").value("Lansing, John"),
-          new SubfieldChange().code("d").value("1756-1791."),
-          new SubfieldChange().code("i").value("book"),
-          new SubfieldChange().code("q").value("(Jules)"),
-          new SubfieldChange().code("t").value("Black Eagles")
-        )),
-        new FieldChange().field("800").subfields(List.of(
-          new SubfieldChange().code("a").value("Lansing, John"),
-          new SubfieldChange().code("d").value("1756-1791."),
-          new SubfieldChange().code("i").value("book"),
-          new SubfieldChange().code("q").value("(Jules)"),
-          new SubfieldChange().code("t").value("Black Eagles")
-        )),
-        new FieldChange().field("240").subfields(List.of(
-          new SubfieldChange().code("a").value("Black Eagles")
-        ))
-      ));
+    assertions.then(value.getSubfieldsChanges()).as("Subfield changes").containsExactlyInAnyOrder(
+      new FieldChange().field("100").subfields(List.of(
+        new SubfieldChange().code("a").value("Lansing, John"),
+        new SubfieldChange().code("d").value("1756-1791."),
+        new SubfieldChange().code("q").value("(Jules)")
+      )),
+      new FieldChange().field("600").subfields(List.of(
+        new SubfieldChange().code("a").value("Lansing, John"),
+        new SubfieldChange().code("d").value("1756-1791."),
+        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("q").value("(Jules)"),
+        new SubfieldChange().code("t").value("Black Eagles")
+      )),
+      new FieldChange().field("700").subfields(List.of(
+        new SubfieldChange().code("a").value("Lansing, John"),
+        new SubfieldChange().code("d").value("1756-1791."),
+        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("q").value("(Jules)"),
+        new SubfieldChange().code("t").value("Black Eagles")
+      )),
+      new FieldChange().field("800").subfields(List.of(
+        new SubfieldChange().code("a").value("Lansing, John"),
+        new SubfieldChange().code("d").value("1756-1791."),
+        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("q").value("(Jules)"),
+        new SubfieldChange().code("t").value("Black Eagles")
+      )),
+      new FieldChange().field("240").subfields(List.of(
+        new SubfieldChange().code("a").value("Black Eagles")
+      ))
+    );
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
     assertions.then(value.getTs()).as("Timestamp").isNotNull();
 

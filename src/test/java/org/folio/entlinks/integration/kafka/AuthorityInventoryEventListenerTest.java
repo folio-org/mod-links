@@ -1,6 +1,6 @@
-package org.folio.entlinks.integration;
+package org.folio.entlinks.integration.kafka;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -18,7 +17,6 @@ import java.util.function.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InventoryEvent;
-import org.folio.entlinks.integration.kafka.AuthorityInventoryEventListener;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.InstanceAuthorityLinkUpdateService;
 import org.folio.spring.test.type.UnitTest;
@@ -72,7 +70,7 @@ class AuthorityInventoryEventListenerTest {
     mockSuccessHandling();
     when(consumerRecord.key()).thenReturn(authId.toString());
     when(consumerRecord.value()).thenReturn(event);
-    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(Map.of(authId, 1L));
+    when(linkingService.retainAuthoritiesIdsWithLinks(Set.of(authId))).thenReturn(Set.of(authId));
 
     listener.handleEvents(singletonList(consumerRecord));
 
@@ -90,7 +88,7 @@ class AuthorityInventoryEventListenerTest {
     mockSuccessHandling();
     when(consumerRecord.key()).thenReturn(authId.toString());
     when(consumerRecord.value()).thenReturn(event);
-    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(emptyMap());
+    when(linkingService.retainAuthoritiesIdsWithLinks(Set.of(authId))).thenReturn(emptySet());
 
     listener.handleEvents(singletonList(consumerRecord));
 
@@ -107,7 +105,7 @@ class AuthorityInventoryEventListenerTest {
     mockFailedHandling(new RuntimeException("test message"));
     when(consumerRecord.key()).thenReturn(authId.toString());
     when(consumerRecord.value()).thenReturn(event);
-    when(linkingService.countLinksByAuthorityIds(Set.of(authId))).thenReturn(Map.of(authId, 1L));
+    when(linkingService.retainAuthoritiesIdsWithLinks(Set.of(authId))).thenReturn(Set.of(authId));
 
     listener.handleEvents(singletonList(consumerRecord));
 
