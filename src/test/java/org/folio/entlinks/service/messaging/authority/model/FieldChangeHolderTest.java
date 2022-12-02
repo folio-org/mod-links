@@ -81,4 +81,29 @@ class FieldChangeHolderTest {
         new SubfieldChange().code("0").value("0-data")
       ));
   }
+
+  @Test
+  void toFieldChange_positive_whenSubfield0ChangeWasTryingToAddButItNull() {
+    var dataField = new DataFieldImpl("100", '0', '0');
+    dataField.addSubfield(new SubfieldImpl('h', "h-data"));
+    dataField.addSubfield(new SubfieldImpl('a', "a-data"));
+    dataField.addSubfield(new SubfieldImpl('d', "d-data"));
+    dataField.addSubfield(new SubfieldImpl('t', "t-data"));
+    var linkingRule = new InstanceAuthorityLinkingRule();
+    linkingRule.setAuthorityField("100");
+    linkingRule.setBibField("240");
+    linkingRule.setAuthoritySubfields(new char[] {'a', 'g', 'h', 'k'});
+
+    var fieldChangeHolder = new FieldChangeHolder(dataField, linkingRule);
+    fieldChangeHolder.addExtraSubfieldChange(null);
+
+    var actual = fieldChangeHolder.toFieldChange();
+
+    assertThat(actual)
+      .extracting(FieldChange::getField, FieldChange::getSubfields)
+      .contains(linkingRule.getBibField(), List.of(
+        new SubfieldChange().code("a").value("a-data"),
+        new SubfieldChange().code("h").value("h-data")
+      ));
+  }
 }
