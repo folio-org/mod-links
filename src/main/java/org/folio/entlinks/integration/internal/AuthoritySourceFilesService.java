@@ -7,12 +7,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.AuthoritySourceFileClient;
 import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class AuthoritySourceFilesService {
@@ -23,6 +25,7 @@ public class AuthoritySourceFilesService {
              key = "@folioExecutionContext.tenantId",
              unless = "#result.isEmpty()")
   public Map<UUID, String> fetchAuthoritySourceUrls() throws FolioIntegrationException {
+    log.info("Fetching authority source files");
     var authoritySourceFiles = fetchAuthoritySourceFiles();
     if (authoritySourceFiles.isEmpty()) {
       throw new FolioIntegrationException("Authority source files are empty.");

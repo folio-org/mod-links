@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.domain.dto.SourceRecord;
@@ -15,6 +16,7 @@ import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.Record;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class AuthoritySourceRecordService {
@@ -23,6 +25,7 @@ public class AuthoritySourceRecordService {
   private final ObjectMapper objectMapper;
 
   public AuthoritySourceRecord getAuthoritySourceRecordById(UUID authorityId) {
+    log.info("Fetching source record [authorityId: {}]", authorityId);
     SourceRecord sourceRecord = fetchSourceRecord(authorityId);
     var content = extractMarcRecord(sourceRecord.getParsedRecord());
     return new AuthoritySourceRecord(authorityId, sourceRecord.getSnapshotId(), content);

@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.MappingRulesClient;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class MappingRulesService {
@@ -21,6 +23,7 @@ public class MappingRulesService {
              key = "@folioExecutionContext.tenantId",
              unless = "#result.isEmpty()")
   public Map<String, List<String>> getFieldTargetsMappingRelations() {
+    log.info("Fetching authority mapping rules");
     var mappingRules = fetchMappingRules();
     return mappingRules.entrySet().stream()
       .collect(Collectors.toMap(Map.Entry::getKey, rulesList ->
