@@ -42,7 +42,7 @@ spring:
     cache-names:
       - authority-source-files-cache
       - authority-mapping-rules-cache
-      - authority-tag-to-field-cache
+      - authority-linking-rules-cache
     caffeine:
       spec: maximumSize=500,expireAfterWrite=3600s
 

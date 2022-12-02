@@ -31,7 +31,6 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -42,30 +41,20 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
   private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private final AuthoritySourceRecordService sourceRecordService;
   private final InstanceAuthorityLinkingRulesService linkingRulesService;
-  private final InstanceAuthorityLinkingService linkService;
+  private final InstanceAuthorityLinkingService linkingService;
 
   public UpdateAuthorityChangeHandler(InstanceAuthorityChangeProperties instanceAuthorityChangeProperties,
                                       AuthoritySourceFilesService sourceFilesService,
                                       AuthorityMappingRulesProcessingService mappingRulesProcessingService,
                                       AuthoritySourceRecordService sourceRecordService,
                                       InstanceAuthorityLinkingRulesService linkingRulesService,
-                                      InstanceAuthorityLinkingService linkService) {
-    super(instanceAuthorityChangeProperties, linkService);
+                                      InstanceAuthorityLinkingService linkingService) {
+    super(instanceAuthorityChangeProperties, linkingService);
     this.sourceFilesService = sourceFilesService;
     this.mappingRulesProcessingService = mappingRulesProcessingService;
     this.sourceRecordService = sourceRecordService;
     this.linkingRulesService = linkingRulesService;
-    this.linkService = linkService;
-  }
-
-  @NotNull
-  private static List<FieldChange> getFieldChangesForNaturalId(SubfieldChange subfield0Change,
-                                                               List<InstanceAuthorityLink> instanceLinks) {
-    return instanceLinks.stream()
-      .map(InstanceAuthorityLink::getBibRecordTag)
-      .distinct()
-      .map(tag -> new FieldChange().field(tag).subfields(singletonList(subfield0Change)))
-      .toList();
+    this.linkingService = linkingService;
   }
 
   @Override
@@ -91,8 +80,18 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     return LinksChangeEvent.TypeEnum.UPDATE;
   }
 
+  @Override
   public InventoryEventType supportedInventoryEventType() {
     return InventoryEventType.UPDATE;
+  }
+
+  private List<FieldChange> getFieldChangesForNaturalId(SubfieldChange subfield0Change,
+                                                        List<InstanceAuthorityLink> instanceLinks) {
+    return instanceLinks.stream()
+      .map(InstanceAuthorityLink::getBibRecordTag)
+      .distinct()
+      .map(tag -> new FieldChange().field(tag).subfields(singletonList(subfield0Change)))
+      .toList();
   }
 
   private List<LinksChangeEvent> handle0(InventoryEvent event) throws AuthorityBatchProcessingException {
@@ -116,7 +115,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
   private List<LinksChangeEvent> handleNaturalIdChange(AuthorityChangeHolder changeHolder) {
     var authorityId = changeHolder.getAuthorityId();
     var naturalId = changeHolder.getNewNaturalId();
-    linkService.updateNaturalId(naturalId, authorityId);
+    linkingService.updateNaturalId(naturalId, authorityId);
 
     var subfield0Change = getSubfield0Value(naturalId, changeHolder.getNewSourceFileId());
 
@@ -139,8 +138,8 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
 
     var fieldChangeHolders = getFieldChangeHolders(authorityId, sourceRecord, changedTag, linkingRules);
     getSubfield0Change(changeHolder)
-      .ifPresent(subfieldChange -> fieldChangeHolders
-        .forEach(fieldChangeHolder -> fieldChangeHolder.setSubfield0Change(subfieldChange)));
+      .ifPresent(subfield0Change -> fieldChangeHolders
+        .forEach(fieldChangeHolder -> fieldChangeHolder.addExtraSubfieldChange(subfield0Change)));
 
     updateLinksAccordingToChange(changeHolder, authorityId, fieldChangeHolders);
 
@@ -158,7 +157,8 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     fieldChangeHolders.forEach(fieldChangeHolder -> {
       var subfieldCodes = fieldChangeHolder.getBibSubfieldCodes();
       var naturalId = changeHolder.getNewNaturalId();
-      linkService.updateSubfieldsAndNaturalId(subfieldCodes, naturalId, authorityId, fieldChangeHolder.getBibField());
+      linkingService.updateSubfieldsAndNaturalId(subfieldCodes, naturalId, authorityId,
+        fieldChangeHolder.getBibField());
     });
   }
 

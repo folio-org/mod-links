@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 public abstract class AbstractAuthorityChangeHandler implements AuthorityChangeHandler {
 
   private final InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
-  private final InstanceAuthorityLinkingService linkService;
+  private final InstanceAuthorityLinkingService linkingService;
 
   protected List<LinksChangeEvent> handleLinksByPartitions(UUID authorityId,
                                                            Function<List<InstanceAuthorityLink>,
@@ -27,7 +27,7 @@ public abstract class AbstractAuthorityChangeHandler implements AuthorityChangeH
     List<LinksChangeEvent> linksEvents = new ArrayList<>();
     Pageable pageable = PageRequest.of(0, instanceAuthorityChangeProperties.getNumPartitions());
     do {
-      var linksPage = linkService.getLinksByAuthorityId(authorityId, pageable);
+      var linksPage = linkingService.getLinksByAuthorityId(authorityId, pageable);
       var instanceLinks = linksPage.getContent();
 
       linksEvents.add(function.apply(instanceLinks));

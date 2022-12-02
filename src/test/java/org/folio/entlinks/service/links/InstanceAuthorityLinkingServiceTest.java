@@ -280,7 +280,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateNaturalId() {
+  void updateNaturalId_positive() {
     var naturalId = "naturalId";
     var authorityId = randomUUID();
 
@@ -290,7 +290,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void updateSubfieldsAndNaturalId() {
+  void updateSubfieldsAndNaturalId_positive() {
     var subfields = new char[] {'a', 'b'};
     var naturalId = "naturalId";
     var authorityId = randomUUID();
@@ -302,7 +302,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   @Test
-  void deleteByAuthorityIdIn() {
+  void deleteByAuthorityIdIn_positive() {
     var authorityId = randomUUID();
     var authorityIds = Set.of(authorityId);
 

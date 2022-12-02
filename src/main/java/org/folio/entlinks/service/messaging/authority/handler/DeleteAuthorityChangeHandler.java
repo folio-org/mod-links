@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler {
 
-  private final InstanceAuthorityLinkingService linkService;
+  private final InstanceAuthorityLinkingService linkingService;
 
-  public DeleteAuthorityChangeHandler(InstanceAuthorityLinkingService linkService,
+  public DeleteAuthorityChangeHandler(InstanceAuthorityLinkingService linkingService,
                                       InstanceAuthorityChangeProperties instanceAuthorityChangeProperties) {
-    super(instanceAuthorityChangeProperties, linkService);
-    this.linkService = linkService;
+    super(instanceAuthorityChangeProperties, linkingService);
+    this.linkingService = linkingService;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     }
 
 
-    linkService.deleteByAuthorityIdIn(events.stream().map(InventoryEvent::getId).collect(Collectors.toSet()));
+    linkingService.deleteByAuthorityIdIn(events.stream().map(InventoryEvent::getId).collect(Collectors.toSet()));
     return linksEvents;
   }
 

@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import lombok.Setter;
 import org.bouncycastle.util.Arrays;
 import org.folio.entlinks.domain.dto.FieldChange;
 import org.folio.entlinks.domain.dto.SubfieldChange;
@@ -23,12 +22,18 @@ public class FieldChangeHolder {
 
   private final List<Subfield> bibSubfields;
 
-  private @Setter SubfieldChange subfield0Change;
+  private final List<SubfieldChange> extraSubfieldChanges = new ArrayList<>();
 
   public FieldChangeHolder(DataField dataField, InstanceAuthorityLinkingRule linkingRule) {
     this.linkingRule = linkingRule;
     this.bibField = linkingRule.getBibField();
     this.bibSubfields = getBibSubfields(dataField.getSubfields());
+  }
+
+  public void addExtraSubfieldChange(SubfieldChange change) {
+    if (change != null) {
+      extraSubfieldChanges.add(change);
+    }
   }
 
   public char[] getBibSubfieldCodes() {
@@ -41,13 +46,13 @@ public class FieldChangeHolder {
 
   public FieldChange toFieldChange() {
     var subfieldChanges = toSubfieldsChange();
-    if (subfield0Change != null) {
-      subfieldChanges.add(subfield0Change);
+    if (!extraSubfieldChanges.isEmpty()) {
+      subfieldChanges.addAll(extraSubfieldChanges);
     }
     return new FieldChange().field(getBibField()).subfields(subfieldChanges);
   }
 
-  public List<SubfieldChange> toSubfieldsChange() {
+  private List<SubfieldChange> toSubfieldsChange() {
     return bibSubfields.stream()
       .map(subfield -> new SubfieldChange()
         .code(Character.toString(subfield.getCode()))
