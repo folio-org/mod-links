@@ -57,7 +57,7 @@
       <column name="authority_field" type="CHAR(3)">
         <constraints nullable="false"/>
       </column>
-      <column name="authority_subfields" type="VARCHAR(30)">
+      <column name="authority_subfields" type="VARCHAR(50)">
         <constraints nullable="false"/>
       </column>
       <column name="subfield_modifications" type="jsonb"/>
@@ -92,6 +92,21 @@
     </sql>
   </changeSet>
 
+  <changeSet id="MODELINKS-18@@add-unique-constant-bib-authority-fields" author="Pavlo_Smahin">
+    <preConditions>
+      <and>
+        <tableExists tableName="instance_authority_linking_rule"/>
+        <columnExists tableName="instance_authority_linking_rule" columnName="bib_field"/>
+        <columnExists tableName="instance_authority_linking_rule" columnName="authority_field"/>
+      </and>
+    </preConditions>
+
+    <comment>Add unique constant for bib_field and authority_field to instance_authority_linking_rule</comment>
+
+    <addUniqueConstraint tableName="instance_authority_linking_rule" columnNames="bib_field, authority_field"
+                         constraintName="unq_bib_field_authority_fields"/>
+  </changeSet>
+
   <changeSet id="MODELINKS-18@@drop-linking-rules-table" author="Pavlo_Smahin">
     <preConditions>
       <tableExists tableName="linking_rules"/>
@@ -101,5 +116,6 @@
 
     <dropTable tableName="linking_rules"/>
   </changeSet>
+
 
 </databaseChangeLog>
