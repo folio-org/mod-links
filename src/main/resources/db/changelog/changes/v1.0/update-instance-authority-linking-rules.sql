@@ -1,6 +1,5 @@
-INSERT INTO linking_rules (linking_pair_type, jsonb)
-VALUES ('INSTANCE_AUTHORITY', '
-[
+UPDATE linking_rules
+SET jsonb = '[
   {
     "bibField": "100",
     "authorityField": "100",
@@ -188,6 +187,5 @@ VALUES ('INSTANCE_AUTHORITY', '
     "subfieldModifications": [],
     "validation": {}
   }
-]
-')
-ON CONFLICT (linking_pair_type) DO UPDATE SET jsonb = EXCLUDED.jsonb;
+]'
+WHERE linking_pair_type = 'INSTANCE_AUTHORITY'
