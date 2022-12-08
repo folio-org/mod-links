@@ -33,7 +33,6 @@ public class AuthoritySourceFilesService {
 
     return authoritySourceFiles.stream()
       .collect(Collectors.toMap(AuthoritySourceFile::id, AuthoritySourceFile::baseUrl));
-
   }
 
   private List<AuthoritySourceFile> fetchAuthoritySourceFiles() {

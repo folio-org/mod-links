@@ -14,12 +14,12 @@
     <comment>Create linking_rules table</comment>
 
     <createTable tableName="linking_rules">
-      <column name="linking_pair_type" type="VARCHAR(20)">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_linking_rules"/>
-      </column>
-      <column name="jsonb" type="JSONB">
-        <constraints nullable="false"/>
-      </column>
+        <column name="linking_pair_type" type="VARCHAR(20)">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="pk_linking_rules"/>
+        </column>
+        <column name="jsonb" type="JSONB">
+            <constraints nullable="false"/>
+        </column>
     </createTable>
   </changeSet>
 
@@ -34,6 +34,13 @@
 
     <sqlFile dbms="postgresql"
              path="populate-instance-authority-linking-rules.sql"
+             relativeToChangelogFile="true"
+             splitStatements="false"/>
+  </changeSet>
+
+  <changeSet id="MODELINKS-24@@update-instance-authority-linking-rules" author="Shans_Kaluhin">
+    <sqlFile dbms="postgresql"
+             path="update-instance-authority-linking-rules.sql"
              relativeToChangelogFile="true"
              splitStatements="false"/>
   </changeSet>
@@ -116,6 +123,5 @@
 
     <dropTable tableName="linking_rules"/>
   </changeSet>
-
 
 </databaseChangeLog>
