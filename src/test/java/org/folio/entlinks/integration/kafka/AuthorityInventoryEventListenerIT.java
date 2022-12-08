@@ -250,26 +250,27 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
       new FieldChange().field("600").subfields(List.of(
         new SubfieldChange().code("a").value("Lansing, John"),
         new SubfieldChange().code("d").value("1756-1791."),
-        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("l").value("book"),
         new SubfieldChange().code("q").value("(Jules)"),
         new SubfieldChange().code("t").value("Black Eagles")
       )),
       new FieldChange().field("700").subfields(List.of(
         new SubfieldChange().code("a").value("Lansing, John"),
         new SubfieldChange().code("d").value("1756-1791."),
-        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("l").value("book"),
         new SubfieldChange().code("q").value("(Jules)"),
         new SubfieldChange().code("t").value("Black Eagles")
       )),
       new FieldChange().field("800").subfields(List.of(
         new SubfieldChange().code("a").value("Lansing, John"),
         new SubfieldChange().code("d").value("1756-1791."),
-        new SubfieldChange().code("i").value("book"),
+        new SubfieldChange().code("l").value("book"),
         new SubfieldChange().code("q").value("(Jules)"),
         new SubfieldChange().code("t").value("Black Eagles")
       )),
       new FieldChange().field("240").subfields(List.of(
-        new SubfieldChange().code("a").value("Black Eagles")
+        new SubfieldChange().code("a").value("Black Eagles"),
+        new SubfieldChange().code("l").value("book")
       ))
     );
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
@@ -281,7 +282,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     doGet(linksInstanceEndpoint(), instanceId1)
       .andExpect(jsonPath("$.links[0].bibRecordSubfields", containsInAnyOrder("a", "d", "q")));
     doGet(linksInstanceEndpoint(), instanceId2)
-      .andExpect(jsonPath("$.links[0].bibRecordSubfields", containsInAnyOrder("a")));
+      .andExpect(jsonPath("$.links[0].bibRecordSubfields", containsInAnyOrder("a", "l")));
   }
 
   @Nullable
