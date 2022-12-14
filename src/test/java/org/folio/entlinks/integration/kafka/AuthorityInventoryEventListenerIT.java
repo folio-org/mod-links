@@ -98,12 +98,70 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
 
-    var event = TestUtils.authorityEvent("DELETE",
-      new AuthorityInventoryRecord().id(link1.authorityId()), null);
+    var event = TestUtils.authorityEvent("DELETE", null,
+      new AuthorityInventoryRecord().id(link1.authorityId()));
     sendKafkaMessage(inventoryAuthorityTopic(), link1.authorityId().toString(), event);
 
     var received = getReceivedEvent();
 
+    // check sent event fields
+    var assertions = new BDDSoftAssertions();
+    assertions.then(received).isNotNull();
+
+    var headers = requireNonNull(received).headers();
+    assertions.then(headers)
+      .as("Headers")
+      .extracting(Header::key)
+      .contains(XOkapiHeaders.TENANT, XOkapiHeaders.URL, XOkapiHeaders.TOKEN);
+
+    var value = received.value();
+    assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
+    assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+    assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
+    assertions.then(value.getUpdateTargets()).as("Update targets")
+      .isEqualTo(List.of(
+        updateTarget(link1.tag(), instanceId1, instanceId3),
+        updateTarget(link2.tag(), instanceId2)
+      ));
+    assertions.then(value.getSubfieldsChanges()).as("Subfield changes").isEmpty();
+    assertions.then(value.getJobId()).as("Job ID").isNotNull();
+    assertions.then(value.getTs()).as("Timestamp").isNotNull();
+
+    assertions.assertAll();
+
+    // check that links were deleted
+    doGet(linksInstanceEndpoint(), instanceId1)
+      .andExpect(jsonPath("$.links", hasSize(0)));
+    doGet(linksInstanceEndpoint(), instanceId2)
+      .andExpect(jsonPath("$.links", hasSize(0)));
+    doGet(linksInstanceEndpoint(), instanceId3)
+      .andExpect(jsonPath("$.links", hasSize(0)));
+  }
+
+  @SneakyThrows
+  @Test
+  void shouldHandleUpdateEvent_positive_whenAuthorityLinkExistAndFieldChangedFromOneToAnother() {
+    // prepare links
+    var authorityId = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
+    var instanceId1 = UUID.randomUUID();
+    var instanceId2 = UUID.randomUUID();
+    var instanceId3 = UUID.randomUUID();
+    var link1 = new TestUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
+    var link2 = new TestUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
+    var link3 = new TestUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
+    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
+    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
+    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
+
+    // prepare and send inventory update authority event
+    var event = TestUtils.authorityEvent("UPDATE",
+      new AuthorityInventoryRecord().id(authorityId).personalName("new personal name").naturalId("naturalId"),
+      new AuthorityInventoryRecord().id(authorityId).personalNameTitle("old").naturalId("naturalId"));
+    sendKafkaMessage(inventoryAuthorityTopic(), authorityId.toString(), event);
+
+    var received = getReceivedEvent();
+
+    // check sent event fields
     var assertions = new BDDSoftAssertions();
     assertions.then(received).isNotNull();
 
