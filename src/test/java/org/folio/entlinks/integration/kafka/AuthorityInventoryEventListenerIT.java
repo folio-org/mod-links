@@ -28,6 +28,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.BDDSoftAssertions;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.ChangeTarget;
+import org.folio.entlinks.domain.dto.ChangeTargetLink;
 import org.folio.entlinks.domain.dto.FieldChange;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.SubfieldChange;
@@ -37,6 +38,7 @@ import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.TestUtils;
 import org.folio.support.base.IntegrationTestBase;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +61,16 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
   @Autowired
   private KafkaProperties kafkaProperties;
+
+  @NotNull
+  private static List<ChangeTarget> getChangeTargets(LinksChangeEvent value) {
+    for (ChangeTarget changeTarget : value.getUpdateTargets()) {
+      for (ChangeTargetLink l : changeTarget.getLinks()) {
+        l.setLinkId(null);
+      }
+    }
+    return value.getUpdateTargets();
+  }
 
   @BeforeEach
   void setUp() {
@@ -118,7 +130,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
-    assertions.then(value.getUpdateTargets()).as("Update targets")
+    assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
@@ -175,7 +187,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
-    assertions.then(value.getUpdateTargets()).as("Update targets")
+    assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
@@ -229,7 +241,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
-    assertions.then(value.getUpdateTargets()).as("Update targets")
+    assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
@@ -294,7 +306,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
-    assertions.then(value.getUpdateTargets()).as("Update targets")
+    assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
         updateTarget(link1.tag(), instanceId1, instanceId3),
         updateTarget(link2.tag(), instanceId2)
@@ -350,7 +362,9 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
   }
 
   private ChangeTarget updateTarget(String tag, UUID... instanceIds) {
-    return new ChangeTarget().field(tag).instanceIds(Arrays.asList(instanceIds));
+    return new ChangeTarget().field(tag).links(Arrays.asList(instanceIds).stream()
+      .map(uuid -> new ChangeTargetLink().instanceId(uuid))
+      .toList());
   }
 
 }

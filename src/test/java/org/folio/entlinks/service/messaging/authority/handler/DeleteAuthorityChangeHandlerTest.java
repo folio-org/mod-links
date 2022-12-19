@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.ChangeTarget;
+import org.folio.entlinks.domain.dto.ChangeTargetLink;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -107,6 +108,7 @@ class DeleteAuthorityChangeHandlerTest {
   }
 
   private ChangeTarget changeTarget(UUID instanceId, TestUtils.Link link) {
-    return new ChangeTarget().field(link.tag()).instanceIds(Collections.singletonList(instanceId));
+    return new ChangeTarget().field(link.tag()).links(
+      Collections.singletonList(new ChangeTargetLink().instanceId(instanceId)));
   }
 }
