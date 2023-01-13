@@ -52,7 +52,7 @@ import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 @IntegrationTest
-@DatabaseCleanup(tables = "instance_link")
+@DatabaseCleanup(tables = "instance_authority_link")
 class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
 
   private KafkaMessageListenerContainer<String, LinksChangeEvent> container;

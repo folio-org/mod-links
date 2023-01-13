@@ -1,5 +1,6 @@
 package org.folio.entlinks.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,28 +17,26 @@ public interface InstanceLinkRepository extends JpaRepository<InstanceAuthorityL
 
   List<InstanceAuthorityLink> findByInstanceId(UUID instanceId);
 
-  Page<InstanceAuthorityLink> findByAuthorityId(UUID instanceId, Pageable pageable);
+  @Query("select l from InstanceAuthorityLink l where l.authorityData.id = :id order by l.id")
+  Page<InstanceAuthorityLink> findByAuthorityId(@Param("id") UUID id, Pageable pageable);
 
-  @Modifying
-  @Query("DELETE FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds")
-  void deleteByAuthorityIdIn(@Param("authorityIds") Set<UUID> authorityIds);
-
-  @Query("SELECT il.authorityId AS id,"
-    + " COUNT(DISTINCT il.instanceId) AS totalLinks"
-    + " FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds"
-    + " GROUP BY id")
+  @Query("select l.AuthorityData.id as id,"
+    + " count(distinct l.instanceId) as totalLinks"
+    + " from instanceAuthorityLink l where l.AuthorityData.id in :authorityIds"
+    + " group by id")
   List<LinkCountView> countLinksByAuthorityIds(@Param("authorityIds") Set<UUID> authorityIds);
 
-  @Query("SELECT il.authorityId FROM InstanceAuthorityLink il WHERE il.authorityId IN :authorityIds")
+  @Query("select l.authorityData.id from InstanceAuthorityLink l where l.authorityData.id in :authorityIds")
   Set<UUID> findAuthorityIdsWithLinks(@Param("authorityIds") Set<UUID> authorityIds);
 
   @Modifying
-  @Query("UPDATE InstanceAuthorityLink il SET il.authorityNaturalId = :naturalId, il.bibRecordSubfields = :subfields "
-    + "WHERE il.authorityId = :authorityId AND il.bibRecordTag = :tag")
-  void updateSubfieldsAndNaturalId(@Param("subfields") char[] subfields, @Param("naturalId") String naturalId,
-                                   @Param("authorityId") UUID authorityId, @Param("tag") String tag);
+  @Query("update InstanceAuthorityLink l SET l.bibRecordSubfields = :subfields "
+    + "where l.authorityData.id = :authorityId and l.bibRecordTag = :tag")
+  void updateSubfieldsByAuthorityIdAndTag(@Param("subfields") char[] subfields, @Param("authorityId") UUID authorityId,
+                                          @Param("tag") String tag);
 
   @Modifying
-  @Query("UPDATE InstanceAuthorityLink il SET il.authorityNaturalId = :naturalId WHERE il.authorityId = :authorityId")
-  void updateNaturalId(@Param("naturalId") String naturalId, @Param("authorityId") UUID authorityId);
+  @Query("delete from InstanceAuthorityLink i where i.authorityData.id in :authorityIds")
+  void deleteByAuthorityDataIn(@Param("authorityIds") Collection<UUID> authorityIds);
+
 }

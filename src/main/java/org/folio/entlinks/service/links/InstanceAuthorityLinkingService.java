@@ -24,17 +24,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class InstanceAuthorityLinkingService {
 
-  private final InstanceLinkRepository repository;
+  private final InstanceLinkRepository instanceLinkRepository;
+  private final AuthorityDataService authorityDataService;
 
   public List<InstanceAuthorityLink> getLinksByInstanceId(UUID instanceId) {
     log.info("Loading links for [instanceId: {}]", instanceId);
-    return repository.findByInstanceId(instanceId);
+    return instanceLinkRepository.findByInstanceId(instanceId);
   }
 
   public Page<InstanceAuthorityLink> getLinksByAuthorityId(UUID authorityId, Pageable pageable) {
     log.info("Loading links for [authorityId: {}, page size: {}, page num: {}]", authorityId,
       pageable.getPageSize(), pageable.getOffset());
-    return repository.findByAuthorityId(authorityId, pageable);
+    return instanceLinkRepository.findByAuthorityId(authorityId, pageable);
   }
 
   @Transactional
@@ -44,12 +45,24 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Update links for [instanceId: {}, links amount: {}]", instanceId, incomingLinks.size());
     }
-    var existedLinks = repository.findByInstanceId(instanceId);
+
+    var authorityDataSet = incomingLinks.stream()
+      .map(InstanceAuthorityLink::getAuthorityData)
+      .collect(Collectors.toSet());
+
+    var existedAuthorityData = authorityDataService.saveAll(authorityDataSet);
+
+    for (InstanceAuthorityLink incomingLink : incomingLinks) {
+      var linkAuthorityData = incomingLink.getAuthorityData();
+      var authorityData =  existedAuthorityData.get(linkAuthorityData.getId());
+      incomingLink.setAuthorityData(authorityData);
+    }
+    var existedLinks = instanceLinkRepository.findByInstanceId(instanceId);
 
     var linksToDelete = subtract(existedLinks, incomingLinks);
     var linksToSave = getLinksToSave(incomingLinks, existedLinks, linksToDelete);
-    repository.deleteAllInBatch(linksToDelete);
-    repository.saveAll(linksToSave);
+    instanceLinkRepository.deleteAllInBatch(linksToDelete);
+    instanceLinkRepository.saveAll(linksToSave);
   }
 
   public Map<UUID, Long> countLinksByAuthorityIds(Set<UUID> authorityIds) {
@@ -58,28 +71,21 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Count links for [authority ids amount: {}]", authorityIds.size());
     }
-    return repository.countLinksByAuthorityIds(authorityIds).stream()
+    return instanceLinkRepository.countLinksByAuthorityIds(authorityIds).stream()
       .collect(Collectors.toMap(LinkCountView::getId, LinkCountView::getTotalLinks));
   }
 
   public Set<UUID> retainAuthoritiesIdsWithLinks(Set<UUID> authorityIds) {
-    var authorityIdsWithLinks = repository.findAuthorityIdsWithLinks(authorityIds);
+    var authorityIdsWithLinks = instanceLinkRepository.findAuthorityIdsWithLinks(authorityIds);
     var result = new HashSet<>(authorityIds);
     result.retainAll(authorityIdsWithLinks);
     return result;
   }
 
   @Transactional
-  public void updateNaturalId(String naturalId, UUID authorityId) {
-    log.info("Update links [authority id: {}, natural id: {}]", authorityId, naturalId);
-    repository.updateNaturalId(naturalId, authorityId);
-  }
-
-  @Transactional
-  public void updateSubfieldsAndNaturalId(char[] subfields, String naturalId, UUID authorityId, String tag) {
-    log.info("Update links [authority id: {}, tag: {}, natural id: {}, subfields: {}]",
-      authorityId, tag, naturalId, subfields);
-    repository.updateSubfieldsAndNaturalId(subfields, naturalId, authorityId, tag);
+  public void updateSubfields(char[] subfields, UUID authorityId, String tag) {
+    log.info("Update links [authority id: {}, tag: {}, subfields: {}]", authorityId, tag, subfields);
+    instanceLinkRepository.updateSubfieldsByAuthorityIdAndTag(subfields, authorityId, tag);
   }
 
   @Transactional
@@ -89,7 +95,8 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Delete links for [authority ids amount: {}]", authorityIds.size());
     }
-    repository.deleteByAuthorityIdIn(authorityIds);
+    instanceLinkRepository.deleteByAuthorityDataIn(authorityIds);
+    authorityDataService.markDeleted(authorityIds);
   }
 
   private List<InstanceAuthorityLink> getLinksToSave(List<InstanceAuthorityLink> incomingLinks,
@@ -107,7 +114,7 @@ public class InstanceAuthorityLinkingService {
     linksToUpdate
       .forEach(link -> incomingLinks.stream().filter(l -> l.isSameLink(link)).findFirst()
         .ifPresent(l -> {
-          link.setAuthorityNaturalId(l.getAuthorityNaturalId());
+          link.getAuthorityData().setNaturalId(l.getAuthorityData().getNaturalId());
           link.setBibRecordSubfields(l.getBibRecordSubfields());
         }));
   }
