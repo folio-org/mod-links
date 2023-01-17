@@ -162,7 +162,7 @@
     <comment>Create authority_data_stat table</comment>
 
     <createTable tableName="authority_data_stat">
-      <column autoIncrement="true" name="id" type="BIGINT">
+      <column name="id" type="UUID">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_authority_data_stat"/>
       </column>
       <column name="authority_id" type="UUID"/>

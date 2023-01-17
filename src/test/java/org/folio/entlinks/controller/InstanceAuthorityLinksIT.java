@@ -346,8 +346,8 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
       .andExpect(linksMatch(hasSize(2)))
       .andExpect(content().json(asJson(new LinksCountDtoCollection().links(
         List.of(
-          new LinksCountDto().id(secondAuthorityId).totalLinks(1L),
-          new LinksCountDto().id(authorityId).totalLinks(2L)
+          new LinksCountDto().id(secondAuthorityId).totalLinks(1),
+          new LinksCountDto().id(authorityId).totalLinks(2)
         )))));
   }
 

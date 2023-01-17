@@ -64,8 +64,8 @@ public class InstanceAuthorityLink {
   @Convert(converter = StringToCharArrayConverter.class)
   private char[] bibRecordSubfields;
 
-  @Column(name = "status", nullable = false)
   @Type(type = "enum")
+  @Column(name = "status", nullable = false)
   private InstanceAuthorityLinkStatus status;
 
   @Column(name = "error_cause")

@@ -31,7 +31,7 @@ public interface InstanceAuthorityLinkMapper {
 
   List<InstanceAuthorityLink> convertDto(List<InstanceLinkDto> source);
 
-  default List<LinksCountDto> convert(Map<UUID, Long> source) {
+  default List<LinksCountDto> convert(Map<UUID, Integer> source) {
     return source.entrySet().stream()
       .map(e -> new LinksCountDto().id(e.getKey()).totalLinks(e.getValue()))
       .toList();

@@ -1,14 +1,11 @@
 package org.folio.entlinks.domain.entity;
 
+import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -20,6 +17,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -31,20 +30,20 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Setter
 @ToString
 @Table(name = "authority_data_stat")
+@TypeDef(name = "enum", typeClass = PostgreSQLEnumType.class)
 public class AuthorityDataStat {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
-  private Long id;
+  private UUID id;
 
   @ToString.Exclude
   @ManyToOne
   @JoinColumn(name = "authority_id")
   private AuthorityData authorityData;
 
+  @Type(type = "enum")
   @Column(name = "action", nullable = false)
-  @Enumerated(EnumType.STRING)
   private AuthorityDataStatAction action;
 
   @Column(name = "authority_natural_id_old")
@@ -80,8 +79,8 @@ public class AuthorityDataStat {
   @Column(name = "lb_failed")
   private int lbFailed;
 
+  @Type(type = "enum")
   @Column(name = "status", nullable = false)
-  @Enumerated(EnumType.STRING)
   private AuthorityDataStatStatus status;
 
   @Column(name = "fail_cause")

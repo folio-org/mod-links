@@ -1,14 +1,13 @@
 package org.folio.entlinks.service.links;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.AuthorityData;
-import org.folio.entlinks.repository.AuthorityDataRepository;
+import org.folio.entlinks.domain.repository.AuthorityDataRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthorityDataService {
 
   private final AuthorityDataRepository repository;
-
-  public List<AuthorityData> findByIds(Collection<UUID> ids) {
-    if (log.isDebugEnabled()) {
-      log.debug("Fetching authority data [authority ids: {}]", ids);
-    } else {
-      log.info("Fetching authority data for {} authority ids", ids.size());
-    }
-    return repository.findAllById(ids);
-  }
 
   public Map<UUID, AuthorityData> saveAll(Collection<AuthorityData> authorityDataSet) {
     if (log.isDebugEnabled()) {

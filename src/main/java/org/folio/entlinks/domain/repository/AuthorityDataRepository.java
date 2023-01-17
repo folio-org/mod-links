@@ -1,4 +1,4 @@
-package org.folio.entlinks.repository;
+package org.folio.entlinks.domain.repository;
 
 import java.util.Collection;
 import java.util.UUID;

@@ -111,7 +111,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
 
     var event = TestUtils.authorityEvent("DELETE", null,
-      new AuthorityInventoryRecord().id(link1.authorityId()));
+      new AuthorityInventoryRecord().id(link1.authorityId()).naturalId("oldNaturalId"));
     sendKafkaMessage(inventoryAuthorityTopic(), link1.authorityId().toString(), event);
 
     var received = getReceivedEvent();

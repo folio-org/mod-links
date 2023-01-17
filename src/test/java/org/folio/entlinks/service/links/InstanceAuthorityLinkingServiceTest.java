@@ -11,14 +11,16 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
-import org.folio.entlinks.domain.projection.LinkCountView;
-import org.folio.entlinks.repository.AuthorityDataRepository;
-import org.folio.entlinks.repository.InstanceLinkRepository;
+import org.folio.entlinks.domain.entity.projection.LinkCountView;
+import org.folio.entlinks.domain.repository.InstanceLinkRepository;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.support.TestUtils.Link;
 import org.junit.jupiter.api.Test;
@@ -37,7 +39,7 @@ class InstanceAuthorityLinkingServiceTest {
   @Mock
   private InstanceLinkRepository instanceLinkRepository;
   @Mock
-  private AuthorityDataRepository authorityDataRepository;
+  private AuthorityDataService authorityDataService;
 
   @InjectMocks
   private InstanceAuthorityLinkingService service;
@@ -158,6 +160,7 @@ class InstanceAuthorityLinkingServiceTest {
       Link.of(3, 2)
     );
 
+    mockSavingAuthorityData();
     when(instanceLinkRepository.findByInstanceId(instanceId)).thenReturn(existedLinks);
     doNothing().when(instanceLinkRepository).deleteAllInBatch(any());
     when(instanceLinkRepository.saveAll(any())).thenReturn(emptyList());
@@ -192,6 +195,7 @@ class InstanceAuthorityLinkingServiceTest {
       Link.of(3, 3)
     );
 
+    mockSavingAuthorityData();
     when(instanceLinkRepository.findByInstanceId(instanceId)).thenReturn(existedLinks);
     doNothing().when(instanceLinkRepository).deleteAllInBatch(any());
     when(instanceLinkRepository.saveAll(any())).thenReturn(emptyList());
@@ -226,6 +230,7 @@ class InstanceAuthorityLinkingServiceTest {
       Link.of(3, 2)
     );
 
+    mockSavingAuthorityData();
     when(instanceLinkRepository.findByInstanceId(instanceId)).thenReturn(existedLinks);
     doNothing().when(instanceLinkRepository).deleteAllInBatch(any());
     when(instanceLinkRepository.saveAll(any())).thenReturn(emptyList());
@@ -263,23 +268,7 @@ class InstanceAuthorityLinkingServiceTest {
 
     assertThat(result)
       .hasSize(2)
-      .contains(entry(authorityId1, 10L), entry(authorityId2, 15L));
-  }
-
-  @Test
-  void retainAuthoritiesIdsWithLinks_positive() {
-    var authorityId1 = randomUUID();
-    var authorityId2 = randomUUID();
-    var authorityId3 = randomUUID();
-
-    when(instanceLinkRepository.findAuthorityIdsWithLinks(anySet())).thenReturn(Set.of(authorityId1, authorityId2));
-
-    var authorityIds = Set.of(authorityId1, authorityId2, authorityId3);
-    var result = service.retainAuthoritiesIdsWithLinks(authorityIds);
-
-    assertThat(result)
-      .hasSize(2)
-      .contains(authorityId1, authorityId2);
+      .contains(entry(authorityId1, 10), entry(authorityId2, 15));
   }
 
   @Test
@@ -300,7 +289,14 @@ class InstanceAuthorityLinkingServiceTest {
 
     service.deleteByAuthorityIdIn(authorityIds);
 
-    verify(authorityDataRepository).deleteAllByIdInBatch(authorityIds);
+    verify(instanceLinkRepository).deleteByAuthorityIds(authorityIds);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void mockSavingAuthorityData() {
+    when(authorityDataService.saveAll(any(Collection.class)))
+      .thenAnswer(invocation -> ((Collection<AuthorityData>) invocation.getArgument(0)).stream()
+        .collect(Collectors.toMap(AuthorityData::getId, a -> a)));
   }
 
   private ArgumentCaptor<List<InstanceAuthorityLink>> linksCaptor() {
@@ -308,7 +304,7 @@ class InstanceAuthorityLinkingServiceTest {
     return ArgumentCaptor.forClass(listClass);
   }
 
-  private LinkCountView linkCountView(UUID id, long totalLinks) {
+  private LinkCountView linkCountView(UUID id, int totalLinks) {
     return new LinkCountView() {
       @Override
       public UUID getId() {
@@ -316,7 +312,7 @@ class InstanceAuthorityLinkingServiceTest {
       }
 
       @Override
-      public Long getTotalLinks() {
+      public Integer getTotalLinks() {
         return totalLinks;
       }
     };

@@ -101,7 +101,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     return handleLinksByPartitions(authorityId,
       instanceLinks -> {
         var fieldChanges = getFieldChangesForNaturalId(subfield0Change, instanceLinks);
-        return constructEvent(UUID.randomUUID(), authorityId, instanceLinks, fieldChanges);
+        return constructEvent(changeHolder.getAuthorityDataStatId(), authorityId, instanceLinks, fieldChanges);
       }
     );
   }
@@ -120,7 +120,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     var authorityId = changeHolder.getAuthorityId();
 
     var sourceRecord = sourceRecordService.getAuthoritySourceRecordById(authorityId);
-    var changedTag = mappingRulesProcessingService.getTagByAuthorityChange(changeHolder.getFieldChange());
+    var changedTag = mappingRulesProcessingService.getTagByAuthorityChangeField(changeHolder.getFieldChange());
     var linkingRules = linkingRulesService.getLinkingRulesByAuthorityField(changedTag);
 
     var fieldChangeHolders = getFieldChangeHolders(authorityId, sourceRecord, changedTag, linkingRules);
@@ -135,7 +135,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
       .toList();
 
     return handleLinksByPartitions(authorityId,
-      instanceLinks -> constructEvent(UUID.randomUUID(), authorityId, instanceLinks, fieldChanges)
+      instanceLinks -> constructEvent(changeHolder.getAuthorityDataStatId(), authorityId, instanceLinks, fieldChanges)
     );
   }
 

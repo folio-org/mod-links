@@ -2,7 +2,6 @@ package org.folio.entlinks.service.links;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +11,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
-import org.folio.entlinks.domain.projection.LinkCountView;
-import org.folio.entlinks.repository.InstanceLinkRepository;
+import org.folio.entlinks.domain.entity.projection.LinkCountView;
+import org.folio.entlinks.domain.repository.InstanceLinkRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -54,7 +53,7 @@ public class InstanceAuthorityLinkingService {
 
     for (InstanceAuthorityLink incomingLink : incomingLinks) {
       var linkAuthorityData = incomingLink.getAuthorityData();
-      var authorityData =  existedAuthorityData.get(linkAuthorityData.getId());
+      var authorityData = existedAuthorityData.get(linkAuthorityData.getId());
       incomingLink.setAuthorityData(authorityData);
     }
     var existedLinks = instanceLinkRepository.findByInstanceId(instanceId);
@@ -65,7 +64,7 @@ public class InstanceAuthorityLinkingService {
     instanceLinkRepository.saveAll(linksToSave);
   }
 
-  public Map<UUID, Long> countLinksByAuthorityIds(Set<UUID> authorityIds) {
+  public Map<UUID, Integer> countLinksByAuthorityIds(Set<UUID> authorityIds) {
     if (log.isDebugEnabled()) {
       log.info("Count links for [authority ids: {}]", authorityIds);
     } else {
@@ -73,13 +72,6 @@ public class InstanceAuthorityLinkingService {
     }
     return instanceLinkRepository.countLinksByAuthorityIds(authorityIds).stream()
       .collect(Collectors.toMap(LinkCountView::getId, LinkCountView::getTotalLinks));
-  }
-
-  public Set<UUID> retainAuthoritiesIdsWithLinks(Set<UUID> authorityIds) {
-    var authorityIdsWithLinks = instanceLinkRepository.findAuthorityIdsWithLinks(authorityIds);
-    var result = new HashSet<>(authorityIds);
-    result.retainAll(authorityIdsWithLinks);
-    return result;
   }
 
   @Transactional
@@ -95,7 +87,7 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Delete links for [authority ids amount: {}]", authorityIds.size());
     }
-    instanceLinkRepository.deleteByAuthorityDataIn(authorityIds);
+    instanceLinkRepository.deleteByAuthorityIds(authorityIds);
     authorityDataService.markDeleted(authorityIds);
   }
 
