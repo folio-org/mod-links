@@ -35,6 +35,7 @@ public class AuthorityDataService {
 
   @Transactional
   public void markDeleted(Collection<UUID> ids) {
+    log.info("Update authority data [authority ids: {}, deleted: true]", ids);
     repository.updateDeletedByIdIn(ids);
   }
 }
