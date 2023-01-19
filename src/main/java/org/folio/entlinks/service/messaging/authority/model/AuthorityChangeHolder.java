@@ -59,11 +59,15 @@ public class AuthorityChangeHolder {
   }
 
   public AuthorityChangeType getChangeType() {
-    var eventType = InventoryEventType.fromValue(event.getType());
-    return switch (eventType) {
-      case UPDATE -> fieldChangedUnexpected() ? AuthorityChangeType.DELETE : AuthorityChangeType.UPDATE;
+    return switch (getInventoryEventType()) {
+      case UPDATE -> isHeadingTypeChanged() ? AuthorityChangeType.DELETE : AuthorityChangeType.UPDATE;
       case DELETE -> AuthorityChangeType.DELETE;
     };
+  }
+
+  @NotNull
+  private InventoryEventType getInventoryEventType() {
+    return InventoryEventType.fromValue(event.getType());
   }
 
   public AuthorityChangeField getFieldChange() {
@@ -87,8 +91,9 @@ public class AuthorityChangeHolder {
 
     if (changeMap.size() == 1) {
       var changeEntry = changeMap.entrySet().iterator().next();
-      headingNew = changeEntry.getValue().valNew().toString();
-      headingOld = changeEntry.getValue().valOld().toString();
+      var entryValue = changeEntry.getValue();
+      headingNew = entryValue.valNew() != null ? entryValue.valNew().toString() : null;
+      headingOld = entryValue.valOld() != null ? entryValue.valOld().toString() : null;
       var headingType = getHeadingType(changeEntry);
       headingTypeNew = headingType;
       headingTypeOld = headingType;
@@ -123,7 +128,7 @@ public class AuthorityChangeHolder {
   }
 
   private AuthorityDataStatAction getAuthorityDataStatAction() {
-    return switch (getChangeType()) {
+    return switch (getInventoryEventType()) {
       case UPDATE -> isOnlyNaturalIdChanged()
                      ? AuthorityDataStatAction.UPDATE_NATURAL_ID
                      : AuthorityDataStatAction.UPDATE_HEADING;
@@ -145,7 +150,7 @@ public class AuthorityChangeHolder {
     return inventoryRecord != null ? inventoryRecord.getSourceFileId() : null;
   }
 
-  private boolean fieldChangedUnexpected() {
+  private boolean isHeadingTypeChanged() {
     return changes.size() > 2 || changes.size() == 2 && !changes.containsKey(AuthorityChangeField.NATURAL_ID);
   }
 
