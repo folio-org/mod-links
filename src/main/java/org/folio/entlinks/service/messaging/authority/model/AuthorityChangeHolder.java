@@ -65,11 +65,6 @@ public class AuthorityChangeHolder {
     };
   }
 
-  @NotNull
-  private InventoryEventType getInventoryEventType() {
-    return InventoryEventType.fromValue(event.getType());
-  }
-
   public AuthorityChangeField getFieldChange() {
     if (changes.isEmpty() || isOnlyNaturalIdChanged()) {
       return null;
@@ -125,6 +120,11 @@ public class AuthorityChangeHolder {
       .action(getAuthorityDataStatAction())
       .lbTotal(numberOfLinks)
       .build();
+  }
+
+  @NotNull
+  private InventoryEventType getInventoryEventType() {
+    return InventoryEventType.fromValue(event.getType());
   }
 
   private AuthorityDataStatAction getAuthorityDataStatAction() {
