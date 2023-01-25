@@ -1,13 +1,17 @@
 package org.folio.entlinks.service.links;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
+import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStatStatus;
 import org.folio.entlinks.domain.repository.AuthorityDataStatRepository;
+import org.folio.entlinks.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -33,5 +37,11 @@ public class AuthorityDataStatService {
     }
 
     return statRepository.saveAll(stats);
+  }
+
+  public List<AuthorityDataStat> fetchDataStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+                                                AuthorityDataStatActionDto action, int limit) {
+    return statRepository.findByDateAndAction(AuthorityDataStatAction.valueOf(action.getValue()),
+      DateUtils.toTimestamp(fromDate), DateUtils.toTimestamp(toDate), limit);
   }
 }
