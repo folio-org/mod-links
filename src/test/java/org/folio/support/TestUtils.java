@@ -13,12 +13,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
+import org.folio.entlinks.client.UsersClient;
+import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.entity.AuthorityData;
+import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
+import org.folio.spring.tools.model.ResultList;
 
 public class TestUtils {
 
@@ -33,7 +37,7 @@ public class TestUtils {
   }
 
   public static InventoryEvent inventoryEvent(String resource, String type,
-                                              AuthorityInventoryRecord n, AuthorityInventoryRecord o) {
+    AuthorityInventoryRecord n, AuthorityInventoryRecord o) {
     return new InventoryEvent().type(type).resourceName(resource).tenant(TENANT_ID)._new(n).old(o);
   }
 
@@ -58,10 +62,45 @@ public class TestUtils {
     return new String(Files.readAllBytes(getFile(filePath).toPath()));
   }
 
-  public record Link(UUID authorityId, String tag, String naturalId, char[] subfields) {
+  public static List<AuthorityDataStat> dataStatList(UUID userId1, UUID userId2) {
+    return List.of(
+      AuthorityDataStat.builder().id(UUID.randomUUID()).startedByUserId(userId1).build(),
+      AuthorityDataStat.builder().id(UUID.randomUUID()).startedByUserId(userId2).build()
+    );
+  }
 
-    public static final UUID[] AUTH_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID(), randomUUID()};
-    public static final String[] TAGS = new String[] {"100", "101", "700", "710"};
+  public static List<AuthorityDataStatDto> dataStatListDto() {
+    return List.of();
+  }
+
+  public static ResultList<UsersClient.User> usersList(List<UUID> userIds) {
+    return ResultList.of(2, List.of(
+      new UsersClient.User(
+        userIds.get(0).toString(),
+        "john_doe",
+        true,
+        new UsersClient.User.Personal("John", "Doe")
+      ),
+      new UsersClient.User(
+        userIds.get(1).toString(),
+        "quick_fox",
+        true,
+        new UsersClient.User.Personal("Quick", "Brown")
+      )
+    ));
+  }
+
+  public static AuthorityDataStatDto getStatDataDto(AuthorityDataStat dataStat) {
+    AuthorityDataStatDto dto = new AuthorityDataStatDto();
+    dto.setAuthorityId(dataStat.getId());
+    return dto;
+  }
+
+  public record Link(UUID authorityId, String tag, String naturalId,
+                     char[] subfields) {
+
+    public static final UUID[] AUTH_IDS = new UUID[]{randomUUID(), randomUUID(), randomUUID(), randomUUID()};
+    public static final String[] TAGS = new String[]{"100", "101", "700", "710"};
 
     public Link(UUID authorityId, String tag) {
       this(authorityId, tag, authorityId.toString(), new char[]{'a', 'b'});

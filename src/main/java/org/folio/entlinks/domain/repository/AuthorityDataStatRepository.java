@@ -12,11 +12,11 @@ import org.springframework.lang.Nullable;
 
 public interface AuthorityDataStatRepository extends JpaRepository<AuthorityDataStat, UUID> {
 
-  @Query("""
-    select a from AuthorityDataStat a
-    where a.action = :action and a.startedAt between :startedAtStart and :startedAtEnd
-    limit :limit
-    order by a.startedAt DESC""")
+  @Query(value = """
+    select * from authority_data_stat
+    where action = :action and started_at between :startedAtStart and :startedAtEnd
+    order by started_at DESC
+    limit :limit""", nativeQuery = true)
   List<AuthorityDataStat> findByDateAndAction(@Param("action") AuthorityDataStatAction action,
                                               @Param("startedAtStart") @Nullable Timestamp startedAtStart,
                                               @Param("startedAtEnd") @Nullable Timestamp startedAtEnd,
