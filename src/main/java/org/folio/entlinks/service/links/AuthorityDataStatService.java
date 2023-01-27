@@ -50,6 +50,8 @@ public class AuthorityDataStatService {
 
   @Transactional
   public void updateForReports(UUID jobId, List<LinkUpdateReport> reports) {
+    log.info("Updating links, stats for reports: [jobId: {}, reports count: {}]", jobId, reports.size());
+    log.debug("Updating links,stats for reports: [reports: {}]", reports);
     updateLinks(reports);
     updateStatsData(jobId, reports);
   }
@@ -109,6 +111,8 @@ public class AuthorityDataStatService {
       updateStatStatus(dataStat);
     }
 
+    log.info("Saving stats data [statsId: {}, status: {}]", dataStat.getId(), dataStat.getStatus());
+    log.debug("Stats data: {}", dataStat);
     statRepository.save(dataStat);
   }
 
