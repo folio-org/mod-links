@@ -41,7 +41,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthorityDataStatServiceTest {
 
   private static final String REPORT_ERROR = "error";
-  private static final String STAT_ERROR = "error | error";
 
   private final Timestamp testStartTime = new Timestamp(System.currentTimeMillis());
 
@@ -121,7 +120,7 @@ class AuthorityDataStatServiceTest {
     var dataStat = dataStatCaptor.getValue();
 
     assertDataStat(dataStat,
-      successReports.size(), failReports.size(), STAT_ERROR, AuthorityDataStatStatus.IN_PROGRESS);
+      successReports.size(), failReports.size(), AuthorityDataStatStatus.IN_PROGRESS);
   }
 
   @Test
@@ -136,7 +135,7 @@ class AuthorityDataStatServiceTest {
     verify(statRepository).save(dataStatCaptor.capture());
     var dataStat = dataStatCaptor.getValue();
 
-    assertDataStat(dataStat, reports.size(), 0, null, AuthorityDataStatStatus.COMPLETED_SUCCESS);
+    assertDataStat(dataStat, reports.size(), 0, AuthorityDataStatStatus.COMPLETED_SUCCESS);
   }
 
   @Test
@@ -155,7 +154,7 @@ class AuthorityDataStatServiceTest {
     var dataStat = dataStatCaptor.getValue();
 
     assertDataStat(dataStat,
-      successReports.size(), failReports.size(), STAT_ERROR, AuthorityDataStatStatus.COMPLETED_WITH_ERRORS);
+      successReports.size(), failReports.size(), AuthorityDataStatStatus.COMPLETED_WITH_ERRORS);
   }
 
   @Test
@@ -170,7 +169,7 @@ class AuthorityDataStatServiceTest {
     verify(statRepository).save(dataStatCaptor.capture());
     var dataStat = dataStatCaptor.getValue();
 
-    assertDataStat(dataStat, 0, reports.size(), STAT_ERROR, AuthorityDataStatStatus.FAILED);
+    assertDataStat(dataStat, 0, reports.size(), AuthorityDataStatStatus.FAILED);
   }
 
   private Consumer<InstanceAuthorityLink> linkAsserter(InstanceAuthorityLinkStatus status, String errorCause) {
@@ -181,8 +180,7 @@ class AuthorityDataStatServiceTest {
     };
   }
 
-  private void assertDataStat(AuthorityDataStat dataStat,
-                              int updated, int failed, String failCause, AuthorityDataStatStatus status) {
+  private void assertDataStat(AuthorityDataStat dataStat, int updated, int failed, AuthorityDataStatStatus status) {
     var softAssertions = new SoftAssertions();
 
     softAssertions.assertThat(dataStat.getLbUpdated())
@@ -190,7 +188,7 @@ class AuthorityDataStatServiceTest {
     softAssertions.assertThat(dataStat.getLbFailed())
       .isEqualTo(failed);
     softAssertions.assertThat(dataStat.getFailCause())
-      .isEqualTo(failCause);
+      .isBlank();
     softAssertions.assertThat(dataStat.getStatus())
       .isEqualTo(status);
     if (status.equals(AuthorityDataStatStatus.IN_PROGRESS)) {

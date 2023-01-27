@@ -146,7 +146,7 @@ class InstanceAuthorityStatsEventListenerIT extends IntegrationTestBase {
     softAssertions.assertThat(dataStat.getLbFailed())
       .isEqualTo(1);
     softAssertions.assertThat(dataStat.getFailCause())
-      .isEqualTo(failCause);
+      .isBlank();
     softAssertions.assertThat(dataStat.getStatus())
       .isEqualTo(AuthorityDataStatStatus.FAILED);
     softAssertions.assertThat(dataStat.getCompletedAt())

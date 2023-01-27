@@ -1,7 +1,6 @@
 package org.folio.entlinks.service.links;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.folio.entlinks.domain.dto.LinkUpdateReport.StatusEnum.FAIL;
 import static org.folio.entlinks.domain.dto.LinkUpdateReport.StatusEnum.SUCCESS;
 
@@ -11,7 +10,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatStatus;
@@ -24,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthorityDataStatService {
-
-  private static final String FAIL_CAUSE_DELIMITER = " | ";
 
   private final AuthorityDataStatRepository statRepository;
 
@@ -76,15 +72,11 @@ public class AuthorityDataStatService {
   }
 
   private InstanceAuthorityLinkStatus mapReportStatus(LinkUpdateReport report) {
-    switch (report.getStatus()) {
-      case SUCCESS -> {
-        return InstanceAuthorityLinkStatus.ACTUAL;
-      }
-      case FAIL -> {
-        return InstanceAuthorityLinkStatus.ERROR;
-      }
+    return switch (report.getStatus()) {
+      case SUCCESS -> InstanceAuthorityLinkStatus.ACTUAL;
+      case FAIL -> InstanceAuthorityLinkStatus.ERROR;
       default -> throw new IllegalArgumentException("Unknown link update report status.");
-    }
+    };
   }
 
   /**
@@ -99,9 +91,6 @@ public class AuthorityDataStatService {
     var failedCount = getReportCountForStatus(reports, FAIL);
     var successCount = getReportCountForStatus(reports, SUCCESS);
 
-    if (failedCount != 0) {
-      dataStat.setFailCause(getStatFailCause(dataStat, reports));
-    }
     dataStat.setLbUpdated(dataStat.getLbUpdated() + successCount);
     dataStat.setLbFailed(dataStat.getLbFailed() + failedCount);
 
@@ -120,23 +109,6 @@ public class AuthorityDataStatService {
     return (int) reports.stream()
       .filter(linkUpdateReport -> linkUpdateReport.getStatus().equals(status))
       .count();
-  }
-
-  private String getStatFailCause(AuthorityDataStat dataStat, List<LinkUpdateReport> reports) {
-    var newFailCause = reports.stream()
-      .map(LinkUpdateReport::getFailCause)
-      .filter(StringUtils::isNotBlank)
-      .collect(Collectors.joining(FAIL_CAUSE_DELIMITER));
-
-    if (isBlank(newFailCause)) {
-      return dataStat.getFailCause();
-    }
-
-    if (isBlank(dataStat.getFailCause())) {
-      return newFailCause;
-    }
-
-    return dataStat.getFailCause() + FAIL_CAUSE_DELIMITER + newFailCause;
   }
 
   private void updateStatStatus(AuthorityDataStat dataStat) {
