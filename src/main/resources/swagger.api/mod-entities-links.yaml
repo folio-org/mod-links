@@ -497,6 +497,9 @@ components:
           description: User's last name that triggers record
           type: string
 
+    linkUpdateReport:
+      $ref: schemas/linkUpdateReport.json
+
   responses:
     badRequestResponse:
       description: Validation errors.
