@@ -26,7 +26,7 @@ public class InstanceAuthorityStatServiceDelegate {
 
   public AuthorityChangeStatDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
                                                                    AuthorityDataStatActionDto action, Integer limit) {
-    List<AuthorityDataStat> dataStatList = dataStatService.fetchDataStats(fromDate, toDate, action, limit);
+    List<AuthorityDataStat> dataStatList = dataStatService.fetchDataStats(fromDate, toDate, action, limit + 1);
 
     Optional<AuthorityDataStat> last = Optional.empty();
     if (dataStatList.size() > limit) {
@@ -53,9 +53,13 @@ public class InstanceAuthorityStatServiceDelegate {
     var user = userResultList.getResult()
       .stream()
       .filter(u -> UUID.fromString(u.id()).equals(source.getStartedByUserId()))
-      .findFirst().orElseThrow();
+      .findFirst().orElse(null);
+    if (user == null) {
+      return null;
+    }
+
     Metadata metadata = new Metadata();
-    metadata.setStartedByUserFirstName(user.username());
+    metadata.setStartedByUserFirstName(user.personal().firstName());
     metadata.setStartedByUserLastName(user.personal().lastName());
     metadata.setStartedByUserId(UUID.fromString(user.id()));
     return metadata;

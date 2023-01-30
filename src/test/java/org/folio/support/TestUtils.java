@@ -14,13 +14,16 @@ import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.client.UsersClient;
+import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.InventoryEvent;
+import org.folio.entlinks.domain.dto.Metadata;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
+import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.spring.tools.model.ResultList;
 
@@ -64,13 +67,47 @@ public class TestUtils {
 
   public static List<AuthorityDataStat> dataStatList(UUID userId1, UUID userId2) {
     return List.of(
-      AuthorityDataStat.builder().id(UUID.randomUUID()).startedByUserId(userId1).build(),
-      AuthorityDataStat.builder().id(UUID.randomUUID()).startedByUserId(userId2).build()
+      AuthorityDataStat.builder()
+        .id(randomUUID())
+        .action(AuthorityDataStatAction.UPDATE_HEADING)
+        .authorityData(AuthorityData.builder()
+          .id(UUID.randomUUID())
+          .deleted(false)
+          .build())
+        .authorityNaturalIdOld("naturalIdOld2")
+        .authorityNaturalIdNew("naturalIdNew2")
+        .authoritySourceFileNew(UUID.randomUUID())
+        .authoritySourceFileOld(UUID.randomUUID())
+        .headingNew("headingNew")
+        .headingOld("headingOld")
+        .headingTypeNew("headingTypeNew")
+        .headingTypeOld("headingTypeOld")
+        .lbUpdated(2)
+        .lbFailed(1)
+        .lbTotal(5)
+        .startedByUserId(userId1)
+        .build(),
+      AuthorityDataStat.builder()
+        .id(UUID.randomUUID())
+        .action(AuthorityDataStatAction.UPDATE_HEADING)
+        .authorityData(AuthorityData.builder()
+          .id(UUID.randomUUID())
+          .deleted(false)
+          .build())
+        .authorityNaturalIdOld("naturalIdOld2")
+        .authorityNaturalIdNew("naturalIdNew2")
+        .authoritySourceFileNew(UUID.randomUUID())
+        .authoritySourceFileOld(UUID.randomUUID())
+        .headingNew("headingNew2")
+        .headingOld("headingOld2")
+        .headingTypeNew("headingTypeNew2")
+        .headingTypeOld("headingTypeOld2")
+        .lbUpdated(2)
+        .lbFailed(1)
+        .lbTotal(5)
+        .startedByUserId(userId2)
+        .build()
     );
-  }
-
-  public static List<AuthorityDataStatDto> dataStatListDto() {
-    return List.of();
   }
 
   public static ResultList<UsersClient.User> usersList(List<UUID> userIds) {
@@ -90,9 +127,27 @@ public class TestUtils {
     ));
   }
 
-  public static AuthorityDataStatDto getStatDataDto(AuthorityDataStat dataStat) {
+  public static AuthorityDataStatDto getStatDataDto(AuthorityDataStat dataStat, UsersClient.User user) {
     AuthorityDataStatDto dto = new AuthorityDataStatDto();
-    dto.setAuthorityId(dataStat.getId());
+    dto.setId(dataStat.getId());
+    dto.setAuthorityId(dataStat.getAuthorityData().getId());
+    dto.setAction(AuthorityDataStatActionDto.fromValue(dataStat.getAction().name()));
+    dto.setHeadingNew(dataStat.getHeadingNew());
+    dto.setHeadingOld(dataStat.getHeadingOld());
+    dto.setHeadingTypeNew(dataStat.getHeadingTypeNew());
+    dto.setHeadingTypeOld(dataStat.getHeadingTypeOld());
+    dto.setLbUpdated(dataStat.getLbUpdated());
+    dto.setLbFailed(dataStat.getLbFailed());
+    dto.setLbTotal(dataStat.getLbTotal());
+    dto.setNaturalIdNew(dataStat.getAuthorityNaturalIdNew());
+    dto.setNaturalIdOld(dataStat.getAuthorityNaturalIdOld());
+    Metadata metadata = new Metadata();
+    metadata.setStartedByUserId(dataStat.getStartedByUserId());
+    metadata.setStartedByUserFirstName(user.personal().firstName());
+    metadata.setStartedByUserLastName(user.personal().lastName());
+    dto.setMetadata(metadata);
+    dto.setSourceFileNew(dataStat.getAuthoritySourceFileNew().toString());
+    dto.setSourceFileOld(dataStat.getAuthoritySourceFileOld().toString());
     return dto;
   }
 

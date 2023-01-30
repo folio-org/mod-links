@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface AuthorityDataStatMapper {
 
-  @Mapping(target = "authorityId", source = "source.id")
+  @Mapping(target = "authorityId", source = "source.authorityData.id")
   AuthorityDataStatDto convertToDto(AuthorityDataStat source);
 
 }
