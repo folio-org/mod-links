@@ -22,7 +22,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.folio.entlinks.client.UsersClient;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
@@ -36,6 +35,7 @@ import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.spring.tools.batch.MessageBatchProcessor;
+import org.folio.spring.tools.client.UsersClient;
 import org.folio.spring.tools.model.ResultList;
 
 public class TestUtils {

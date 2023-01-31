@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.folio.entlinks.client.UsersClient;
 import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
 import org.folio.entlinks.domain.dto.AuthorityChangeStatDtoCollection;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
@@ -13,6 +12,7 @@ import org.folio.entlinks.domain.dto.Metadata;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.entlinks.utils.DateUtils;
+import org.folio.spring.tools.client.UsersClient;
 import org.folio.spring.tools.model.ResultList;
 import org.springframework.stereotype.Component;
 
