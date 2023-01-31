@@ -62,6 +62,8 @@ public class InstanceAuthorityStatServiceDelegate {
     metadata.setStartedByUserFirstName(user.personal().firstName());
     metadata.setStartedByUserLastName(user.personal().lastName());
     metadata.setStartedByUserId(UUID.fromString(user.id()));
+    metadata.setStartedAt(DateUtils.fromTimestamp(source.getStartedAt()));
+    metadata.setCompletedAt(DateUtils.fromTimestamp(source.getCompletedAt()));
     return metadata;
   }
 

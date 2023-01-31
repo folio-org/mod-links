@@ -86,6 +86,8 @@ class InstanceAuthorityStatServiceDelegateTest {
       assertNotNull(statDto.getMetadata().getStartedByUserId());
       assertNotNull(statDto.getMetadata().getStartedByUserFirstName());
       assertNotNull(statDto.getMetadata().getStartedByUserLastName());
+      assertNotNull(statDto.getMetadata().getStartedAt());
+      assertNotNull(statDto.getMetadata().getCompletedAt());
       assertNotNull(statDto.getNaturalIdNew());
       assertNotNull(statDto.getNaturalIdOld());
       assertNotNull(statDto.getSourceFileNew());

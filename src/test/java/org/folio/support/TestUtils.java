@@ -11,6 +11,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +37,7 @@ import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
+import org.folio.entlinks.utils.DateUtils;
 import org.folio.spring.tools.batch.MessageBatchProcessor;
 import org.folio.spring.tools.client.UsersClient;
 import org.folio.spring.tools.model.ResultList;
@@ -163,6 +167,7 @@ public class TestUtils {
         .authorityNaturalIdNew("naturalIdNew2")
         .authoritySourceFileNew(UUID.randomUUID())
         .authoritySourceFileOld(UUID.randomUUID())
+        .completedAt(Timestamp.from(Instant.now()))
         .headingNew("headingNew")
         .headingOld("headingOld")
         .headingTypeNew("headingTypeNew")
@@ -170,6 +175,7 @@ public class TestUtils {
         .lbUpdated(2)
         .lbFailed(1)
         .lbTotal(5)
+        .startedAt(Timestamp.from(Instant.now().minus(5, ChronoUnit.DAYS)))
         .startedByUserId(userId1)
         .build(),
       AuthorityDataStat.builder()
@@ -183,6 +189,7 @@ public class TestUtils {
         .authorityNaturalIdNew("naturalIdNew2")
         .authoritySourceFileNew(UUID.randomUUID())
         .authoritySourceFileOld(UUID.randomUUID())
+        .completedAt(Timestamp.from(Instant.now()))
         .headingNew("headingNew2")
         .headingOld("headingOld2")
         .headingTypeNew("headingTypeNew2")
@@ -190,6 +197,7 @@ public class TestUtils {
         .lbUpdated(2)
         .lbFailed(1)
         .lbTotal(5)
+        .startedAt(Timestamp.from(Instant.now().minus(5, ChronoUnit.DAYS)))
         .startedByUserId(userId2)
         .build()
     );
@@ -230,6 +238,8 @@ public class TestUtils {
     metadata.setStartedByUserId(dataStat.getStartedByUserId());
     metadata.setStartedByUserFirstName(user.personal().firstName());
     metadata.setStartedByUserLastName(user.personal().lastName());
+    metadata.setStartedAt(DateUtils.fromTimestamp(dataStat.getStartedAt()));
+    metadata.setCompletedAt(DateUtils.fromTimestamp(dataStat.getCompletedAt()));
     dto.setMetadata(metadata);
     dto.setSourceFileNew(dataStat.getAuthoritySourceFileNew().toString());
     dto.setSourceFileOld(dataStat.getAuthoritySourceFileOld().toString());
