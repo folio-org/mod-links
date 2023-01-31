@@ -45,8 +45,6 @@ spring:
       - authority-linking-rules-cache
     caffeine:
       spec: maximumSize=500,expireAfterWrite=3600s
-  main:
-    allow-bean-definition-overriding: true
 
 folio:
   environment: ${ENV:folio}
