@@ -61,14 +61,12 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
       return Collections.emptyList();
     }
 
-
     List<LinksChangeEvent> linksEvents = new ArrayList<>();
     for (var change : changes) {
       try {
         linksEvents.addAll(handle0(change));
       } catch (AuthorityBatchProcessingException e) {
         log.warn("Skipping authority change processing.", e);
-
       }
     }
 
