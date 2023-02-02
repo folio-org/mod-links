@@ -107,7 +107,7 @@
               ],
               "pathPattern": "/links/authority/stats",
               "permissionsRequired": [
-                "instance-authority-links.statistics.collection.get"
+                "instance-authority-links.authority-statistics.collection.get"
               ]
             }
           ]
