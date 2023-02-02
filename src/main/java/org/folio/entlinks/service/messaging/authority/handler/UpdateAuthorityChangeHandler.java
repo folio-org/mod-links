@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
@@ -23,6 +24,7 @@ import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProcessingService;
+import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeFailed;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
@@ -61,12 +63,15 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
       return Collections.emptyList();
     }
 
+    CompletableFuture<AuthorityChangeFailed> future = new CompletableFuture<>();
+
     List<LinksChangeEvent> linksEvents = new ArrayList<>();
     for (var change : changes) {
       try {
         linksEvents.addAll(handle0(change));
       } catch (AuthorityBatchProcessingException e) {
         log.warn("Skipping authority change processing.", e);
+        future.completeExceptionally(e);
       }
     }
 

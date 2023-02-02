@@ -98,6 +98,21 @@
           ]
         },
         {
+          "id": "instance-authority-links-statistics",
+          "version": "1.0",
+          "handlers": [
+            {
+              "methods": [
+                "GET"
+              ],
+              "pathPattern": "/links/authority/stats",
+              "permissionsRequired": [
+                "instance-authority-links.statistics.collection.get"
+              ]
+            }
+          ]
+        },
+        {
           "methods": [
             "GET",
             "DELETE"
@@ -139,6 +154,11 @@
         "instance-authority-links.authorities.bulk.post",
         "instance-authority.linking-rules.collection.get"
       ]
+    },
+    {
+      "permissionName":"instance-authority-links.statistics.collection.get",
+      "displayName": "Entities Authority Links Statistics - get instance-authority links statistics",
+      "description": "Get instance-authority links statistics"
     }
   ],
   "launchDescriptor": {
