@@ -108,6 +108,9 @@
               "pathPattern": "/links/authority/stats",
               "permissionsRequired": [
                 "instance-authority-links.authority-statistics.collection.get"
+              ],
+              "modulePermissions": [
+                 "users.collection.get"
               ]
             }
           ]
@@ -156,7 +159,7 @@
       ]
     },
     {
-      "permissionName":"instance-authority-links.statistics.collection.get",
+      "permissionName":"instance-authority-links.authority-statistics.collection.get",
       "displayName": "Entities Authority Links Statistics - get instance-authority links statistics",
       "description": "Get instance-authority links statistics"
     }
