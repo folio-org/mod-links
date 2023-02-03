@@ -25,7 +25,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "authority_data")
-public class AuthorityData {
+public class AuthorityData extends AuditableEntity {
 
   @Id
   @Column(name = "id", nullable = false)
@@ -43,6 +43,11 @@ public class AuthorityData {
   private Timestamp updatedAt;
 
   @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -52,10 +57,5 @@ public class AuthorityData {
     }
     AuthorityData that = (AuthorityData) o;
     return id != null && Objects.equals(id, that.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
   }
 }

@@ -41,7 +41,7 @@ import org.springframework.data.annotation.LastModifiedDate;
   @Index(name = "idx_instance_authority_link_authority_id", columnList = "authority_id"),
   @Index(name = "idx_instance_authority_link_instance_id", columnList = "instance_id")
 })
-public class InstanceAuthorityLink {
+public class InstanceAuthorityLink extends AuditableEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
