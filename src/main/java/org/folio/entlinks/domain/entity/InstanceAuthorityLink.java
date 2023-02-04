@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -27,8 +26,6 @@ import lombok.ToString;
 import org.folio.entlinks.domain.entity.converter.StringToCharArrayConverter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Getter
@@ -71,14 +68,6 @@ public class InstanceAuthorityLink extends AuditableEntity {
 
   @Column(name = "error_cause")
   private String errorCause;
-
-  @CreatedDate
-  @Column(name = "created_at")
-  private Timestamp createdAt;
-
-  @LastModifiedDate
-  @Column(name = "updated_at")
-  private Timestamp updatedAt;
 
   @Override
   public int hashCode() {

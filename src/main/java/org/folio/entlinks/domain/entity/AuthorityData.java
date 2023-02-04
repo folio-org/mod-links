@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -15,7 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Getter
@@ -37,10 +35,6 @@ public class AuthorityData extends AuditableEntity {
 
   @Column(name = "state")
   private boolean deleted = false;
-
-  @LastModifiedDate
-  @Column(name = "updated_at")
-  private Timestamp updatedAt;
 
   @Override
   public int hashCode() {
