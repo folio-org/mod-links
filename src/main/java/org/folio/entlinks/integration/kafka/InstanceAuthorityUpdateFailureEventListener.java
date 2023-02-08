@@ -30,16 +30,12 @@ public class InstanceAuthorityUpdateFailureEventListener {
     groupId = "#{folioKafkaProperties.listener['instance-authority-update-failure'].groupId}",
     concurrency = "#{folioKafkaProperties.listener['instance-authority-update-failure'].concurrency}")
   public void handleEvents(ConsumerRecord<String, LinkUpdateReport> consumerRecord) {
-    log.info("Processing authority update failed from Kafka event {}", consumerRecord);
-
-    consumerRecord.value();
-    this.handleReportEventsForTenant(consumerRecord.topic(), consumerRecord.value());
-  }
-
-  private void handleReportEventsForTenant(String tenant, LinkUpdateReport event) {
-    executionService.executeSystemUserScoped(tenant, () -> {
-      log.info("Triggering update failures for stats records [tenant: {}]", tenant);
-      messageBatchProcessor.consumeBatchWithFallback(List.of(event), DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
+    LinkUpdateReport linkUpdateReport = consumerRecord.value();
+    log.debug("Processing authority update failed from Kafka event {}", linkUpdateReport);
+    String tenantId = linkUpdateReport.getTenant();
+    executionService.executeSystemUserScoped(tenantId, () -> {
+      log.info("Triggering update failures for stats records [tenant: {}]", tenantId);
+      messageBatchProcessor.consumeBatchWithFallback(List.of(linkUpdateReport), DEFAULT_KAFKA_RETRY_TEMPLATE_NAME,
         this::handleReportEventsByJobId, this::logFailedEvent);
       return null;
     });
