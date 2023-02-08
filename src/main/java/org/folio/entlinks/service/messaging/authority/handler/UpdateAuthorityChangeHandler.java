@@ -2,8 +2,6 @@ package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +28,6 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
-import org.folio.entlinks.utils.DateUtils;
 import org.folio.entlinks.utils.KafkaUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -85,11 +82,13 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         log.warn("Skipping authority change processing.", e);
         var report = new LinkUpdateReport();
         report.setFailCause(e.getCause().getMessage());
-        report.setInstanceId(change.getAuthorityId());
+        report.setInstanceId(UUID.fromString(context.getAllHeaders().get("instanceId").iterator().next()));
         report.setTenant(context.getTenantId());
         report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
-        report.setTs(DateUtils.fromTimestamp(Timestamp.from(Instant.now())).toString());
+        report.setTs(String.valueOf(System.currentTimeMillis()));
         var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName(), report);
+        KafkaUtils.toKafkaHeaders(context.getOkapiHeaders())
+          .forEach(header -> producerRecord.headers().add(header));
         linksUpdateKafkaTemplate.send(producerRecord);
       }
     }
