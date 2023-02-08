@@ -1,6 +1,7 @@
 package org.folio.entlinks.controller.delegate;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,7 +34,8 @@ public class InstanceAuthorityStatServiceDelegate {
       last = Optional.of(dataStatList.get(limit));
     }
     String query = getUsersQueryString(dataStatList);
-    var userResultList = usersClient.query(query);
+    ResultList<UsersClient.User> userResultList =
+            query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
     var stats = dataStatList.stream().limit(limit)
       .map(source -> {
         Metadata metadata = getMetadata(userResultList, source);
@@ -69,6 +71,10 @@ public class InstanceAuthorityStatServiceDelegate {
 
   private static String getUsersQueryString(List<AuthorityDataStat> dataStatList) {
     List<UUID> userIds = dataStatList.stream().map(AuthorityDataStat::getStartedByUserId).toList();
+    if (userIds.isEmpty()) {
+      return "";
+    }
+
     var querySb = new StringBuilder();
     querySb.append("id==").append(userIds.get(0));
     for (int i = 1; i < userIds.size(); i++) {
