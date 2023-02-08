@@ -50,7 +50,16 @@ public class AuthorityDataStatService {
 
   public List<AuthorityDataStat> fetchDataStats(OffsetDateTime fromDate, OffsetDateTime toDate,
                                                 AuthorityDataStatActionDto action, int limit) {
-    return statRepository.findByDateAndAction(AuthorityDataStatAction.valueOf(action.getValue()),
+
+    AuthorityDataStatAction authorityDataStatAction = switch (action) {
+      case DELETE -> AuthorityDataStatAction.DELETE;
+      case UPDATE_NATURAL_ID -> AuthorityDataStatAction.UPDATE_NATURAL_ID;
+      case UPDATE_HEADING -> AuthorityDataStatAction.UPDATE_HEADING;
+      default ->
+        throw new IllegalArgumentException("Unexpected enum constant: " + action);
+    };
+
+    return statRepository.findByDateAndAction(authorityDataStatAction.name(),
       DateUtils.toTimestamp(fromDate), DateUtils.toTimestamp(toDate), limit);
   }
 

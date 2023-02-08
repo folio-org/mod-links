@@ -285,6 +285,11 @@
         "description": "Replication factor for `links.instance-authority-stats` topic."
       },
       {
+        "name": "KAFKA_INSTANCE_AUTHORITY_UPDATE_FAILURE_TOPIC_REPLICATION_FACTOR",
+        "value": "",
+        "description": "Replication factor for `links.instance-authority-update-failure` topic."
+      },
+      {
         "name": "KAFKA_AUTHORITIES_CONSUMER_CONCURRENCY",
         "value": "1",
         "description": "Number of kafka concurrent threads for `inventory.authority` message consuming."
@@ -295,9 +300,19 @@
         "description": "Number of kafka concurrent threads for `links.instance-authority-stats` message consuming."
       },
       {
+        "name": "KAFKA_INSTANCE_AUTHORITY_UPDATE_FAILURE_CONSUMER_CONCURRENCY",
+        "value": "1",
+        "description": "Number of kafka concurrent threads for `links.instance-authority-update-failure` message consuming."
+      },
+      {
         "name": "KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS",
         "value": "100",
         "description": "Number of instance-authority links `links.instance-authority` event contains while processing authority link source change."
+      },
+      {
+        "name": "KAFKA_INSTANCE_AUTHORITY_UPDATE_FAILURE_TOPIC_PARTITIONS",
+        "value": "10",
+        "description": "Amount of partitions for `links.instance-authority-update-failure` topic."
       }
     ]
   }

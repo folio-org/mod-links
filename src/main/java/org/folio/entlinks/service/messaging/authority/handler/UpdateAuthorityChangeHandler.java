@@ -2,6 +2,8 @@ package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,8 +11,10 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.FieldChange;
+import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
@@ -26,18 +30,26 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
+import org.folio.entlinks.utils.DateUtils;
+import org.folio.entlinks.utils.KafkaUtils;
+import org.folio.spring.FolioExecutionContext;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler {
 
+  private static final String TOPIC_NAME = "links.instance-authority-update-failure";
   private final AuthoritySourceFilesService sourceFilesService;
   private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private final AuthoritySourceRecordService sourceRecordService;
   private final InstanceAuthorityLinkingRulesService linkingRulesService;
   private final InstanceAuthorityLinkingService linkingService;
   private final AuthorityDataService authorityDataService;
+  private final KafkaTemplate<String, LinkUpdateReport> linksUpdateKafkaTemplate;
+  private final FolioExecutionContext context;
+
 
   public UpdateAuthorityChangeHandler(InstanceAuthorityChangeProperties instanceAuthorityChangeProperties,
                                       AuthoritySourceFilesService sourceFilesService,
@@ -45,7 +57,9 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
                                       AuthoritySourceRecordService sourceRecordService,
                                       InstanceAuthorityLinkingRulesService linkingRulesService,
                                       InstanceAuthorityLinkingService linkingService,
-                                      AuthorityDataService authorityDataService) {
+                                      KafkaTemplate<String, LinkUpdateReport> kafkaTemplate,
+                                      AuthorityDataService authorityDataService,
+                                      FolioExecutionContext context) {
     super(instanceAuthorityChangeProperties, linkingService);
     this.sourceFilesService = sourceFilesService;
     this.mappingRulesProcessingService = mappingRulesProcessingService;
@@ -53,6 +67,8 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     this.linkingRulesService = linkingRulesService;
     this.linkingService = linkingService;
     this.authorityDataService = authorityDataService;
+    this.linksUpdateKafkaTemplate = kafkaTemplate;
+    this.context = context;
   }
 
   @Override
@@ -67,10 +83,22 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         linksEvents.addAll(handle0(change));
       } catch (AuthorityBatchProcessingException e) {
         log.warn("Skipping authority change processing.", e);
+        var report = new LinkUpdateReport();
+        report.setFailCause(e.getCause().getMessage());
+        report.setInstanceId(change.getAuthorityId());
+        report.setTenant(context.getTenantId());
+        report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
+        report.setTs(DateUtils.fromTimestamp(Timestamp.from(Instant.now())).toString());
+        var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName(), report);
+        linksUpdateKafkaTemplate.send(producerRecord);
       }
     }
 
     return linksEvents;
+  }
+
+  private String topicName() {
+    return KafkaUtils.getTenantTopicName(TOPIC_NAME, context.getTenantId());
   }
 
   @Override

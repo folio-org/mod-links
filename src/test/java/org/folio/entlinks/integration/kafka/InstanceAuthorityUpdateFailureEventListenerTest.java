@@ -1,0 +1,86 @@
+package org.folio.entlinks.integration.kafka;
+
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.folio.support.TestUtils.mockBatchFailedHandling;
+import static org.folio.support.TestUtils.mockBatchSuccessHandling;
+import static org.folio.support.TestUtils.report;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import org.folio.entlinks.service.links.AuthorityDataStatService;
+import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.tools.batch.MessageBatchProcessor;
+import org.folio.spring.tools.systemuser.SystemUserScopedExecutionService;
+import org.folio.support.TestUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@UnitTest
+@ExtendWith(MockitoExtension.class)
+class InstanceAuthorityUpdateFailureEventListenerTest {
+
+  @Mock
+  private SystemUserScopedExecutionService executionService;
+  @Mock
+  private AuthorityDataStatService dataStatService;
+  @Mock
+  private MessageBatchProcessor messageBatchProcessor;
+
+  @InjectMocks
+  private InstanceAuthorityUpdateFailureEventListener listener;
+
+  @BeforeEach
+  void setUp() {
+    when(executionService.executeSystemUserScoped(any(), any())).thenAnswer(invocation -> {
+      var argument = invocation.getArgument(1, Callable.class);
+      return argument.call();
+    });
+  }
+
+  // Test that multiple tenants processed in different batches and jobIds in different sub-batches
+  @Test
+  void shouldHandleEvent_positive() {
+    var tenant1 = randomAlphabetic(10);
+    var tenant2 = randomAlphabetic(10);
+    var job1Id = UUID.randomUUID();
+    var job2Id = UUID.randomUUID();
+    var reports = List.of(
+      report(tenant1, job1Id),
+      report(tenant1, job2Id),
+      report(tenant2, job1Id),
+      report(tenant2, job1Id)
+    );
+    var consumerRecords = TestUtils.consumerRecords(reports);
+
+    mockBatchSuccessHandling(messageBatchProcessor);
+
+    listener.handleEvents(consumerRecords.get(0));
+
+    verify(messageBatchProcessor, times(1))
+      .consumeBatchWithFallback(any(), any(), any(), any());
+  }
+
+  @Test
+  void shouldNotHandleEvent_negative_whenExceptionOccurred() {
+    var report = report(randomAlphabetic(10), UUID.randomUUID());
+    var consumerRecords = TestUtils.consumerRecords(singletonList(report));
+
+    mockBatchFailedHandling(messageBatchProcessor, new RuntimeException("test message"));
+
+    listener.handleEvents(consumerRecords.get(0));
+
+    verifyNoInteractions(dataStatService);
+  }
+
+}
