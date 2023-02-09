@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler {
 
-  private static final String TOPIC_NAME = "links.instance-authority-update-failure";
+  private static final String TOPIC_NAME = "links.instance-authority-stats";
   private final AuthoritySourceFilesService sourceFilesService;
   private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private final AuthoritySourceRecordService sourceRecordService;
