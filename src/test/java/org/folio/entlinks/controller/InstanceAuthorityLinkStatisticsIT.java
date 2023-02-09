@@ -2,7 +2,10 @@ package org.folio.entlinks.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import lombok.SneakyThrows;
+import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
@@ -10,14 +13,19 @@ import org.junit.jupiter.api.Test;
 @IntegrationTest
 class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
 
-  private static final String LINK_STATISTICS_ENDPOINT =
-    "/links/authority/stats?action=UPDATE_HEADING&fromDate=2020-07-16T12:13:36.879Z&"
-      + "toDate=2022-07-16T12:13:36.879Z&limit=100";
+  private static final String LINK_STATISTICS_ENDPOINT = "/links/authority/stats";
+  private static final OffsetDateTime FROM_DATE = OffsetDateTime.of(2020, 10, 10, 10, 10, 10, 10, ZoneOffset.UTC);
+  private static final OffsetDateTime TO_DATE = OffsetDateTime.of(2021, 10, 10, 10, 10, 10, 10, ZoneOffset.UTC);
+  private static final Integer LIMIT = 2;
+  private static final AuthorityDataStatActionDto STAT_ACTION_DTO = AuthorityDataStatActionDto.UPDATE_HEADING;
 
   @Test
   @SneakyThrows
-  void getLinkingRules_positive_getInstanceAuthorityRules() {
-    doGet(LINK_STATISTICS_ENDPOINT)
+  void getAuthDataStat_positive_getAuthorityDataStats() {
+    var preparedLink = LINK_STATISTICS_ENDPOINT + "?action=" + STAT_ACTION_DTO
+                        + "&fromDate=" + FROM_DATE
+                        + "&toDate=" + TO_DATE + "&limit=" + LIMIT;
+    doGet(preparedLink)
       .andExpect(status().isOk());
   }
 }
