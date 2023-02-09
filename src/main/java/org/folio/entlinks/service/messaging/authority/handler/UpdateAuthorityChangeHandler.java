@@ -80,6 +80,16 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         linksEvents.addAll(handle0(change));
       } catch (AuthorityBatchProcessingException e) {
         log.warn("Skipping authority change processing.", e);
+        var report = new LinkUpdateReport();
+        report.setFailCause(e.getCause().getMessage());
+        report.setInstanceId(change.getAuthorityId());
+        report.setTenant(context.getTenantId());
+        report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
+        report.setTs(String.valueOf(System.currentTimeMillis()));
+        var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName(), report);
+        KafkaUtils.toKafkaHeaders(context.getOkapiHeaders())
+          .forEach(header -> producerRecord.headers().add(header));
+        linksUpdateKafkaTemplate.send(producerRecord);
       }
     }
 
