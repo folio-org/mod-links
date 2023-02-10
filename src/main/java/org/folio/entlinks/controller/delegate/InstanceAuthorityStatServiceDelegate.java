@@ -52,6 +52,10 @@ public class InstanceAuthorityStatServiceDelegate {
   }
 
   private static Metadata getMetadata(ResultList<UsersClient.User> userResultList, AuthorityDataStat source) {
+    if (userResultList == null) {
+      return null;
+    }
+
     var user = userResultList.getResult()
       .stream()
       .filter(u -> UUID.fromString(u.id()).equals(source.getStartedByUserId()))
