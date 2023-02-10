@@ -61,6 +61,9 @@ public class InstanceAuthorityLink extends AuditableEntity {
   @Convert(converter = StringToCharArrayConverter.class)
   private char[] bibRecordSubfields;
 
+  @Column(name = "linking_rule_id", nullable = false)
+  private Long linkingRuleId;
+
   @Builder.Default
   @Enumerated(EnumType.STRING)
   @Type(PostgreSQLEnumType.class)
