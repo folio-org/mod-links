@@ -154,11 +154,11 @@ public class TestUtils {
     return new String(Files.readAllBytes(getFile(filePath).toPath()));
   }
 
-  public static List<AuthorityDataStat> dataStatList(UUID userId1, UUID userId2) {
+  public static List<AuthorityDataStat> dataStatList(UUID userId1, UUID userId2, AuthorityDataStatAction action) {
     return List.of(
       AuthorityDataStat.builder()
         .id(randomUUID())
-        .action(AuthorityDataStatAction.UPDATE_HEADING)
+        .action(action)
         .authorityData(AuthorityData.builder()
           .id(UUID.randomUUID())
           .deleted(false)
@@ -180,7 +180,7 @@ public class TestUtils {
         .build(),
       AuthorityDataStat.builder()
         .id(UUID.randomUUID())
-        .action(AuthorityDataStatAction.UPDATE_HEADING)
+        .action(action)
         .authorityData(AuthorityData.builder()
           .id(UUID.randomUUID())
           .deleted(false)
@@ -247,13 +247,17 @@ public class TestUtils {
   }
 
   public record Link(UUID authorityId, String tag, String naturalId,
-                     char[] subfields) {
+                     char[] subfields, int linkingRuleId) {
 
     public static final UUID[] AUTH_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID(), randomUUID()};
     public static final String[] TAGS = new String[] {"100", "101", "700", "710"};
 
     public Link(UUID authorityId, String tag) {
       this(authorityId, tag, authorityId.toString(), new char[]{'a', 'b'});
+    }
+
+    public Link(UUID authorityId, String tag, String naturalId, char[] subfields) {
+      this(authorityId, tag, naturalId, subfields, RandomUtils.nextInt(1, 10));
     }
 
     public static Link of(int authIdNum, int tagNum) {
@@ -270,7 +274,8 @@ public class TestUtils {
         .authorityId(authorityId)
         .authorityNaturalId(naturalId)
         .bibRecordSubfields(toStringList(subfields))
-        .bibRecordTag(tag);
+        .bibRecordTag(tag)
+        .linkingRuleId(1);
     }
 
     private List<String> toStringList(char[] subfields) {
@@ -290,6 +295,7 @@ public class TestUtils {
           .build())
         .bibRecordSubfields(subfields)
         .bibRecordTag(tag)
+        .linkingRuleId(1L)
         .build();
     }
   }
