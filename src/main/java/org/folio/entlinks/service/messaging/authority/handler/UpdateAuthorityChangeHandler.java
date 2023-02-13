@@ -82,7 +82,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
       } catch (AuthorityBatchProcessingException e) {
         log.warn("Skipping authority change processing.", e);
         var report = new LinkUpdateReport();
-        report.setFailCause(e.getCause().getMessage());
+        report.setFailCause(e.getMessage());
         report.setJobId(change.getAuthorityDataStatId());
         report.setTenant(context.getTenantId());
         report.setStatus(LinkUpdateReport.StatusEnum.FAIL);

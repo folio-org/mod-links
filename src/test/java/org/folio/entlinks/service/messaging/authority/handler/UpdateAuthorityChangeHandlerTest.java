@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum;
+import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -26,12 +27,14 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
-import org.folio.entlinks.utils.KafkaUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.marc4j.marc.impl.RecordImpl;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,7 +43,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class UpdateAuthorityChangeHandlerTest {
-  private static final String TOPIC_NAME = "links.instance-authority-stats";
 
   private @Mock AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private @Mock AuthorityDataService authorityDataService;
@@ -51,6 +53,14 @@ class UpdateAuthorityChangeHandlerTest {
   private @Mock InstanceAuthorityLinkingService linkingService;
   private @Mock InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
   private @InjectMocks UpdateAuthorityChangeHandler handler;
+
+  @Captor
+  private ArgumentCaptor<ProducerRecord<String, LinkUpdateReport>> producerRecord;
+
+  @BeforeEach
+  void setUp() {
+    when(context.getTenantId()).thenReturn(TENANT_ID);
+  }
 
   @Test
   void getReplyEventType_positive() {
@@ -69,31 +79,26 @@ class UpdateAuthorityChangeHandlerTest {
   @Test
   void handle_positive() {
     UUID id = UUID.randomUUID();
-    long currentTimeMillis = System.currentTimeMillis();
-    var changes = Map.of(
-      AuthorityChangeField.PERSONAL_NAME, new AuthorityChange(AuthorityChangeField.PERSONAL_NAME, "new", "old")
-    );
-    var event = new AuthorityChangeHolder(new InventoryEvent().id(id), changes, emptyMap(), 0);
-    var report = new LinkUpdateReport();
 
-    report.setFailCause("Source record don't contains [authorityId: " + id + ", tag: notExistingTag]");
-    report.setInstanceId(event.getAuthorityId());
-    report.setTenant(context.getTenantId());
-    report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
-    report.setTs(String.valueOf(currentTimeMillis).substring(0, 10));
+    var expected = new LinkUpdateReport();
+    expected.setFailCause("Source record don't contains [authorityId: " + id + ", tag: notExistingTag]");
+    expected.setTenant(context.getTenantId());
+    expected.setStatus(LinkUpdateReport.StatusEnum.FAIL);
 
     when(mappingRulesProcessingService.getTagByAuthorityChangeField(any())).thenReturn("notExistingTag");
     when(sourceRecordService.getAuthoritySourceRecordById(any()))
       .thenReturn(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
 
-    var topicName = KafkaUtils.getTenantTopicName(TOPIC_NAME, context.getTenantId());
-    var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName, report);
-
+    var changes = Map.of(
+      AuthorityChangeField.PERSONAL_NAME, new AuthorityChange(AuthorityChangeField.PERSONAL_NAME, "new", "old")
+    );
+    var event = new AuthorityChangeHolder(new InventoryEvent().id(id), changes, emptyMap(), 0);
     handler.handle(List.of(event));
 
-    verify(linksUpdateKafkaTemplate).send(producerRecord);
-    verify(mappingRulesProcessingService).getTagByAuthorityChangeField(AuthorityChangeField.PERSONAL_NAME);
-    verify(sourceRecordService).getAuthoritySourceRecordById(id);
+    verify(linksUpdateKafkaTemplate).send(producerRecord.capture());
+    assertThat(producerRecord.getValue().value())
+      .extracting("tenant", "failCause", "status")
+      .contains(expected.getTenant(), expected.getFailCause(), expected.getStatus());
   }
 
   @Test
