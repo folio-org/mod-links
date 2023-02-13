@@ -32,11 +32,13 @@ public class InstanceAuthorityStatServiceDelegate {
     Optional<AuthorityDataStat> last = Optional.empty();
     if (dataStatList.size() > limit) {
       last = Optional.of(dataStatList.get(limit));
+      last.ifPresent(dataStatList::remove);
     }
+
     String query = getUsersQueryString(dataStatList);
     ResultList<UsersClient.User> userResultList =
             query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
-    var stats = dataStatList.stream().limit(limit)
+    var stats = dataStatList.stream()
       .map(source -> {
         Metadata metadata = getMetadata(userResultList, source);
         var authorityDataStatDto = dataStatMapper.convertToDto(source);
