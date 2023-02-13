@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ThreadUtils;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
-import org.folio.entlinks.domain.dto.LinkedBibUpdateStatus;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
@@ -69,7 +69,7 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
 
     var toDate = OffsetDateTime.now();
     var fromDate = toDate.minus(1, ChronoUnit.DAYS);
-    perform(getStatsRequest(LinkedBibUpdateStatus.ERROR, fromDate, toDate))
+    perform(getStatsRequest(LinkStatus.ERROR, fromDate, toDate))
       .andExpect(statsMatch(empty()))
       .andExpect(nextMatch(null));
   }
@@ -162,7 +162,7 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
       .next(next);
     stats.getStats().add(stats2.get(0));
 
-    perform(getStatsRequest(LinkedBibUpdateStatus.ACTUAL, fromDate, toDate).param("limit", "3"))
+    perform(getStatsRequest(LinkStatus.ACTUAL, fromDate, toDate).param("limit", "3"))
       .andExpect(statsMatch(hasSize(3)))
       .andExpect(statsMatch(stats))
       .andExpect(jsonPath("$.next", startsWith(nextStartsWith)));
@@ -195,7 +195,7 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
   void getLinkedBibUpdateStats_negative_invalidDates() throws Exception {
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.minus(1, ChronoUnit.DAYS);
-    perform(getStatsRequest(LinkedBibUpdateStatus.ACTUAL, fromDate, toDate))
+    perform(getStatsRequest(LinkStatus.ACTUAL, fromDate, toDate))
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorTotalMatch(1))
       .andExpect(errorTypeMatch(is("RequestBodyValidationException")))
@@ -206,10 +206,10 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
   private MockHttpServletRequestBuilder getStatsRequest() {
     var toDate = OffsetDateTime.now();
     var fromDate = toDate.minus(1, ChronoUnit.DAYS);
-    return getStatsRequest(LinkedBibUpdateStatus.ACTUAL, fromDate, toDate);
+    return getStatsRequest(LinkStatus.ACTUAL, fromDate, toDate);
   }
 
-  private MockHttpServletRequestBuilder getStatsRequest(LinkedBibUpdateStatus status,
+  private MockHttpServletRequestBuilder getStatsRequest(LinkStatus status,
                                                         OffsetDateTime fromDate, OffsetDateTime toDate) {
     return get(linksStatsInstanceEndpoint())
       .param("fromDate", fromDate.toString())

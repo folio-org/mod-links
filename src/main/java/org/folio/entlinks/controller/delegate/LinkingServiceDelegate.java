@@ -18,7 +18,7 @@ import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
-import org.folio.entlinks.domain.dto.LinkedBibUpdateStatus;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -43,7 +43,7 @@ public class LinkingServiceDelegate {
     return mapper.convertToDto(links);
   }
 
-  public BibStatsDtoCollection getLinkedBibUpdateStats(LinkedBibUpdateStatus status, OffsetDateTime fromDate,
+  public BibStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
                                         OffsetDateTime toDate, int limit) {
     validateDateRange(fromDate, toDate);
 

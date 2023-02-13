@@ -27,7 +27,7 @@ import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.controller.converter.LinkedBibUpdateStatsMapper;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
-import org.folio.entlinks.domain.dto.LinkedBibUpdateStatus;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.dto.UuidCollection;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
@@ -132,7 +132,7 @@ class LinkingServiceDelegateTest {
 
   @Test
   void getLinkedBibUpdateStats_negative_invalidDates() {
-    var status = LinkedBibUpdateStatus.ACTUAL;
+    var status = LinkStatus.ACTUAL;
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.minus(1, ChronoUnit.DAYS);
     var limit = 2;
@@ -226,7 +226,7 @@ class LinkingServiceDelegateTest {
                                                     List<String> instanceIds,
                                                     Map<String, String> instanceTitles,
                                                     OffsetDateTime next) {
-    var status = LinkedBibUpdateStatus.ACTUAL;
+    var status = LinkStatus.ACTUAL;
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.plus(1, ChronoUnit.DAYS);
     var limit = 2;

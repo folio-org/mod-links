@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.domain.dto.LinkedBibUpdateStatus;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
@@ -121,7 +121,7 @@ public class InstanceAuthorityLinkingService {
     instanceLinkRepository.saveAll(links);
   }
 
-  public List<InstanceAuthorityLink> getLinks(LinkedBibUpdateStatus status, OffsetDateTime fromDate,
+  public List<InstanceAuthorityLink> getLinks(LinkStatus status, OffsetDateTime fromDate,
                                               OffsetDateTime toDate, int limit) {
     log.info("Fetching links for [status: {}, fromDate: {}, toDate: {}, limit: {}]",
       status, fromDate, toDate, limit);

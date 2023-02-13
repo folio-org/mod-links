@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.folio.entlinks.domain.dto.LinkedBibUpdateStatus;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
@@ -331,7 +331,7 @@ class InstanceAuthorityLinkingServiceTest {
   @Test
   @SuppressWarnings("unchecked")
   void getLinks_positive() {
-    var status = LinkedBibUpdateStatus.ACTUAL;
+    var status = LinkStatus.ACTUAL;
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.plus(1, ChronoUnit.DAYS);
     var limit = 1;

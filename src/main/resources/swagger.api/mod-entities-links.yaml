@@ -179,7 +179,7 @@ paths:
           required: false
           description: Status to filter by
           schema:
-            $ref: "#/components/schemas/linkedBibUpdateStatus"
+            $ref: "#/components/schemas/linkStatus"
         - name: limit
           in: query
           required: false
@@ -553,7 +553,7 @@ components:
     linkUpdateReport:
       $ref: schemas/linkUpdateReport.json
 
-    linkedBibUpdateStatus:
+    linkStatus:
       type: string
       enum:
         - ACTUAL
