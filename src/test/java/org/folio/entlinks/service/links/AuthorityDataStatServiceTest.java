@@ -73,12 +73,12 @@ class AuthorityDataStatServiceTest {
 
     service.updateForReports(jobId, reports);
 
-    verify(linkingService).saveAll(eq(reports.get(0).getInstanceId().toString()), linksCaptor.capture());
+    verify(linkingService).saveAll(eq(reports.get(0).getInstanceId()), linksCaptor.capture());
     var links = linksCaptor.getValue();
     assertThat(links)
       .anySatisfy(linkAsserter(ACTUAL, EMPTY));
 
-    verify(linkingService).saveAll(eq(reports.get(1).getInstanceId().toString()), linksCaptor.capture());
+    verify(linkingService).saveAll(eq(reports.get(1).getInstanceId()), linksCaptor.capture());
     links = linksCaptor.getValue();
     assertThat(links)
       .anySatisfy(linkAsserter(ACTUAL, EMPTY));
@@ -93,12 +93,12 @@ class AuthorityDataStatServiceTest {
 
     service.updateForReports(jobId, reports);
 
-    verify(linkingService).saveAll(eq(reports.get(0).getInstanceId().toString()), linksCaptor.capture());
+    verify(linkingService).saveAll(eq(reports.get(0).getInstanceId()), linksCaptor.capture());
     var links = linksCaptor.getValue();
     assertThat(links)
       .anySatisfy(linkAsserter(ERROR, REPORT_ERROR));
 
-    verify(linkingService).saveAll(eq(reports.get(1).getInstanceId().toString()), linksCaptor.capture());
+    verify(linkingService).saveAll(eq(reports.get(1).getInstanceId()), linksCaptor.capture());
     links = linksCaptor.getValue();
     assertThat(links)
       .anySatisfy(linkAsserter(ERROR, REPORT_ERROR));

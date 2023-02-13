@@ -1,5 +1,7 @@
 package org.folio.entlinks.service.links;
 
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
 import org.folio.entlinks.domain.repository.InstanceLinkRepository;
 import org.springframework.data.domain.Page;
@@ -90,6 +93,12 @@ public class InstanceAuthorityLinkingService {
   }
 
   @Transactional
+  public void updateStatus(UUID authorityId, InstanceAuthorityLinkStatus status, String errorCause) {
+    log.info("Update links [authority id: {}, status: {}, errorCause: {}]", authorityId, status, errorCause);
+    instanceLinkRepository.updateStatusAndErrorCauseByAuthorityId(status, trimToNull(errorCause), authorityId);
+  }
+
+  @Transactional
   public void deleteByAuthorityIdIn(Set<UUID> authorityIds) {
     if (log.isDebugEnabled()) {
       log.info("Delete links for [authority ids: {}]", authorityIds);
@@ -101,7 +110,7 @@ public class InstanceAuthorityLinkingService {
   }
 
   @Transactional
-  public void saveAll(String instanceId, List<InstanceAuthorityLink> links) {
+  public void saveAll(UUID instanceId, List<InstanceAuthorityLink> links) {
     log.info("Save links for [instanceId: {}, links amount: {}]", instanceId, links.size());
     log.debug("Save links for [instanceId: {}, links: {}]", instanceId, links);
 

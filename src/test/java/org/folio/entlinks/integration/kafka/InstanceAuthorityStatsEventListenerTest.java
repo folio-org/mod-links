@@ -90,36 +90,4 @@ class InstanceAuthorityStatsEventListenerTest {
     verifyNoInteractions(dataStatService);
   }
 
-  @Test
-  void shouldHandleUpdateFailEvent_positive() {
-    var tenant1 = randomAlphabetic(10);
-    var job1Id = UUID.randomUUID();
-    var reports = List.of(
-      report(tenant1, job1Id)
-    );
-    var consumerRecords = TestUtils.consumerRecords(reports);
-
-    mockBatchSuccessHandling(messageBatchProcessor);
-
-    listener.handleLinkUpdateFailEvents(consumerRecords.get(0));
-
-    verify(messageBatchProcessor, times(1))
-      .consumeBatchWithFallback(any(), any(), any(), any());
-
-    verify(dataStatService)
-      .updateForReports(job1Id, singletonList(reports.get(0)));
-  }
-
-  @Test
-  void shouldNotHandleUpdateFailEvent_negative_whenExceptionOccurred() {
-    var report = report(randomAlphabetic(10), UUID.randomUUID());
-    var consumerRecords = TestUtils.consumerRecords(singletonList(report));
-
-    mockBatchFailedHandling(messageBatchProcessor, new RuntimeException("test message"));
-
-    listener.handleLinkUpdateFailEvents(consumerRecords.get(0));
-
-    verifyNoInteractions(dataStatService);
-  }
-
 }

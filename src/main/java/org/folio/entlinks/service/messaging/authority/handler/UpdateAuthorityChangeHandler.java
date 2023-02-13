@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
+import static org.folio.entlinks.utils.DateUtils.currentTsInString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,10 +83,10 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         log.warn("Skipping authority change processing.", e);
         var report = new LinkUpdateReport();
         report.setFailCause(e.getCause().getMessage());
-        report.setInstanceId(change.getAuthorityId());
+        report.setJobId(change.getAuthorityDataStatId());
         report.setTenant(context.getTenantId());
         report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
-        report.setTs(String.valueOf(System.currentTimeMillis()));
+        report.setTs(currentTsInString());
         var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName(), report);
         KafkaUtils.toKafkaHeaders(context.getOkapiHeaders())
           .forEach(header -> producerRecord.headers().add(header));

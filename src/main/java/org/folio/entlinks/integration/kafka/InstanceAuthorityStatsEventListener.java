@@ -38,17 +38,6 @@ public class InstanceAuthorityStatsEventListener {
       .forEach(this::handleReportEventsForTenant);
   }
 
-  @KafkaListener(id = "mod-entities-links-instance-authority-stats-update-fail-listener",
-    containerFactory = "statsListenerFactory",
-    topicPattern = "#{folioKafkaProperties.listener['instance-authority-stats'].topicPattern}",
-    groupId = "#{folioKafkaProperties.listener['instance-authority-stats'].groupId}",
-    concurrency = "#{folioKafkaProperties.listener['instance-authority-stats'].concurrency}")
-  public void handleLinkUpdateFailEvents(ConsumerRecord<String, LinkUpdateReport> consumerRecord) {
-    LinkUpdateReport linkUpdateReport = consumerRecord.value();
-    log.debug("Processing authority update failed from Kafka event {}", linkUpdateReport);
-    handleReportEventsForTenant(linkUpdateReport.getTenant(), List.of(linkUpdateReport));
-  }
-
   private void handleReportEventsForTenant(String tenant, List<LinkUpdateReport> events) {
     executionService.executeSystemUserScoped(tenant, () -> {
       log.info("Triggering updates for stats records [tenant: {}, number of records: {}]", tenant, events.size());
