@@ -19,6 +19,9 @@ import org.folio.entlinks.domain.entity.AuthorityDataStatStatus;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.repository.AuthorityDataStatRepository;
 import org.folio.entlinks.utils.DateUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,17 +53,12 @@ public class AuthorityDataStatService {
 
   public List<AuthorityDataStat> fetchDataStats(OffsetDateTime fromDate, OffsetDateTime toDate,
                                                 AuthorityDataStatActionDto action, int limit) {
-
-    AuthorityDataStatAction authorityDataStatAction = switch (action) {
-      case DELETE -> AuthorityDataStatAction.DELETE;
-      case UPDATE_NATURAL_ID -> AuthorityDataStatAction.UPDATE_NATURAL_ID;
-      case UPDATE_HEADING -> AuthorityDataStatAction.UPDATE_HEADING;
-      default ->
-        throw new IllegalArgumentException("Unexpected enum constant: " + action);
-    };
-
-    return statRepository.findByDateAndAction(authorityDataStatAction.name(),
-      DateUtils.toTimestamp(fromDate), DateUtils.toTimestamp(toDate), limit);
+    Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("startedAt")));
+    return statRepository.findByActionAndStartedAtGreaterThanEqualAndStartedAtLessThanEqual(
+      AuthorityDataStatAction.valueOf(action.getValue()),
+      DateUtils.toTimestamp(fromDate),
+      DateUtils.toTimestamp(toDate),
+      pageable);
   }
 
   @Transactional
@@ -99,10 +97,10 @@ public class AuthorityDataStatService {
 
   /**
    * Updates authority statistics data.
-
+   *
    * @param jobId linked bib update job id.
    *              AuthorityDataStat id and jobId are interchangeable (jobId is used as id to create stat record)
-   * */
+   */
   private void updateStatsData(UUID jobId, List<LinkUpdateReport> reports) {
     var dataStat = statRepository.findById(jobId)
       .orElseThrow(() -> new IllegalStateException("Cannot find authority data statistics for id: " + jobId));
