@@ -3,31 +3,20 @@ package org.folio.entlinks.service.messaging.authority.handler;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.groups.Tuple.tuple;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
-import org.folio.entlinks.domain.dto.LinkUpdateReport;
-import org.folio.entlinks.domain.dto.ChangeTarget;
-import org.folio.entlinks.domain.dto.ChangeTargetLink;
 import org.folio.entlinks.domain.dto.InventoryEvent;
-import org.folio.entlinks.domain.dto.LinksChangeEvent;
-import org.folio.entlinks.exception.AuthorityBatchProcessingException;
+import org.folio.entlinks.domain.dto.LinkUpdateReport;
+import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
 import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
@@ -40,14 +29,12 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.entlinks.utils.KafkaUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
-import org.folio.support.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.marc4j.marc.impl.RecordImpl;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @UnitTest
@@ -61,6 +48,7 @@ class UpdateAuthorityChangeHandlerTest {
   private @Mock InstanceAuthorityLinkingRulesService linkingRulesService;
   private @Mock KafkaTemplate<String, LinkUpdateReport> linksUpdateKafkaTemplate;
   private @Mock FolioExecutionContext context;
+  private @Mock InstanceAuthorityLinkingService linkingService;
   private @Mock InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
   private @InjectMocks UpdateAuthorityChangeHandler handler;
 
@@ -81,21 +69,31 @@ class UpdateAuthorityChangeHandlerTest {
   @Test
   void handle_positive() {
     UUID id = UUID.randomUUID();
-    UUID naturalId = UUID.randomUUID();
-    var changes = Map.of(AuthorityChangeField.NATURAL_ID, new AuthorityChange(AuthorityChangeField.NATURAL_ID,"new", "old"));
+    long currentTimeMillis = System.currentTimeMillis();
+    var changes = Map.of(
+      AuthorityChangeField.PERSONAL_NAME, new AuthorityChange(AuthorityChangeField.PERSONAL_NAME, "new", "old")
+    );
     var event = new AuthorityChangeHolder(new InventoryEvent().id(id), changes, emptyMap(), 0);
     var report = new LinkUpdateReport();
-    report.setFailCause("Error");
+
+    report.setFailCause("Source record don't contains [authorityId: " + id + ", tag: notExistingTag]");
     report.setInstanceId(event.getAuthorityId());
     report.setTenant(context.getTenantId());
     report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
-    report.setTs(String.valueOf(System.currentTimeMillis()));
+    report.setTs(String.valueOf(currentTimeMillis).substring(0, 10));
+
+    when(mappingRulesProcessingService.getTagByAuthorityChangeField(any())).thenReturn("notExistingTag");
+    when(sourceRecordService.getAuthoritySourceRecordById(any()))
+      .thenReturn(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
+
     var topicName = KafkaUtils.getTenantTopicName(TOPIC_NAME, context.getTenantId());
     var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName, report);
-    doThrow(new AuthorityBatchProcessingException("Error")).when(authorityDataService).updateNaturalId(naturalId.toString(),id);
+
     handler.handle(List.of(event));
 
     verify(linksUpdateKafkaTemplate).send(producerRecord);
+    verify(mappingRulesProcessingService).getTagByAuthorityChangeField(AuthorityChangeField.PERSONAL_NAME);
+    verify(sourceRecordService).getAuthoritySourceRecordById(id);
   }
 
   @Test
@@ -110,10 +108,5 @@ class UpdateAuthorityChangeHandlerTest {
     var actual = handler.handle(null);
 
     assertThat(actual).isEmpty();
-  }
-
-  private ChangeTarget changeTarget(UUID instanceId, TestUtils.Link link) {
-    return new ChangeTarget().field(link.tag()).links(
-      Collections.singletonList(new ChangeTargetLink().instanceId(instanceId)));
   }
 }
