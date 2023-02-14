@@ -1,12 +1,11 @@
 package org.folio.entlinks.service.links;
 
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.folio.entlinks.utils.DateUtils.toTimestamp;
 
 import jakarta.persistence.criteria.Predicate;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
