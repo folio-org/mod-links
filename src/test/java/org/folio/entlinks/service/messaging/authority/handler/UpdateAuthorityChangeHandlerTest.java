@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum;
-import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -13,12 +12,12 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
+import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -29,7 +28,6 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolde
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.marc4j.marc.impl.RecordImpl;
@@ -38,7 +36,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaTemplate;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -48,19 +45,14 @@ class UpdateAuthorityChangeHandlerTest {
   private @Mock AuthorityDataService authorityDataService;
   private @Mock AuthoritySourceRecordService sourceRecordService;
   private @Mock InstanceAuthorityLinkingRulesService linkingRulesService;
-  private @Mock KafkaTemplate<String, LinkUpdateReport> linksUpdateKafkaTemplate;
+  private @Mock EventProducer<LinkUpdateReport> linksUpdateKafkaTemplate;
   private @Mock FolioExecutionContext context;
   private @Mock InstanceAuthorityLinkingService linkingService;
   private @Mock InstanceAuthorityChangeProperties instanceAuthorityChangeProperties;
   private @InjectMocks UpdateAuthorityChangeHandler handler;
 
   @Captor
-  private ArgumentCaptor<ProducerRecord<String, LinkUpdateReport>> producerRecord;
-
-  @BeforeEach
-  void setUp() {
-    when(context.getTenantId()).thenReturn(TENANT_ID);
-  }
+  private ArgumentCaptor<List<LinkUpdateReport>> producerRecord;
 
   @Test
   void getReplyEventType_positive() {
@@ -95,8 +87,8 @@ class UpdateAuthorityChangeHandlerTest {
     var event = new AuthorityChangeHolder(new InventoryEvent().id(id), changes, emptyMap(), 0);
     handler.handle(List.of(event));
 
-    verify(linksUpdateKafkaTemplate).send(producerRecord.capture());
-    assertThat(producerRecord.getValue().value())
+    verify(linksUpdateKafkaTemplate).sendMessages(producerRecord.capture());
+    assertThat(producerRecord.getValue().get(0))
       .extracting("tenant", "failCause", "status")
       .contains(expected.getTenant(), expected.getFailCause(), expected.getStatus());
   }

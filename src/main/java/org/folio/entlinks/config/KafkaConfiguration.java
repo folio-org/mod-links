@@ -13,6 +13,7 @@ import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
+import org.folio.entlinks.integration.kafka.EventProducer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -82,23 +83,6 @@ public class KafkaConfiguration {
     return consumerFactoryForEvent(kafkaProperties, LinkUpdateReport.class);
   }
 
-  private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(
-    ConsumerFactory<String, T> consumerFactory) {
-    var factory = new ConcurrentKafkaListenerContainerFactory<String, T>();
-    factory.setBatchListener(true);
-    factory.setConsumerFactory(consumerFactory);
-    factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
-    return factory;
-  }
-
-  private <T> ConsumerFactory<String, T> consumerFactoryForEvent(KafkaProperties kafkaProperties, Class<T> eventClass) {
-    var deserializer = new JsonDeserializer<>(eventClass);
-    Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
-    config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-    config.put(VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-    return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
-  }
-
   /**
    * Creates and configures {@link org.springframework.kafka.core.ProducerFactory} as Spring bean.
    *
@@ -108,10 +92,7 @@ public class KafkaConfiguration {
    */
   @Bean
   public ProducerFactory<String, LinksChangeEvent> producerFactory(KafkaProperties kafkaProperties) {
-    Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
-    configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-    configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-    return new DefaultKafkaProducerFactory<>(configProps);
+    return new DefaultKafkaProducerFactory<>(getProducerConfigProps(kafkaProperties));
   }
 
   /**
@@ -123,10 +104,7 @@ public class KafkaConfiguration {
    */
   @Bean
   public ProducerFactory<String, LinkUpdateReport> linkUpdateProducerFactory(KafkaProperties kafkaProperties) {
-    Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
-    configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-    configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-    return new DefaultKafkaProducerFactory<>(configProps);
+    return new DefaultKafkaProducerFactory<>(getProducerConfigProps(kafkaProperties));
   }
 
   /**
@@ -153,5 +131,41 @@ public class KafkaConfiguration {
   public KafkaTemplate<String, LinkUpdateReport> linksUpdateKafkaTemplate(
     ProducerFactory<String, LinkUpdateReport> linkUpdateProducerFactory) {
     return new KafkaTemplate<>(linkUpdateProducerFactory);
+  }
+
+  @Bean
+  public EventProducer<LinksChangeEvent> linksChangeEventMessageProducerService(
+    KafkaTemplate<String, LinksChangeEvent> template) {
+    return new EventProducer<>(template, "links.instance-authority");
+  }
+
+  @Bean
+  public EventProducer<LinkUpdateReport> linkUpdateReportMessageProducerService(
+    KafkaTemplate<String, LinkUpdateReport> template) {
+    return new EventProducer<>(template, "links.instance-authority-stats");
+  }
+
+  private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(
+    ConsumerFactory<String, T> consumerFactory) {
+    var factory = new ConcurrentKafkaListenerContainerFactory<String, T>();
+    factory.setBatchListener(true);
+    factory.setConsumerFactory(consumerFactory);
+    factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
+    return factory;
+  }
+
+  private <T> ConsumerFactory<String, T> consumerFactoryForEvent(KafkaProperties kafkaProperties, Class<T> eventClass) {
+    var deserializer = new JsonDeserializer<>(eventClass);
+    Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
+    config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+    config.put(VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+    return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
+  }
+
+  private Map<String, Object> getProducerConfigProps(KafkaProperties kafkaProperties) {
+    Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
+    configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+    return configProps;
   }
 }

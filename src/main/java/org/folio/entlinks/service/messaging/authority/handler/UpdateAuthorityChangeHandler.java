@@ -1,7 +1,6 @@
 package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.singletonList;
-import static org.folio.entlinks.utils.DateUtils.currentTsInString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.FieldChange;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
@@ -22,6 +20,7 @@ import org.folio.entlinks.exception.AuthorityBatchProcessingException;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
+import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -29,25 +28,19 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
-import org.folio.entlinks.utils.KafkaUtils;
-import org.folio.spring.FolioExecutionContext;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler {
 
-  private static final String TOPIC_NAME = "links.instance-authority-stats";
   private final AuthoritySourceFilesService sourceFilesService;
   private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private final AuthoritySourceRecordService sourceRecordService;
   private final InstanceAuthorityLinkingRulesService linkingRulesService;
   private final InstanceAuthorityLinkingService linkingService;
   private final AuthorityDataService authorityDataService;
-  private final KafkaTemplate<String, LinkUpdateReport> linksUpdateKafkaTemplate;
-  private final FolioExecutionContext context;
-
+  private final EventProducer<LinkUpdateReport> eventProducer;
 
   public UpdateAuthorityChangeHandler(InstanceAuthorityChangeProperties instanceAuthorityChangeProperties,
                                       AuthoritySourceFilesService sourceFilesService,
@@ -55,9 +48,8 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
                                       AuthoritySourceRecordService sourceRecordService,
                                       InstanceAuthorityLinkingRulesService linkingRulesService,
                                       InstanceAuthorityLinkingService linkingService,
-                                      KafkaTemplate<String, LinkUpdateReport> kafkaTemplate,
                                       AuthorityDataService authorityDataService,
-                                      FolioExecutionContext context) {
+                                      EventProducer<LinkUpdateReport> eventProducer) {
     super(instanceAuthorityChangeProperties, linkingService);
     this.sourceFilesService = sourceFilesService;
     this.mappingRulesProcessingService = mappingRulesProcessingService;
@@ -65,8 +57,7 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     this.linkingRulesService = linkingRulesService;
     this.linkingService = linkingService;
     this.authorityDataService = authorityDataService;
-    this.linksUpdateKafkaTemplate = kafkaTemplate;
-    this.context = context;
+    this.eventProducer = eventProducer;
   }
 
   @Override
@@ -84,21 +75,12 @@ public class UpdateAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         var report = new LinkUpdateReport();
         report.setFailCause(e.getMessage());
         report.setJobId(change.getAuthorityDataStatId());
-        report.setTenant(context.getTenantId());
         report.setStatus(LinkUpdateReport.StatusEnum.FAIL);
-        report.setTs(currentTsInString());
-        var producerRecord = new ProducerRecord<String, LinkUpdateReport>(topicName(), report);
-        KafkaUtils.toKafkaHeaders(context.getOkapiHeaders())
-          .forEach(header -> producerRecord.headers().add(header));
-        linksUpdateKafkaTemplate.send(producerRecord);
+        eventProducer.sendMessages(singletonList(report));
       }
     }
 
     return linksEvents;
-  }
-
-  private String topicName() {
-    return KafkaUtils.getTenantTopicName(TOPIC_NAME, context.getTenantId());
   }
 
   @Override

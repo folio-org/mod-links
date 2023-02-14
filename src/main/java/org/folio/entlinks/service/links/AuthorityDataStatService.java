@@ -36,14 +36,6 @@ public class AuthorityDataStatService {
   private final AuthorityDataService authorityDataService;
   private final InstanceAuthorityLinkingService linkingService;
 
-  private static void checkIfAllFailed(List<LinkUpdateReport> reports, AuthorityDataStat dataStat) {
-    reports.stream()
-      .filter(linkUpdateReport -> CollectionUtils.isEmpty(linkUpdateReport.getLinkIds())
-        && linkUpdateReport.getStatus().equals(FAIL))
-      .findFirst()
-      .ifPresent(linkUpdateReport -> dataStat.setLbFailed(dataStat.getLbTotal()));
-  }
-
   public List<AuthorityDataStat> createInBatch(List<AuthorityDataStat> stats) {
     var authorityDataSet = stats.stream()
       .map(AuthorityDataStat::getAuthorityData)
@@ -76,6 +68,14 @@ public class AuthorityDataStatService {
     log.debug("Updating links,stats for reports: [reports: {}]", reports);
     updateLinks(jobId, reports);
     updateStatsData(jobId, reports);
+  }
+
+  private void checkIfAllFailed(List<LinkUpdateReport> reports, AuthorityDataStat dataStat) {
+    reports.stream()
+      .filter(linkUpdateReport -> CollectionUtils.isEmpty(linkUpdateReport.getLinkIds())
+        && linkUpdateReport.getStatus().equals(FAIL))
+      .findFirst()
+      .ifPresent(linkUpdateReport -> dataStat.setLbFailed(dataStat.getLbTotal()));
   }
 
   private void updateLinks(UUID jobId, List<LinkUpdateReport> reports) {
