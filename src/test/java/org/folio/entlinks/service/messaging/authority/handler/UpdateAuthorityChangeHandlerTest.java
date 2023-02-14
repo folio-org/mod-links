@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum;
-import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -29,7 +28,6 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolde
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.marc4j.marc.impl.RecordImpl;
@@ -56,11 +54,6 @@ class UpdateAuthorityChangeHandlerTest {
 
   @Captor
   private ArgumentCaptor<ProducerRecord<String, LinkUpdateReport>> producerRecord;
-
-  @BeforeEach
-  void setUp() {
-    when(context.getTenantId()).thenReturn(TENANT_ID);
-  }
 
   @Test
   void getReplyEventType_positive() {
