@@ -1,5 +1,9 @@
 package org.folio.entlinks.controller;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,12 +13,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
+import org.apache.http.HttpStatus;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.repository.AuthorityDataStatRepository;
@@ -26,6 +30,7 @@ import org.folio.support.TestUtils;
 import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @IntegrationTest
@@ -36,9 +41,7 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
   private static final OffsetDateTime TO_DATE = OffsetDateTime.of(2021, 10, 10, 10, 10, 10, 10, ZoneOffset.UTC);
   private static final Integer LIMIT = 2;
   private static final AuthorityDataStatActionDto STAT_ACTION_DTO = AuthorityDataStatActionDto.UPDATE_HEADING;
-
   private @MockBean AuthorityDataStatRepository authorityDataStatRepository;
-  private @MockBean UsersClient usersClient;
 
   @Test
   @SneakyThrows
@@ -57,8 +60,11 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
     UUID userId2 = randomUUID();
     var list = TestUtils.dataStatList(userId1, userId2, AuthorityDataStatAction.UPDATE_HEADING);
     ResultList<UsersClient.User> userResultList = TestUtils.usersList(List.of(userId1, userId2));
-    getWireMock().stubFor(WireMock.get(WireMock.urlEqualTo("users"))
-      .willReturn(WireMock.ok(userResultList.toString())));
+    okapi.wireMockServer().stubFor(get(urlPathEqualTo("/users"))
+      .withQueryParam("query", equalTo("id==" + userId1 + " or id==" + userId2))
+      .willReturn(aResponse().withBody(OBJECT_MAPPER.writeValueAsString(userResultList))
+        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .withStatus(HttpStatus.SC_OK)));
     when(authorityDataStatRepository.findByActionAndStartedAtGreaterThanEqualAndStartedAtLessThanEqual(
       eq(AuthorityDataStatAction.valueOf(STAT_ACTION_DTO.getValue())),
       eq(DateUtils.toTimestamp(FROM_DATE)),
@@ -70,17 +76,22 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
       + "&fromDate=" + FROM_DATE
       + "&toDate=" + TO_DATE + "&limit=" + LIMIT;
 
+    var authorityDataStat = list.get(0);
     doGet(preparedLink)
       .andExpect(status().is2xxSuccessful())
       .andExpect(jsonPath("$.stats[0].action", is(AuthorityDataStatActionDto.UPDATE_HEADING.name())))
-      .andExpect(jsonPath("$.stats[0].id", is(list.get(0).getId().toString())))
-      .andExpect(jsonPath("$.stats[0].authorityId", is(list.get(0).getAuthorityData().getId().toString())))
-      .andExpect(jsonPath("$.stats[0].lbFailed", is(list.get(0).getLbFailed())))
-      .andExpect(jsonPath("$.stats[0].lbUpdated", is(list.get(0).getLbUpdated())))
-      .andExpect(jsonPath("$.stats[0].lbTotal", is(list.get(0).getLbTotal())))
-      .andExpect(jsonPath("$.stats[0].headingOld", is(list.get(0).getHeadingOld())))
-      .andExpect(jsonPath("$.stats[0].headingNew", is(list.get(0).getHeadingNew())))
-      .andExpect(jsonPath("$.stats[0].headingTypeOld", is(list.get(0).getHeadingTypeOld())))
-      .andExpect(jsonPath("$.stats[0].headingTypeNew", is(list.get(0).getHeadingTypeNew())));
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is(userResultList.getResult().get(0).personal().firstName())))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is(userResultList.getResult().get(0).personal().lastName())))
+      .andExpect(jsonPath("$.stats[0].metadata.startedAt", is(DateUtils.fromTimestamp(authorityDataStat.getStartedAt()).toString())))
+      .andExpect(jsonPath("$.stats[0].metadata.completedAt", is(DateUtils.fromTimestamp(authorityDataStat.getCompletedAt()).toString())))
+      .andExpect(jsonPath("$.stats[0].id", is(authorityDataStat.getId().toString())))
+      .andExpect(jsonPath("$.stats[0].authorityId", is(authorityDataStat.getAuthorityData().getId().toString())))
+      .andExpect(jsonPath("$.stats[0].lbFailed", is(authorityDataStat.getLbFailed())))
+      .andExpect(jsonPath("$.stats[0].lbUpdated", is(authorityDataStat.getLbUpdated())))
+      .andExpect(jsonPath("$.stats[0].lbTotal", is(authorityDataStat.getLbTotal())))
+      .andExpect(jsonPath("$.stats[0].headingOld", is(authorityDataStat.getHeadingOld())))
+      .andExpect(jsonPath("$.stats[0].headingNew", is(authorityDataStat.getHeadingNew())))
+      .andExpect(jsonPath("$.stats[0].headingTypeOld", is(authorityDataStat.getHeadingTypeOld())))
+      .andExpect(jsonPath("$.stats[0].headingTypeNew", is(authorityDataStat.getHeadingTypeNew())));
   }
 }

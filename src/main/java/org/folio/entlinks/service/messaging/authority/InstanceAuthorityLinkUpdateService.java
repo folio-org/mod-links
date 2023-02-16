@@ -21,6 +21,7 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
+import org.folio.spring.FolioExecutionContext;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -32,18 +33,20 @@ public class InstanceAuthorityLinkUpdateService {
   private final AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private final InstanceAuthorityLinkingService linkingService;
   private final EventProducer<LinksChangeEvent> eventProducer;
+  private final FolioExecutionContext context;
 
   public InstanceAuthorityLinkUpdateService(AuthorityDataStatService authorityDataStatService,
                                             AuthorityMappingRulesProcessingService mappingRulesProcessingService,
                                             InstanceAuthorityLinkingService linkingService,
                                             EventProducer<LinksChangeEvent> eventProducer,
-                                            List<AuthorityChangeHandler> changeHandlers) {
+                                            List<AuthorityChangeHandler> changeHandlers, FolioExecutionContext context) {
     this.authorityDataStatService = authorityDataStatService;
     this.mappingRulesProcessingService = mappingRulesProcessingService;
     this.linkingService = linkingService;
     this.eventProducer = eventProducer;
     this.changeHandlers = changeHandlers.stream()
       .collect(Collectors.toMap(AuthorityChangeHandler::supportedAuthorityChangeType, handler -> handler));
+    this.context = context;
   }
 
   public void handleAuthoritiesChanges(List<InventoryEvent> events) {
@@ -89,7 +92,11 @@ public class InstanceAuthorityLinkUpdateService {
 
   private void prepareAndSaveAuthorityDataStats(List<AuthorityChangeHolder> changeHolders) {
     var authorityDataStats = changeHolders.stream()
-      .map(AuthorityChangeHolder::toAuthorityDataStat)
+      .map(authorityChangeHolder -> {
+        var stat = authorityChangeHolder.toAuthorityDataStat();
+        stat.setStartedByUserId(context.getUserId());
+        return stat;
+      })
       .toList();
 
     var dataStats = authorityDataStatService.createInBatch(authorityDataStats);

@@ -14,7 +14,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +64,16 @@ public class IntegrationTestBase {
   protected static OkapiConfiguration okapi;
   protected static KafkaTemplate<String, String> kafkaTemplate;
   protected static ObjectMapper objectMapper;
+  protected static final ObjectMapper OBJECT_MAPPER;
 
+  static {
+    OBJECT_MAPPER = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+      .registerModule(new JavaTimeModule());
+  }
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
                     @Autowired ObjectMapper objectMapper,

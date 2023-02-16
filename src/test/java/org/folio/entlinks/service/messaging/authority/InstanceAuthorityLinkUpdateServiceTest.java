@@ -20,6 +20,7 @@ import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.handler.AuthorityChangeHandler;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
+import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +44,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
   private @Mock AuthorityChangeHandler deleteHandler;
   private @Mock AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private @Mock InstanceAuthorityLinkingService linkingService;
+  private @Mock FolioExecutionContext context;
 
   private InstanceAuthorityLinkUpdateService service;
 
@@ -51,7 +54,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     when(deleteHandler.supportedAuthorityChangeType()).thenReturn(AuthorityChangeType.DELETE);
 
     service = new InstanceAuthorityLinkUpdateService(authorityDataStatService,
-      mappingRulesProcessingService, linkingService, eventProducer, List.of(updateHandler, deleteHandler));
+      mappingRulesProcessingService, linkingService, eventProducer, List.of(updateHandler, deleteHandler), context);
   }
 
   @Test
