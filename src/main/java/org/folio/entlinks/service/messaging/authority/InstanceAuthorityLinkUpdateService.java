@@ -39,7 +39,8 @@ public class InstanceAuthorityLinkUpdateService {
                                             AuthorityMappingRulesProcessingService mappingRulesProcessingService,
                                             InstanceAuthorityLinkingService linkingService,
                                             EventProducer<LinksChangeEvent> eventProducer,
-                                            List<AuthorityChangeHandler> changeHandlers, FolioExecutionContext context) {
+                                            List<AuthorityChangeHandler> changeHandlers,
+                                            FolioExecutionContext context) {
     this.authorityDataStatService = authorityDataStatService;
     this.mappingRulesProcessingService = mappingRulesProcessingService;
     this.linkingService = linkingService;

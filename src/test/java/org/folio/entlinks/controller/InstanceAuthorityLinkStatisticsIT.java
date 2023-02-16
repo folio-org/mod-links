@@ -77,13 +77,16 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
       + "&toDate=" + TO_DATE + "&limit=" + LIMIT;
 
     var authorityDataStat = list.get(0);
+    UsersClient.User.Personal personal = userResultList.getResult().get(0).personal();
+    String startedAtStr = DateUtils.fromTimestamp(authorityDataStat.getStartedAt()).toString();
+    String completedAtStr = DateUtils.fromTimestamp(authorityDataStat.getCompletedAt()).toString();
     doGet(preparedLink)
       .andExpect(status().is2xxSuccessful())
       .andExpect(jsonPath("$.stats[0].action", is(AuthorityDataStatActionDto.UPDATE_HEADING.name())))
-      .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is(userResultList.getResult().get(0).personal().firstName())))
-      .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is(userResultList.getResult().get(0).personal().lastName())))
-      .andExpect(jsonPath("$.stats[0].metadata.startedAt", is(DateUtils.fromTimestamp(authorityDataStat.getStartedAt()).toString())))
-      .andExpect(jsonPath("$.stats[0].metadata.completedAt", is(DateUtils.fromTimestamp(authorityDataStat.getCompletedAt()).toString())))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is(personal.firstName())))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is(personal.lastName())))
+      .andExpect(jsonPath("$.stats[0].metadata.startedAt", is(startedAtStr)))
+      .andExpect(jsonPath("$.stats[0].metadata.completedAt", is(completedAtStr)))
       .andExpect(jsonPath("$.stats[0].id", is(authorityDataStat.getId().toString())))
       .andExpect(jsonPath("$.stats[0].authorityId", is(authorityDataStat.getAuthorityData().getId().toString())))
       .andExpect(jsonPath("$.stats[0].lbFailed", is(authorityDataStat.getLbFailed())))

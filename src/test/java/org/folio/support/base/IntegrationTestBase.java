@@ -74,6 +74,7 @@ public class IntegrationTestBase {
       .setSerializationInclusion(JsonInclude.Include.NON_NULL)
       .registerModule(new JavaTimeModule());
   }
+
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
                     @Autowired ObjectMapper objectMapper,
