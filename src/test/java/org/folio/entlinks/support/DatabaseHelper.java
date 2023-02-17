@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 public class DatabaseHelper {
-
   public static final String AUTHORITY_DATA_STAT = "authority_data_stat";
   public static final String AUTHORITY_DATA = "authority_data";
   private final FolioModuleMetadata metadata;
