@@ -7,6 +7,7 @@ import static org.folio.entlinks.service.messaging.authority.model.AuthorityChan
 import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField.PERSONAL_NAME_TITLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
@@ -263,6 +264,53 @@ class AuthorityChangeHolderTest {
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
       .containsExactly(AuthorityDataStatAction.DELETE, "o", null, "100", "100", "o", null, null, null, 1, null);
+  }
 
+  @Test
+  void toAuthorityDataStat_positive_metadataGiven() {
+    UUID startedByUserId = UUID.randomUUID();
+    String updatedByUserId = startedByUserId.toString();
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent().type(InventoryEventType.UPDATE.toString())
+        ._new(new AuthorityInventoryRecord().naturalId("n").metaData(new org.folio.entlinks.domain.dto.MetaData().updatedByUserId(updatedByUserId)))
+        .old(new AuthorityInventoryRecord().naturalId("o")),
+      Map.of(PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "n", "o"),
+        NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
+      Map.of(PERSONAL_NAME, "100"), 1);
+
+    var actual = holder.toAuthorityDataStat();
+
+    assertThat(actual)
+      .extracting(STAT_OBJ_PROPERTIES)
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1,
+        startedByUserId);
+  }
+
+  @Test
+  void getFieldChange_positive_onlyNaturalIdChanges() {
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent()
+        ._new(new AuthorityInventoryRecord())
+        .old(new AuthorityInventoryRecord()),
+      Map.of(NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
+      Map.of(), 1);
+
+    var actual = holder.getFieldChange();
+
+    assertNull(actual);
+  }
+
+  @Test
+  void getFieldChange_positive_noFieldChange() {
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent()
+        ._new(new AuthorityInventoryRecord())
+        .old(new AuthorityInventoryRecord()),
+      Map.of(),
+      Map.of(), 1);
+
+    var actual = holder.getFieldChange();
+
+    assertNull(actual);
   }
 }
