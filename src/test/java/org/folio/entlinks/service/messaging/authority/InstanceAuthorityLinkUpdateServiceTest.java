@@ -20,7 +20,6 @@ import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.handler.AuthorityChangeHandler;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
-import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +42,6 @@ class InstanceAuthorityLinkUpdateServiceTest {
   private @Mock AuthorityChangeHandler deleteHandler;
   private @Mock AuthorityMappingRulesProcessingService mappingRulesProcessingService;
   private @Mock InstanceAuthorityLinkingService linkingService;
-  private @Mock FolioExecutionContext context;
-
   private InstanceAuthorityLinkUpdateService service;
 
   @BeforeEach
@@ -53,7 +50,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     when(deleteHandler.supportedAuthorityChangeType()).thenReturn(AuthorityChangeType.DELETE);
 
     service = new InstanceAuthorityLinkUpdateService(authorityDataStatService,
-      mappingRulesProcessingService, linkingService, eventProducer, List.of(updateHandler, deleteHandler), context);
+      mappingRulesProcessingService, linkingService, eventProducer, List.of(updateHandler, deleteHandler));
   }
 
   @Test
