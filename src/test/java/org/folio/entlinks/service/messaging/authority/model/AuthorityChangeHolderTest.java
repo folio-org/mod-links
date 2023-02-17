@@ -145,6 +145,20 @@ class AuthorityChangeHolderTest {
   }
 
   @Test
+  void getFieldChange_positive_noFieldChange() {
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent()
+        ._new(new AuthorityInventoryRecord())
+        .old(new AuthorityInventoryRecord()),
+      Map.of(),
+      Map.of(), 1);
+
+    var actual = holder.getFieldChange();
+
+    assertNull(actual);
+  }
+
+  @Test
   void getFieldChange_positive_fieldAndNaturalIdChanges() {
     var holder = new AuthorityChangeHolder(
       new InventoryEvent()
