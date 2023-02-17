@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Meta data",
+  "properties": {
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date-time when authority update was registered"
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date-time when update of all related links was completed"
+    },
+    "startedByUserId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User's ID that triggers record"
+    },
+    "startedByUserFirstName": {
+      "type": "string",
+      "description": "User's ID that triggers record"
+    },
+    "startedByUserLastName": {
+      "type": "string",
+      "description": "User's ID that triggers record"
+    }
+  }
+}

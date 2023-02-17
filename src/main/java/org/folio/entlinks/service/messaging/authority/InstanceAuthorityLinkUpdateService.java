@@ -89,14 +89,7 @@ public class InstanceAuthorityLinkUpdateService {
 
   private void prepareAndSaveAuthorityDataStats(List<AuthorityChangeHolder> changeHolders) {
     var authorityDataStats = changeHolders.stream()
-      .map(authorityChangeHolder -> {
-        var stat = authorityChangeHolder.toAuthorityDataStat();
-        InventoryEvent event = authorityChangeHolder.getEvent();
-        if (event.getNew() != null) {
-          stat.setStartedByUserId(event.getNew().getId());
-        }
-        return stat;
-      })
+      .map(AuthorityChangeHolder::toAuthorityDataStat)
       .toList();
 
     var dataStats = authorityDataStatService.createInBatch(authorityDataStats);

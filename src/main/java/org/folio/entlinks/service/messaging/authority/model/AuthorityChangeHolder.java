@@ -104,7 +104,7 @@ public class AuthorityChangeHolder {
       }
     }
 
-    return AuthorityDataStat.builder()
+    AuthorityDataStat authorityDataStat = AuthorityDataStat.builder()
       .authorityData(AuthorityData.builder()
         .id(getAuthorityId())
         .naturalId(getNewNaturalId() == null ? getOldNaturalId() : getNewNaturalId())
@@ -120,6 +120,11 @@ public class AuthorityChangeHolder {
       .action(getAuthorityDataStatAction())
       .lbTotal(numberOfLinks)
       .build();
+    if (this.event.getNew() != null && this.event.getNew().getMetadata() != null) {
+      authorityDataStat.setStartedByUserId(this.event.getNew().getMetadata().getStartedByUserId());
+    }
+
+    return authorityDataStat;
   }
 
   @NotNull
@@ -130,8 +135,8 @@ public class AuthorityChangeHolder {
   private AuthorityDataStatAction getAuthorityDataStatAction() {
     return switch (getInventoryEventType()) {
       case UPDATE -> isOnlyNaturalIdChanged()
-                     ? AuthorityDataStatAction.UPDATE_NATURAL_ID
-                     : AuthorityDataStatAction.UPDATE_HEADING;
+        ? AuthorityDataStatAction.UPDATE_NATURAL_ID
+        : AuthorityDataStatAction.UPDATE_HEADING;
       case DELETE -> AuthorityDataStatAction.DELETE;
     };
   }

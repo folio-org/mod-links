@@ -372,6 +372,9 @@ components:
     sourceRecord:
       $ref: schemas/sourceRecord.json
 
+    metadata:
+      $ref: schemas/metadata.json
+
     linksChangeEvent:
       type: object
       description: Links change event body
@@ -513,7 +516,7 @@ components:
           type: integer
         metadata:
           description: Statistics metadata
-          $ref: '#/components/schemas/metadata'
+          $ref: schemas/metadata.json
 
     authorityChangeStatDtoCollection:
       description: Collection of authority changes statistic
@@ -528,28 +531,6 @@ components:
           description: Next response item date to seek by
           type: string
           format: date-time
-
-    metadata:
-      description: Meta data for authorityDataStatDto
-      type: object
-      properties:
-        startedAt:
-          description: Date-time when authority update was registered
-          type: string
-          format: date-time
-        completedAt:
-          description: Date-time when update of all related links was completed
-          type: string
-          format: date-time
-        startedByUserId:
-          description: User's ID that triggers record
-          $ref: "#/components/schemas/uuid"
-        startedByUserFirstName:
-          description: User's first name that triggers record
-          type: string
-        startedByUserLastName:
-          description: User's last name that triggers record
-          type: string
 
     linkUpdateReport:
       description: Link update report

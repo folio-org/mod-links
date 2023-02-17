@@ -14,16 +14,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.folio.entlinks.support.DatabaseHelper;
+import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.EnableKafka;
 import org.folio.spring.test.extension.EnableOkapi;
@@ -42,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -64,25 +63,19 @@ public class IntegrationTestBase {
   protected static OkapiConfiguration okapi;
   protected static KafkaTemplate<String, String> kafkaTemplate;
   protected static ObjectMapper objectMapper;
-  protected static final ObjectMapper OBJECT_MAPPER;
-
-  static {
-    OBJECT_MAPPER = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-      .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-      .registerModule(new JavaTimeModule());
-  }
+  protected static DatabaseHelper databaseHelper;
+  protected static final String TENANT = "test";
 
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
                     @Autowired ObjectMapper objectMapper,
-                    @Autowired KafkaTemplate<String, String> kafkaTemplate) {
+                    @Autowired KafkaTemplate<String, String> kafkaTemplate,
+                    @Autowired DatabaseHelper databaseHelper) {
     System.setProperty("env", "folio-test");
     IntegrationTestBase.mockMvc = mockMvc;
     IntegrationTestBase.objectMapper = objectMapper;
     IntegrationTestBase.kafkaTemplate = kafkaTemplate;
+    IntegrationTestBase.databaseHelper = databaseHelper;
     setUpTenant();
   }
 
@@ -203,6 +196,11 @@ public class IntegrationTestBase {
     @Primary
     public KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> producerFactory) {
       return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public DatabaseHelper databaseHelper(JdbcTemplate jdbcTemplate, FolioModuleMetadata moduleMetadata) {
+      return new DatabaseHelper(moduleMetadata, jdbcTemplate);
     }
   }
 }
