@@ -59,7 +59,8 @@
     },
     "metaData": {
       "type": "object",
-      "$ref": "metaData.json"
+      "$ref": "metaData.json",
+      "description": "Authority metaData"
     }
   }
 }
