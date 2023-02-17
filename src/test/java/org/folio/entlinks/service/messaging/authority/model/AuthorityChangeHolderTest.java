@@ -7,7 +7,6 @@ import static org.folio.entlinks.service.messaging.authority.model.AuthorityChan
 import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField.PERSONAL_NAME_TITLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
@@ -15,7 +14,6 @@ import java.util.UUID;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.InventoryEventType;
-import org.folio.entlinks.domain.dto.MetaData;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.junit.jupiter.api.Test;
 
