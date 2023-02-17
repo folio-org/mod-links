@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.InventoryEventType;
+import org.folio.entlinks.domain.dto.Metadata;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class AuthorityChangeHolderTest {
   public static final String[] STAT_OBJ_PROPERTIES =
     {"action", "headingOld", "headingNew", "headingTypeOld", "headingTypeNew",
      "authorityNaturalIdOld", "authorityNaturalIdNew", "authoritySourceFileOld", "authoritySourceFileNew",
-     "lbTotal"};
+     "lbTotal", "startedByUserId"};
 
   @Test
   void getNewNaturalId_positive() {
@@ -214,7 +215,7 @@ class AuthorityChangeHolderTest {
 
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
-      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "101", "o", "n", null, null, 1);
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "101", "o", "n", null, null, 1, null);
   }
 
   @Test
@@ -230,7 +231,7 @@ class AuthorityChangeHolderTest {
 
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
-      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "n", "n", null, null, 1);
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "n", "n", null, null, 1, null);
   }
 
   @Test
@@ -247,7 +248,25 @@ class AuthorityChangeHolderTest {
 
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
-      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1);
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1, null);
+  }
+
+  @Test
+  void toAuthorityDataStat_positive_metadataGiven() {
+    UUID startedByUserId = UUID.randomUUID();
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent().type(InventoryEventType.UPDATE.toString())
+        ._new(new AuthorityInventoryRecord().naturalId("n").metadata(new Metadata().startedByUserId(startedByUserId)))
+        .old(new AuthorityInventoryRecord().naturalId("o")),
+      Map.of(PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "n", "o"),
+        NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
+      Map.of(PERSONAL_NAME, "100"), 1);
+
+    var actual = holder.toAuthorityDataStat();
+
+    assertThat(actual)
+      .extracting(STAT_OBJ_PROPERTIES)
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1, startedByUserId);
   }
 
   @Test
@@ -262,7 +281,7 @@ class AuthorityChangeHolderTest {
 
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
-      .containsExactly(AuthorityDataStatAction.DELETE, "o", null, "100", "100", "o", null, null, null, 1);
+      .containsExactly(AuthorityDataStatAction.DELETE, "o", null, "100", "100", "o", null, null, null, 1, null);
 
   }
 }
