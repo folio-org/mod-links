@@ -266,7 +266,8 @@ class AuthorityChangeHolderTest {
 
     assertThat(actual)
       .extracting(STAT_OBJ_PROPERTIES)
-      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1, startedByUserId);
+      .containsExactly(AuthorityDataStatAction.UPDATE_HEADING, "o", "n", "100", "100", "o", "n", null, null, 1,
+        startedByUserId);
   }
 
   @Test
