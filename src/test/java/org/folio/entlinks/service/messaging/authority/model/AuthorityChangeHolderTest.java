@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.InventoryEventType;
-import org.folio.entlinks.domain.dto.Metadata;
+import org.folio.entlinks.domain.dto.MetaData;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.junit.jupiter.api.Test;
 
@@ -254,9 +254,10 @@ class AuthorityChangeHolderTest {
   @Test
   void toAuthorityDataStat_positive_metadataGiven() {
     UUID startedByUserId = UUID.randomUUID();
+    String updatedByUserId = startedByUserId.toString();
     var holder = new AuthorityChangeHolder(
       new InventoryEvent().type(InventoryEventType.UPDATE.toString())
-        ._new(new AuthorityInventoryRecord().naturalId("n").metadata(new Metadata().startedByUserId(startedByUserId)))
+        ._new(new AuthorityInventoryRecord().naturalId("n").metaData(new MetaData().updatedByUserId(updatedByUserId)))
         .old(new AuthorityInventoryRecord().naturalId("o")),
       Map.of(PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "n", "o"),
         NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
