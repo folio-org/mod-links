@@ -91,7 +91,10 @@ public class InstanceAuthorityLinkUpdateService {
     var authorityDataStats = changeHolders.stream()
       .map(authorityChangeHolder -> {
         var stat = authorityChangeHolder.toAuthorityDataStat();
-        stat.setStartedByUserId(authorityChangeHolder.getEvent().getNew().getId());
+        InventoryEvent event = authorityChangeHolder.getEvent();
+        if (event.getNew() != null) {
+          stat.setStartedByUserId(event.getNew().getId());
+        }
         return stat;
       })
       .toList();
