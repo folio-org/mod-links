@@ -7,6 +7,7 @@ import static org.folio.entlinks.service.messaging.authority.model.AuthorityChan
 import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField.PERSONAL_NAME_TITLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
@@ -156,6 +157,20 @@ class AuthorityChangeHolderTest {
     var actual = holder.getFieldChange();
 
     assertEquals(PERSONAL_NAME, actual);
+  }
+
+  @Test
+  void getFieldChange_positive_onlyNaturalIdChanges() {
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent()
+        ._new(new AuthorityInventoryRecord())
+        .old(new AuthorityInventoryRecord()),
+      Map.of(NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
+      Map.of(), 1);
+
+    var actual = holder.getFieldChange();
+
+    assertNull(actual);
   }
 
   @Test
