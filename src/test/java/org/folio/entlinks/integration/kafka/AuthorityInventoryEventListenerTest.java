@@ -76,6 +76,7 @@ class AuthorityInventoryEventListenerTest {
     var authId = UUID.randomUUID();
     String updatedByUserId = UUID.randomUUID().toString();
     MetaData metaData = new MetaData().updatedByUserId(updatedByUserId);
+
     var newRecord = new AuthorityInventoryRecord().id(authId).metaData(metaData);
     var oldRecord = new AuthorityInventoryRecord().id(authId).metaData(metaData.createdByUserId(updatedByUserId));
     var event = TestUtils.authorityEvent(type, newRecord, oldRecord);
