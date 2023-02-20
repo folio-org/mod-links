@@ -156,7 +156,7 @@ public class AuthorityChangeHolder {
   }
 
   private boolean isHeadingTypeChanged() {
-    return changes.size() >= 2 && !changes.containsKey(AuthorityChangeField.NATURAL_ID);
+    return changes.size() > 2 || changes.size() == 2 && !changes.containsKey(AuthorityChangeField.NATURAL_ID);
   }
 
 }
