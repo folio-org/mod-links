@@ -169,7 +169,7 @@ class AuthorityChangeHolderTest {
     var holder = new AuthorityChangeHolder(
       new InventoryEvent().type(InventoryEventType.UPDATE.toString())
         ._new(new AuthorityInventoryRecord().naturalId("n")
-          .metaData(new org.folio.entlinks.domain.dto.MetaData().updatedByUserId(updatedByUserId)))
+          .metadata(new org.folio.entlinks.domain.dto.MetaData().updatedByUserId(updatedByUserId)))
         .old(new AuthorityInventoryRecord().naturalId("o")),
       Map.of(PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "n", "o"),
         NATURAL_ID, new AuthorityChange(NATURAL_ID, "n", "o")),
