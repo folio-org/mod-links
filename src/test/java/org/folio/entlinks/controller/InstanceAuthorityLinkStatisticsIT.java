@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
+import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,17 +22,18 @@ import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.support.DatabaseHelper;
+import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.spring.tools.client.UsersClient;
 import org.folio.spring.tools.model.ResultList;
 import org.folio.support.TestUtils;
 import org.folio.support.base.IntegrationTestBase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @IntegrationTest
+@DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_DATA_STAT, DatabaseHelper.AUTHORITY_DATA})
 class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
 
   private static final String LINK_STATISTICS_ENDPOINT = "/links/authority/stats";
@@ -39,12 +41,6 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
   private static final OffsetDateTime TO_DATE = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC);
   private static final Integer LIMIT = 2;
   private static final AuthorityDataStatActionDto STAT_ACTION_DTO = AuthorityDataStatActionDto.UPDATE_HEADING;
-
-  @BeforeEach
-  void setUp() {
-    databaseHelper.clearTable(TENANT, DatabaseHelper.AUTHORITY_DATA_STAT);
-    databaseHelper.clearTable(TENANT, DatabaseHelper.AUTHORITY_DATA);
-  }
 
   @Test
   @SneakyThrows
@@ -69,8 +65,8 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .withStatus(HttpStatus.SC_OK)));
     for (AuthorityDataStat authorityDataStat : list) {
-      databaseHelper.saveAuthData(authorityDataStat.getAuthorityData(), TENANT);
-      databaseHelper.saveStat(authorityDataStat, TENANT);
+      databaseHelper.saveAuthData(authorityDataStat.getAuthorityData(), TENANT_ID);
+      databaseHelper.saveStat(authorityDataStat, TENANT_ID);
     }
 
     var preparedLink = LINK_STATISTICS_ENDPOINT + "?action=" + STAT_ACTION_DTO

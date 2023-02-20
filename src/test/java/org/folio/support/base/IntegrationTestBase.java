@@ -64,7 +64,6 @@ public class IntegrationTestBase {
   protected static KafkaTemplate<String, String> kafkaTemplate;
   protected static ObjectMapper objectMapper;
   protected static DatabaseHelper databaseHelper;
-  protected static final String TENANT = "test";
 
   @BeforeAll
   static void setUp(@Autowired MockMvc mockMvc,
