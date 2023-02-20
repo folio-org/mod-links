@@ -252,7 +252,7 @@ class AuthorityChangeHolderTest {
   }
 
   @Test
-  public void toAuthorityDataStat_positive_authorityDeleted() {
+  void toAuthorityDataStat_positive_authorityDeleted() {
     var holder = new AuthorityChangeHolder(
       new InventoryEvent().type(InventoryEventType.DELETE.toString())
         .old(new AuthorityInventoryRecord().naturalId("o")),
@@ -267,7 +267,7 @@ class AuthorityChangeHolderTest {
   }
 
   @Test
-  public void toAuthorityDataStat_positive_metadataGiven() {
+  void toAuthorityDataStat_positive_metadataGiven() {
     UUID startedByUserId = UUID.randomUUID();
     String updatedByUserId = startedByUserId.toString();
     var holder = new AuthorityChangeHolder(
@@ -288,7 +288,7 @@ class AuthorityChangeHolderTest {
   }
 
   @Test
-  public void getFieldChange_positive_onlyNaturalIdChanges() {
+  void getFieldChange_null_onlyNaturalIdChanges() {
     var holder = new AuthorityChangeHolder(
       new InventoryEvent()
         ._new(new AuthorityInventoryRecord())
@@ -302,7 +302,21 @@ class AuthorityChangeHolderTest {
   }
 
   @Test
-  public void getFieldChange_positive_noFieldChange() {
+  void getFieldChange_null_noFieldChange() {
+    var holder = new AuthorityChangeHolder(
+      new InventoryEvent()
+        ._new(new AuthorityInventoryRecord())
+        .old(new AuthorityInventoryRecord()),
+      Map.of(),
+      Map.of(), 1);
+
+    var actual = holder.getFieldChange();
+
+    assertNull(actual);
+  }
+
+  @Test
+  void getFieldChange_noFieldChange() {
     var holder = new AuthorityChangeHolder(
       new InventoryEvent()
         ._new(new AuthorityInventoryRecord())
