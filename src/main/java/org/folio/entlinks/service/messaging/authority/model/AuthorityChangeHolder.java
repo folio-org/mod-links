@@ -135,8 +135,8 @@ public class AuthorityChangeHolder {
   private AuthorityDataStatAction getAuthorityDataStatAction() {
     return switch (getInventoryEventType()) {
       case UPDATE -> isOnlyNaturalIdChanged()
-        ? AuthorityDataStatAction.UPDATE_NATURAL_ID
-        : AuthorityDataStatAction.UPDATE_HEADING;
+                     ? AuthorityDataStatAction.UPDATE_NATURAL_ID
+                     : AuthorityDataStatAction.UPDATE_HEADING;
       case DELETE -> AuthorityDataStatAction.DELETE;
     };
   }
