@@ -8,10 +8,12 @@ import org.folio.entlinks.domain.dto.FieldChange;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
+import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.marc4j.marc.impl.DataFieldImpl;
 import org.marc4j.marc.impl.SubfieldImpl;
 
+@UnitTest
 class FieldChangeHolderTest {
 
   private static SubfieldChange valueChangeEmpty(String f) {
