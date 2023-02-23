@@ -1,4 +1,4 @@
-package org.folio.entlinks.support;
+package org.folio.support;
 
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.jdbc.core.JdbcTemplate;
