@@ -4,7 +4,6 @@ import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.jdbc.JdbcTestUtils;
 
 public class DatabaseHelper {
   public static final String AUTHORITY_DATA_STAT = "authority_data_stat";
@@ -21,13 +20,9 @@ public class DatabaseHelper {
     return metadata.getDBSchemaName(tenantId) + "." + table;
   }
 
-  public void clearTable(String tenant, String tableName) {
-    JdbcTestUtils.deleteFromTables(jdbcTemplate, getTable(tenant, tableName));
-  }
-
-  public void saveAuthData(AuthorityData authorityData, String tenant) {
+  public void saveAuthData(AuthorityData authorityData, String tenant, boolean isDeleted) {
     var sql = "INSERT INTO " + getTable(tenant, AUTHORITY_DATA) + " (id, natural_id, state) VALUES (?, ?, ?)";
-    jdbcTemplate.update(sql, authorityData.getId(), authorityData.getNaturalId(), false);
+    jdbcTemplate.update(sql, authorityData.getId(), authorityData.getNaturalId(), isDeleted);
   }
 
   public void saveStat(AuthorityDataStat stat, String tenant) {

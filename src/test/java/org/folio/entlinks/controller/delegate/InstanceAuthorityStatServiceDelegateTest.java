@@ -45,7 +45,10 @@ class InstanceAuthorityStatServiceDelegateTest {
   @Test
   void fetchStats() {
     var userIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-    var statData = TestUtils.dataStatList(userIds.get(0), userIds.get(1), AuthorityDataStatAction.UPDATE_HEADING);
+    var statData = List.of(
+      TestUtils.authorityDataStat(userIds.get(0), AuthorityDataStatAction.UPDATE_HEADING),
+      TestUtils.authorityDataStat(userIds.get(1), AuthorityDataStatAction.UPDATE_HEADING)
+    );
     var users = TestUtils.usersList(userIds);
 
     var fromDate = OffsetDateTime.of(2022, 10, 10, 15, 30, 30, 0, ZoneOffset.UTC);
