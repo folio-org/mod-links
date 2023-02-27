@@ -25,6 +25,10 @@
     {
       "id": "authority-source-files",
       "version": "1.0"
+    },
+    {
+      "id": "instance-storage",
+      "version": "10.0"
     }
   ],
   "provides": [
@@ -98,30 +102,48 @@
           ]
         },
         {
-          "id": "instance-authority-links-statistics",
-          "version": "1.0",
-          "handlers": [
-            {
-              "methods": [
-                "GET"
-              ],
-              "pathPattern": "/links/authority/stats",
-              "permissionsRequired": [
-                "instance-authority-links.authority-statistics.collection.get"
-              ],
-              "modulePermissions": [
-                 "users.collection.get"
-              ]
-            }
-          ]
-        },
-        {
           "methods": [
             "GET",
             "DELETE"
           ],
           "pathPattern": "/_/tenant/{id}",
           "permissionsRequired": []
+        }
+      ]
+    },
+    {
+      "id": "instance-authority-links-statistics",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/links/authority/stats",
+          "permissionsRequired": [
+            "instance-authority-links.authority-statistics.collection.get"
+           ],
+          "modulePermissions": [
+             "users.collection.get"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linked-bib-update-statistics",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/links/stats/instance",
+          "permissionsRequired": [
+            "instance-authority-links.instance-statistics.collection.get"
+           ],
+          "modulePermissions": [
+            "inventory-storage.instances.collection.get"
+          ]
         }
       ]
     }
@@ -148,6 +170,16 @@
       "description": "Get instance-authority linking rules"
     },
     {
+      "permissionName":"instance-authority-links.authority-statistics.collection.get",
+      "displayName": "Entities Authority Links Statistics - get instance-authority links statistics",
+      "description": "Get instance-authority links statistics"
+    },
+    {
+      "permissionName":"instance-authority-links.instance-statistics.collection.get",
+      "displayName": "Entities Instance Links Statistics - get instance-authority links statistics",
+      "description": "Get instance-authority links (Instance) statistics"
+    },
+    {
       "permissionName": "instance-authority-links.instances.all",
       "displayName": "Entities Links - all instance-authority links permissions",
       "description": "Entire set of permissions needed to use instance-links operations",
@@ -155,13 +187,10 @@
         "instance-authority-links.instances.collection.get",
         "instance-authority-links.instances.collection.put",
         "instance-authority-links.authorities.bulk.post",
-        "instance-authority.linking-rules.collection.get"
+        "instance-authority.linking-rules.collection.get",
+        "instance-authority-links.authority-statistics.collection.get",
+        "instance-authority-links.instance-statistics.collection.get"
       ]
-    },
-    {
-      "permissionName":"instance-authority-links.authority-statistics.collection.get",
-      "displayName": "Entities Authority Links Statistics - get instance-authority links statistics",
-      "description": "Get instance-authority links statistics"
     }
   ],
   "launchDescriptor": {
@@ -298,7 +327,6 @@
         "name": "KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS",
         "value": "100",
         "description": "Number of instance-authority links `links.instance-authority` event contains while processing authority link source change."
-      }
-    ]
+      }    ]
   }
 }

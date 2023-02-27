@@ -20,10 +20,12 @@ import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
+import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.spring.tools.client.UsersClient;
+import org.folio.support.TestDataUtils;
 import org.folio.support.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +57,7 @@ class InstanceAuthorityStatServiceDelegateTest {
 
   @BeforeEach
   void setUp() {
-    delegate = new InstanceAuthorityStatServiceDelegate(statService, sourceFilesService, mapper, usersClient);
+    delegate = new InstanceAuthorityStatServiceDelegate(statService, mapper, usersClient);
     var statData = TestUtils.dataStatList(USER_ID_1, USER_ID_2);
     var users = TestUtils.usersList(List.of(USER_ID_1, USER_ID_2));
 
@@ -71,9 +73,8 @@ class InstanceAuthorityStatServiceDelegateTest {
       .thenReturn(TestUtils.getStatDataDto(authorityDataStat2, userList.get(0)));
   }
 
-
   @Test
-  void fetchStats_withSuccess() {
+  void fetchStats() {
     //  GIVEN
     AuthoritySourceFile sourceFile = new AuthoritySourceFile(USER_ID_1, BASE_URL, SOURCE_FILE_NAME);
     Map<UUID, AuthoritySourceFile> expectedMap = new HashMap<>();
@@ -81,6 +82,31 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     //  WHEN
     when(sourceFilesService.fetchAuthoritySources()).thenReturn(expectedMap);
+
+
+
+    var userIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+    var statData = List.of(
+      TestDataUtils.authorityDataStat(userIds.get(0), AuthorityDataStatAction.UPDATE_HEADING),
+      TestDataUtils.authorityDataStat(userIds.get(1), AuthorityDataStatAction.UPDATE_HEADING)
+    );
+    var users = TestDataUtils.usersList(userIds);
+
+    var fromDate = OffsetDateTime.of(2022, 10, 10, 15, 30, 30, 0, ZoneOffset.UTC);
+    var toDate = OffsetDateTime.now();
+    var dataStatActionDto = AuthorityDataStatActionDto.UPDATE_HEADING;
+
+    when(statService.fetchDataStats(fromDate, toDate, dataStatActionDto, 3)).thenReturn(statData);
+    when(usersClient.query(anyString())).thenReturn(users);
+
+    AuthorityDataStat authorityDataStat1 = statData.get(0);
+    AuthorityDataStat authorityDataStat2 = statData.get(1);
+    var userList = users.getResult();
+    when(mapper.convertToDto(authorityDataStat1))
+      .thenReturn(TestDataUtils.getStatDataDto(authorityDataStat1, userList.get(0)));
+    when(mapper.convertToDto(authorityDataStat2))
+      .thenReturn(TestDataUtils.getStatDataDto(authorityDataStat2, userList.get(0)));
+
     var authorityChangeStatDtoCollection = delegate.fetchAuthorityLinksStats(
       FROM_DATE, TO_DATE, DATA_STAT_ACTION_DTO, LIMIT_SIZE
     );

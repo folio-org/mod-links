@@ -1,28 +1,33 @@
 package org.folio.entlinks.service.links;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.folio.support.TestUtils.links;
+import static org.folio.support.TestDataUtils.links;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
 import org.folio.entlinks.domain.repository.InstanceLinkRepository;
 import org.folio.spring.test.type.UnitTest;
-import org.folio.support.TestUtils.Link;
+import org.folio.support.TestDataUtils.Link;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,7 +35,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -312,12 +320,33 @@ class InstanceAuthorityLinkingServiceTest {
 
   @Test
   void saveAll_positive() {
-    var instanceId = UUID.randomUUID().toString();
+    var instanceId = UUID.randomUUID();
     var links = links(2);
 
     service.saveAll(instanceId, links);
 
     verify(instanceLinkRepository).saveAll(links);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void getLinks_positive() {
+    var status = LinkStatus.ACTUAL;
+    var fromDate = OffsetDateTime.now();
+    var toDate = fromDate.plus(1, ChronoUnit.DAYS);
+    var limit = 1;
+    var pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("updatedAt")));
+    var expectedLinks = singletonList(InstanceAuthorityLink.builder()
+      .id(1L)
+      .build());
+
+    when(instanceLinkRepository.findAll(any(Specification.class), eq(pageable)))
+      .thenReturn(new PageImpl<>(expectedLinks, pageable, 0));
+
+    var links = service.getLinks(status, fromDate, toDate, limit);
+
+    assertThat(links)
+      .isEqualTo(expectedLinks);
   }
 
   @SuppressWarnings("unchecked")

@@ -56,6 +56,16 @@
     "naturalId": {
       "type": "string",
       "description": "Authority Natural ID"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "updatedByUserId": {
+          "description": "ID of the user who last updated the record (when available)",
+          "type": "string",
+          "format": "uuid"
+        }
+      }
     }
   }
 }

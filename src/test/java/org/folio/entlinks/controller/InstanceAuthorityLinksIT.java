@@ -2,10 +2,10 @@ package org.folio.entlinks.controller;
 
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static org.folio.support.TestUtils.Link.TAGS;
-import static org.folio.support.TestUtils.asJson;
-import static org.folio.support.TestUtils.linksDto;
-import static org.folio.support.TestUtils.linksDtoCollection;
+import static org.folio.support.JsonTestUtils.asJson;
+import static org.folio.support.TestDataUtils.Link.TAGS;
+import static org.folio.support.TestDataUtils.linksDto;
+import static org.folio.support.TestDataUtils.linksDtoCollection;
 import static org.folio.support.base.TestConstants.authoritiesLinksCountEndpoint;
 import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,7 +32,8 @@ import org.folio.entlinks.domain.dto.UuidCollection;
 import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
-import org.folio.support.TestUtils.Link;
+import org.folio.support.DatabaseHelper;
+import org.folio.support.TestDataUtils.Link;
 import org.folio.support.base.IntegrationTestBase;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -44,7 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 @IntegrationTest
-@DatabaseCleanup(tables = "instance_authority_link")
+@DatabaseCleanup(tables = DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE)
 class InstanceAuthorityLinksIT extends IntegrationTestBase {
 
   public static Stream<Arguments> requiredFieldMissingProvider() {
@@ -53,21 +54,30 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
         new InstanceLinkDto()
           .authorityId(randomUUID()).authorityNaturalId("id")
           .bibRecordTag("100").bibRecordSubfields(List.of("a"))
+          .linkingRuleId(1)
       ),
       arguments("authorityId",
         new InstanceLinkDto().instanceId(randomUUID())
           .authorityNaturalId("id")
           .bibRecordTag("100").bibRecordSubfields(List.of("a"))
+          .linkingRuleId(1)
       ),
       arguments("authorityNaturalId",
         new InstanceLinkDto().instanceId(randomUUID())
           .authorityId(randomUUID())
           .bibRecordTag("100").bibRecordSubfields(List.of("a"))
+          .linkingRuleId(1)
       ),
       arguments("bibRecordTag",
         new InstanceLinkDto().instanceId(randomUUID())
           .authorityId(randomUUID()).authorityNaturalId("id")
           .bibRecordSubfields(List.of("a"))
+          .linkingRuleId(1)
+      ),
+      arguments("linkingRuleId",
+        new InstanceLinkDto().instanceId(randomUUID())
+          .authorityId(randomUUID()).authorityNaturalId("id")
+          .bibRecordTag("100").bibRecordSubfields(List.of("a"))
       )
     );
   }
@@ -271,6 +281,7 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
     var incomingLinks = linksDtoCollection(List.of(new InstanceLinkDto()
       .instanceId(randomUUID()).authorityId(randomUUID())
       .authorityNaturalId("id").bibRecordTag("100")
+      .linkingRuleId(1)
     ));
 
     tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
@@ -291,6 +302,7 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
       .instanceId(instanceId).authorityId(randomUUID())
       .authorityNaturalId("id").bibRecordTag("100")
       .bibRecordSubfields(List.of("aa", "bb", "11"))
+      .linkingRuleId(1)
     ));
 
     tryPut(linksInstanceEndpoint(), incomingLinks, instanceId)
@@ -348,7 +360,7 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
         List.of(
           new LinksCountDto().id(secondAuthorityId).totalLinks(1),
           new LinksCountDto().id(authorityId).totalLinks(2)
-        )))));
+        )), objectMapper)));
   }
 
   @Test
@@ -418,7 +430,8 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
           && Objects.equals(expectedLink.getAuthorityNaturalId(), actualLink.get("authorityNaturalId"))
           && Objects.equals(expectedLink.getInstanceId().toString(), actualLink.get("instanceId"))
           && Objects.equals(expectedLink.getBibRecordTag(), actualLink.get("bibRecordTag"))
-          && Objects.equals(expectedLink.getBibRecordSubfields(), actualLink.get("bibRecordSubfields"));
+          && Objects.equals(expectedLink.getBibRecordSubfields(), actualLink.get("bibRecordSubfields"))
+          && Objects.equals(expectedLink.getLinkingRuleId(), actualLink.get("linkingRuleId"));
       }
 
       return false;
