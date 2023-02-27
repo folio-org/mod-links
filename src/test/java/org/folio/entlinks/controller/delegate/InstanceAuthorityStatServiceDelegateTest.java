@@ -14,6 +14,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
@@ -26,7 +27,6 @@ import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.spring.tools.client.UsersClient;
 import org.folio.support.TestDataUtils;
-import org.folio.support.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +40,7 @@ class InstanceAuthorityStatServiceDelegateTest {
 
   private static final UUID USER_ID_1 = UUID.randomUUID();
   private static final UUID USER_ID_2 = UUID.randomUUID();
+  private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
   private static final String BASE_URL = "baseUrl";
   private static final String SOURCE_FILE_NAME = "sourceFileName";
   private static final LocalDateTime NOW = LocalDateTime.now();
@@ -57,46 +58,14 @@ class InstanceAuthorityStatServiceDelegateTest {
 
   @BeforeEach
   void setUp() {
-    delegate = new InstanceAuthorityStatServiceDelegate(statService, mapper, usersClient);
-    var statData = TestUtils.dataStatList(USER_ID_1, USER_ID_2);
-    var users = TestUtils.usersList(List.of(USER_ID_1, USER_ID_2));
+    delegate = new InstanceAuthorityStatServiceDelegate(statService, sourceFilesService, mapper, usersClient);
+    var statData = List.of(
+      TestDataUtils.authorityDataStat(USER_ID_1, SOURCE_FILE_ID, AuthorityDataStatAction.UPDATE_HEADING),
+      TestDataUtils.authorityDataStat(USER_ID_2, SOURCE_FILE_ID, AuthorityDataStatAction.UPDATE_HEADING)
+    );
+    var users = TestDataUtils.usersList(List.of(USER_ID_1, USER_ID_2));
 
     when(statService.fetchDataStats(FROM_DATE, TO_DATE, DATA_STAT_ACTION_DTO, 3)).thenReturn(statData);
-    when(usersClient.query(anyString())).thenReturn(users);
-
-    AuthorityDataStat authorityDataStat1 = statData.get(0);
-    AuthorityDataStat authorityDataStat2 = statData.get(1);
-    var userList = users.getResult();
-    when(mapper.convertToDto(authorityDataStat1))
-      .thenReturn(TestUtils.getStatDataDto(authorityDataStat1, userList.get(0)));
-    when(mapper.convertToDto(authorityDataStat2))
-      .thenReturn(TestUtils.getStatDataDto(authorityDataStat2, userList.get(0)));
-  }
-
-  @Test
-  void fetchStats() {
-    //  GIVEN
-    AuthoritySourceFile sourceFile = new AuthoritySourceFile(USER_ID_1, BASE_URL, SOURCE_FILE_NAME);
-    Map<UUID, AuthoritySourceFile> expectedMap = new HashMap<>();
-    expectedMap.put(sourceFile.id(), sourceFile);
-
-    //  WHEN
-    when(sourceFilesService.fetchAuthoritySources()).thenReturn(expectedMap);
-
-
-
-    var userIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-    var statData = List.of(
-      TestDataUtils.authorityDataStat(userIds.get(0), AuthorityDataStatAction.UPDATE_HEADING),
-      TestDataUtils.authorityDataStat(userIds.get(1), AuthorityDataStatAction.UPDATE_HEADING)
-    );
-    var users = TestDataUtils.usersList(userIds);
-
-    var fromDate = OffsetDateTime.of(2022, 10, 10, 15, 30, 30, 0, ZoneOffset.UTC);
-    var toDate = OffsetDateTime.now();
-    var dataStatActionDto = AuthorityDataStatActionDto.UPDATE_HEADING;
-
-    when(statService.fetchDataStats(fromDate, toDate, dataStatActionDto, 3)).thenReturn(statData);
     when(usersClient.query(anyString())).thenReturn(users);
 
     AuthorityDataStat authorityDataStat1 = statData.get(0);
@@ -106,10 +75,19 @@ class InstanceAuthorityStatServiceDelegateTest {
       .thenReturn(TestDataUtils.getStatDataDto(authorityDataStat1, userList.get(0)));
     when(mapper.convertToDto(authorityDataStat2))
       .thenReturn(TestDataUtils.getStatDataDto(authorityDataStat2, userList.get(0)));
+  }
 
-    var authorityChangeStatDtoCollection = delegate.fetchAuthorityLinksStats(
-      FROM_DATE, TO_DATE, DATA_STAT_ACTION_DTO, LIMIT_SIZE
-    );
+  @Test
+  void fetchStats() {
+    //  GIVEN
+    AuthoritySourceFile sourceFile = new AuthoritySourceFile(SOURCE_FILE_ID, BASE_URL, SOURCE_FILE_NAME);
+    Map<UUID, AuthoritySourceFile> expectedMap = new HashMap<>();
+    expectedMap.put(sourceFile.id(), sourceFile);
+
+    //  WHEN
+    when(sourceFilesService.fetchAuthoritySources()).thenReturn(expectedMap);
+    var authorityChangeStatDtoCollection = delegate
+      .fetchAuthorityLinksStats(FROM_DATE, TO_DATE, DATA_STAT_ACTION_DTO, LIMIT_SIZE);
 
     //  THEN
     assertNotNull(authorityChangeStatDtoCollection);
@@ -167,6 +145,30 @@ class InstanceAuthorityStatServiceDelegateTest {
       .map(org.folio.entlinks.domain.dto.AuthorityDataStatDto::getMetadata)
       .map(org.folio.entlinks.domain.dto.Metadata::getStartedByUserId)
       .toList();
+    assertNull(authorityChangeStatDtoCollection.getNext());
+    assertThat(List.of(USER_ID_1, USER_ID_2)).containsAll(resultUserIds);
+  }
+
+
+  @Test
+  void fetchStats_withoutMetadata() {
+    //  WHEN
+    when(usersClient.query(anyString())).thenReturn(null);
+    var authorityChangeStatDtoCollection = delegate
+      .fetchAuthorityLinksStats(FROM_DATE, TO_DATE, DATA_STAT_ACTION_DTO, LIMIT_SIZE);
+
+    //  THEN
+    assertNotNull(authorityChangeStatDtoCollection);
+    assertNotNull(authorityChangeStatDtoCollection.getStats());
+    assertEquals(LIMIT_SIZE, authorityChangeStatDtoCollection.getStats().size());
+
+    var resultUserIds = authorityChangeStatDtoCollection.getStats()
+      .stream()
+      .map(org.folio.entlinks.domain.dto.AuthorityDataStatDto::getMetadata)
+      .filter(Objects::nonNull)
+      .map(org.folio.entlinks.domain.dto.Metadata::getStartedByUserId)
+      .toList();
+
     assertNull(authorityChangeStatDtoCollection.getNext());
     assertThat(List.of(USER_ID_1, USER_ID_2)).containsAll(resultUserIds);
   }

@@ -55,11 +55,11 @@ public class InstanceAuthorityStatServiceDelegate {
       .map(source -> {
         Metadata metadata = getMetadata(userResultList, source);
         var authorityDataStatDto = dataStatMapper.convertToDto(source);
-        var sourceFile = sourceFilesMap.get(authorityDataStatDto.getAuthorityId());
+        var sourceFile = sourceFilesMap.get(UUID.fromString(authorityDataStatDto.getSourceFileNew()));
 
         if (sourceFile == null) {
           // keep original value authSourceFileId
-          log.warn("AuthoritySourceFile not found by [authorityId={}]", authorityDataStatDto.getAuthorityId());
+          log.warn("AuthoritySourceFile not found by [sourceFileId={}]", authorityDataStatDto.getSourceFileNew());
         } else {
           authorityDataStatDto.setSourceFileNew(sourceFile.name());
         }
