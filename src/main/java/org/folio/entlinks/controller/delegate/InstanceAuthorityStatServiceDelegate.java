@@ -47,7 +47,6 @@ public class InstanceAuthorityStatServiceDelegate {
     Map<UUID, AuthoritySourceFileClient.AuthoritySourceFile> sourceFilesMap =
       sourceFilesService.fetchAuthoritySources();
 
-
     String query = getUsersQueryString(dataStatList);
     ResultList<UsersClient.User> userResultList =
       query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
@@ -55,13 +54,15 @@ public class InstanceAuthorityStatServiceDelegate {
       .map(source -> {
         Metadata metadata = getMetadata(userResultList, source);
         var authorityDataStatDto = dataStatMapper.convertToDto(source);
-        var sourceFile = sourceFilesMap.get(UUID.fromString(authorityDataStatDto.getSourceFileNew()));
 
-        if (sourceFile == null) {
-          // keep original value authSourceFileId
-          log.warn("AuthoritySourceFile not found by [sourceFileId={}]", authorityDataStatDto.getSourceFileNew());
-        } else {
-          authorityDataStatDto.setSourceFileNew(sourceFile.name());
+        if (authorityDataStatDto != null && authorityDataStatDto.getSourceFileNew() != null) {
+          var sourceFile = sourceFilesMap.get(UUID.fromString(authorityDataStatDto.getSourceFileNew()));
+          if (sourceFile != null) {
+            authorityDataStatDto.setSourceFileNew(sourceFile.name());
+          } else {
+            // keep original value authSourceFileId
+            log.warn("AuthoritySourceFile not found by [sourceFileId={}]", authorityDataStatDto.getSourceFileNew());
+          }
         }
 
         authorityDataStatDto.setMetadata(metadata);
