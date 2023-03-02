@@ -80,8 +80,8 @@ public class AuthorityDataStatService {
   public void updateForReports(UUID jobId, List<LinkUpdateReport> reports) {
     log.info("Updating links, stats for reports: [jobId: {}, reports count: {}]", jobId, reports.size());
     log.debug("Updating links,stats for reports: [reports: {}]", reports);
-    updateStatsData(jobId, reports);
     updateLinks(jobId, reports);
+    updateStatsData(jobId, reports);
   }
 
   private void checkIfAllFailed(List<LinkUpdateReport> reports, AuthorityDataStat dataStat) {
