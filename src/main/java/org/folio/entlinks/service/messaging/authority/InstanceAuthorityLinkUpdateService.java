@@ -99,7 +99,7 @@ public class InstanceAuthorityLinkUpdateService {
       .filter(c -> c.getNumberOfLinks() == 0)
       .map(AuthorityChangeHolder::toAuthorityDataStat)
       .toList();
-    authorityDataStatsWithLinks.forEach(authorityDataStat->authorityDataStat.setStartedAt(DateUtils.currentTs()));
+    authorityDataStatsWithLinks.forEach(authorityDataStat -> authorityDataStat.setStartedAt(DateUtils.currentTs()));
     var dataStats = authorityDataStatService.createInBatchWithoutLinks(authorityDataStatsWithNoLinks);
     var dataStatsWithLinks = authorityDataStatService.createInBatchWithLinks(authorityDataStatsWithLinks);
     dataStats.addAll(dataStatsWithLinks);
