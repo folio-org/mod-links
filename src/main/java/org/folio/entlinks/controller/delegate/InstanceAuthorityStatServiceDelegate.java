@@ -85,7 +85,7 @@ public class InstanceAuthorityStatServiceDelegate {
   }
 
 
-  private Metadata getMetadata(ResultList<User> userResultList, AuthorityDataStat source) {
+  public Metadata getMetadata(ResultList<User> userResultList, AuthorityDataStat source) {
     if (userResultList == null || source == null) {
       log.debug("getMetadata:: Attempts to return null, empty input params");
       return null;

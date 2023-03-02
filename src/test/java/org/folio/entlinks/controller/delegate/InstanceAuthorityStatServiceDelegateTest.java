@@ -20,15 +20,20 @@ import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
 import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
+import org.folio.entlinks.domain.dto.Metadata;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.spring.tools.client.UsersClient;
+import org.folio.spring.tools.client.UsersClient.User;
+import org.folio.spring.tools.model.ResultList;
 import org.folio.support.TestDataUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -57,8 +62,11 @@ class InstanceAuthorityStatServiceDelegateTest {
 
 
   @BeforeEach
-  void setUp() {
+  void setUp(TestInfo info) {
     delegate = new InstanceAuthorityStatServiceDelegate(statService, sourceFilesService, mapper, usersClient);
+    if (info.getDisplayName().equals("fetchStats_whenMetaDataThrowExp")) {
+      return;
+    }
     var statData = List.of(
       TestDataUtils.authorityDataStat(USER_ID_1, SOURCE_FILE_ID, AuthorityDataStatAction.UPDATE_HEADING),
       TestDataUtils.authorityDataStat(USER_ID_2, SOURCE_FILE_ID, AuthorityDataStatAction.UPDATE_HEADING)
@@ -171,5 +179,24 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     assertNull(authorityChangeStatDtoCollection.getNext());
     assertThat(List.of(USER_ID_1, USER_ID_2)).containsAll(resultUserIds);
+  }
+
+  @Test
+  @DisplayName("fetchStats_whenMetaDataThrowExp")
+  void fetchStats_whenMetaDataThrowExp() {
+    //  GIVEN
+    ResultList<User> userResultList = new ResultList<>();
+    User user = new User(USER_ID_1.toString(), "username", true, new User.Personal("lastname"));
+    userResultList.setResult(List.of(user));
+    AuthorityDataStat source = AuthorityDataStat.builder()
+      .id(USER_ID_2)
+      .startedByUserId(USER_ID_2)
+      .build();
+
+    //  WHEN
+    Metadata metadata = delegate.getMetadata(userResultList, source);
+
+    //  THEN
+    assertNull(metadata);
   }
 }
