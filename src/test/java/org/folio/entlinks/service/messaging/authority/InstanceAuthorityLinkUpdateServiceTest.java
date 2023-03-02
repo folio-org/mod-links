@@ -66,7 +66,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     service.handleAuthoritiesChanges(inventoryEvents);
 
     verify(eventProducer).sendMessages(argumentCaptor.capture());
-    verify(authorityDataStatService).createInBatch(anyList());
+    verify(authorityDataStatService).createInBatchWithLinks(anyList());
 
     var messages = argumentCaptor.getValue();
     assertThat(messages).hasSize(1);
@@ -84,7 +84,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     service.handleAuthoritiesChanges(inventoryEvents);
 
     verify(eventProducer, never()).sendMessages(argumentCaptor.capture());
-    verify(authorityDataStatService).createInBatch(anyList());
+    verify(authorityDataStatService).createInBatchWithLinks(anyList());
   }
 
   @Test
@@ -101,7 +101,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     service.handleAuthoritiesChanges(inventoryEvents);
 
     verify(eventProducer).sendMessages(argumentCaptor.capture());
-    verify(authorityDataStatService).createInBatch(anyList());
+    verify(authorityDataStatService).createInBatchWithLinks(anyList());
 
     var messages = argumentCaptor.getValue();
     assertThat(messages).hasSize(1);

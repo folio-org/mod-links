@@ -60,7 +60,8 @@ public class AuthorityChangeHolder {
 
   public AuthorityChangeType getChangeType() {
     return switch (getInventoryEventType()) {
-      case UPDATE -> isHeadingTypeChanged() ? AuthorityChangeType.DELETE : AuthorityChangeType.UPDATE;
+      case UPDATE ->
+        isHeadingTypeChanged() ? AuthorityChangeType.DELETE : AuthorityChangeType.UPDATE;
       case DELETE -> AuthorityChangeType.DELETE;
     };
   }
@@ -76,14 +77,20 @@ public class AuthorityChangeHolder {
   }
 
   public AuthorityDataStat toAuthorityDataStat() {
+    if (changes.isEmpty()) {
+      return getAuthorityDataStat(null, null, null, null);
+    }
+
     var changeMap = new EnumMap<>(changes);
-    changeMap.remove(AuthorityChangeField.NATURAL_ID);
+    if (changeMap.isEmpty()) {
+      return getAuthorityDataStat(null, null, null, null);
+    }
 
     String headingNew = null;
     String headingOld = null;
     String headingTypeNew = null;
     String headingTypeOld = null;
-
+    changeMap.remove(AuthorityChangeField.NATURAL_ID);
     if (changeMap.size() == 1) {
       var changeEntry = changeMap.entrySet().iterator().next();
       var entryValue = changeEntry.getValue();
@@ -104,6 +111,13 @@ public class AuthorityChangeHolder {
       }
     }
 
+    return getAuthorityDataStat(headingNew, headingOld, headingTypeNew, headingTypeOld);
+  }
+
+  private AuthorityDataStat getAuthorityDataStat(String headingNew,
+                                                 String headingOld,
+                                                 String headingTypeNew,
+                                                 String headingTypeOld) {
     AuthorityDataStat authorityDataStat = AuthorityDataStat.builder()
       .authorityData(AuthorityData.builder()
         .id(getAuthorityId())
@@ -123,7 +137,6 @@ public class AuthorityChangeHolder {
     if (this.event.getNew() != null && this.event.getNew().getMetadata() != null) {
       authorityDataStat.setStartedByUserId(this.event.getNew().getMetadata().getUpdatedByUserId());
     }
-
     return authorityDataStat;
   }
 
@@ -135,8 +148,8 @@ public class AuthorityChangeHolder {
   private AuthorityDataStatAction getAuthorityDataStatAction() {
     return switch (getInventoryEventType()) {
       case UPDATE -> isOnlyNaturalIdChanged()
-                     ? AuthorityDataStatAction.UPDATE_NATURAL_ID
-                     : AuthorityDataStatAction.UPDATE_HEADING;
+        ? AuthorityDataStatAction.UPDATE_NATURAL_ID
+        : AuthorityDataStatAction.UPDATE_HEADING;
       case DELETE -> AuthorityDataStatAction.DELETE;
     };
   }

@@ -36,7 +36,7 @@ public class AuthorityDataStatService {
   private final AuthorityDataService authorityDataService;
   private final InstanceAuthorityLinkingService linkingService;
 
-  public List<AuthorityDataStat> createInBatch(List<AuthorityDataStat> stats) {
+  public List<AuthorityDataStat> createInBatchWithLinks(List<AuthorityDataStat> stats) {
     var authorityDataSet = stats.stream()
       .map(AuthorityDataStat::getAuthorityData)
       .collect(Collectors.toSet());
@@ -45,6 +45,23 @@ public class AuthorityDataStatService {
     for (AuthorityDataStat stat : stats) {
       stat.setId(UUID.randomUUID());
       stat.setStatus(AuthorityDataStatStatus.IN_PROGRESS);
+      var authorityData = savedAuthorityData.get(stat.getAuthorityData().getId());
+      stat.setAuthorityData(authorityData);
+    }
+
+    return statRepository.saveAll(stats);
+  }
+
+  public List<AuthorityDataStat> createInBatchWithoutLinks(List<AuthorityDataStat> stats) {
+    var authorityDataSet = stats.stream()
+      .map(AuthorityDataStat::getAuthorityData)
+      .collect(Collectors.toSet());
+    var savedAuthorityData = authorityDataService.saveAll(authorityDataSet);
+
+    for (AuthorityDataStat stat : stats) {
+      stat.setId(UUID.randomUUID());
+      stat.setStatus(AuthorityDataStatStatus.COMPLETED_SUCCESS);
+      stat.setCompletedAt(DateUtils.currentTs());
       var authorityData = savedAuthorityData.get(stat.getAuthorityData().getId());
       stat.setAuthorityData(authorityData);
     }
@@ -63,8 +80,8 @@ public class AuthorityDataStatService {
   public void updateForReports(UUID jobId, List<LinkUpdateReport> reports) {
     log.info("Updating links, stats for reports: [jobId: {}, reports count: {}]", jobId, reports.size());
     log.debug("Updating links,stats for reports: [reports: {}]", reports);
-    updateLinks(jobId, reports);
     updateStatsData(jobId, reports);
+    updateLinks(jobId, reports);
   }
 
   private void checkIfAllFailed(List<LinkUpdateReport> reports, AuthorityDataStat dataStat) {

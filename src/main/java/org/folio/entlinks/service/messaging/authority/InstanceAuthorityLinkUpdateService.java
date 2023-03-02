@@ -21,6 +21,7 @@ import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
+import org.folio.entlinks.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -88,11 +89,21 @@ public class InstanceAuthorityLinkUpdateService {
   }
 
   private void prepareAndSaveAuthorityDataStats(List<AuthorityChangeHolder> changeHolders) {
-    var authorityDataStats = changeHolders.stream()
+    var authorityDataStatsWithLinks = changeHolders.stream()
+      .filter(c -> c.getNumberOfLinks() > 0)
       .map(AuthorityChangeHolder::toAuthorityDataStat)
+      .peek(authorityDataStat -> authorityDataStat.setStartedAt(DateUtils.currentTs()))
       .toList();
 
-    var dataStats = authorityDataStatService.createInBatch(authorityDataStats);
+    var authorityDataStatsWithNoLinks = changeHolders.stream()
+      .filter(c -> c.getNumberOfLinks() == 0)
+      .map(AuthorityChangeHolder::toAuthorityDataStat)
+      .peek(authorityDataStat -> authorityDataStat.setStartedAt(DateUtils.currentTs()))
+      .toList();
+
+    var dataStats = authorityDataStatService.createInBatchWithoutLinks(authorityDataStatsWithNoLinks);
+    var dataStatsWithLinks = authorityDataStatService.createInBatchWithLinks(authorityDataStatsWithLinks);
+    dataStats.addAll(dataStatsWithLinks);
     for (AuthorityChangeHolder changeHolder : changeHolders) {
       for (AuthorityDataStat authorityDataStat : dataStats) {
         if (authorityDataStat.getAuthorityData().getId() == changeHolder.getAuthorityId()) {
@@ -106,7 +117,9 @@ public class InstanceAuthorityLinkUpdateService {
   private AuthorityChangeHolder toAuthorityChangeHolder(InventoryEvent event,
                                                         Map<AuthorityChangeField, String> fieldTagRelation,
                                                         Map<UUID, Integer> linksNumberByAuthorityId) {
-    var difference = getAuthorityChanges(event.getNew(), event.getOld());
+    Map<AuthorityChangeField, AuthorityChange> difference = (event.getNew() == null && event.getOld() == null)
+                                                             ? Map.of()
+                                                             : getAuthorityChanges(event.getNew(), event.getOld());
     return new AuthorityChangeHolder(event, difference, fieldTagRelation,
       linksNumberByAuthorityId.getOrDefault(event.getId(), 0));
   }
