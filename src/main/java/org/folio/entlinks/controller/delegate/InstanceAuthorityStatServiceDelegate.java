@@ -1,16 +1,7 @@
 package org.folio.entlinks.controller.delegate;
 
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.client.AuthoritySourceFileClient;
 import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
 import org.folio.entlinks.domain.dto.AuthorityChangeStatDtoCollection;
 import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
@@ -22,6 +13,16 @@ import org.folio.entlinks.utils.DateUtils;
 import org.folio.spring.tools.client.UsersClient;
 import org.folio.spring.tools.model.ResultList;
 import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Log4j2
 @Component
@@ -44,36 +45,29 @@ public class InstanceAuthorityStatServiceDelegate {
       last.ifPresent(dataStatList::remove);
     }
 
-    Map<UUID, AuthoritySourceFileClient.AuthoritySourceFile> sourceFilesMap =
-      sourceFilesService.fetchAuthoritySources();
-
     String query = getUsersQueryString(dataStatList);
     ResultList<UsersClient.User> userResultList =
-      query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
+        query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
     var stats = dataStatList.stream()
-      .map(source -> {
-        Metadata metadata = getMetadata(userResultList, source);
-        var authorityDataStatDto = dataStatMapper.convertToDto(source);
+        .map(source -> {
+          Metadata metadata = getMetadata(userResultList, source);
+          var authorityDataStatDto = dataStatMapper.convertToDto(source);
 
-        if (authorityDataStatDto != null && authorityDataStatDto.getSourceFileNew() != null) {
-          var sourceFile = sourceFilesMap.get(UUID.fromString(authorityDataStatDto.getSourceFileNew()));
-          if (sourceFile != null) {
-            authorityDataStatDto.setSourceFileNew(sourceFile.name());
-          } else {
-            // keep original value authSourceFileId
-            log.warn("AuthoritySourceFile not found by [sourceFileId={}]", authorityDataStatDto.getSourceFileNew());
+          if (authorityDataStatDto != null) {
+            var sourceFileIdOld = authorityDataStatDto.getSourceFileOld();
+            var sourceFileIdNew = authorityDataStatDto.getSourceFileNew();
+            authorityDataStatDto.setSourceFileOld(getSourceFileName(sourceFileIdOld));
+            authorityDataStatDto.setSourceFileNew(getSourceFileName(sourceFileIdNew));
+            authorityDataStatDto.setMetadata(metadata);
           }
-        }
-
-        authorityDataStatDto.setMetadata(metadata);
-        return authorityDataStatDto;
-      })
-      .toList();
+          return authorityDataStatDto;
+        })
+        .toList();
 
     return new AuthorityChangeStatDtoCollection()
-      .stats(stats)
-      .next(last.map(authorityDataStat -> DateUtils.fromTimestamp(authorityDataStat.getStartedAt()))
-        .orElse(null));
+        .stats(stats)
+        .next(last.map(authorityDataStat -> DateUtils.fromTimestamp(authorityDataStat.getStartedAt()))
+            .orElse(null));
   }
 
   private Metadata getMetadata(ResultList<UsersClient.User> userResultList, AuthorityDataStat source) {
@@ -87,9 +81,9 @@ public class InstanceAuthorityStatServiceDelegate {
     }
 
     var user = userResultList.getResult()
-      .stream()
-      .filter(u -> UUID.fromString(u.id()).equals(startedByUserId))
-      .findFirst().orElse(null);
+        .stream()
+        .filter(u -> UUID.fromString(u.id()).equals(startedByUserId))
+        .findFirst().orElse(null);
     if (user == null) {
       return metadata;
     }
@@ -101,11 +95,21 @@ public class InstanceAuthorityStatServiceDelegate {
 
   private String getUsersQueryString(List<AuthorityDataStat> dataStatList) {
     var userIds = dataStatList.stream()
-      .map(AuthorityDataStat::getStartedByUserId)
-      .filter(Objects::nonNull)
-      .map(UUID::toString)
-      .distinct()
-      .collect(Collectors.joining(" or "));
+        .map(AuthorityDataStat::getStartedByUserId)
+        .filter(Objects::nonNull)
+        .map(UUID::toString)
+        .distinct()
+        .collect(Collectors.joining(" or "));
     return userIds.isEmpty() ? "" : "id=(" + userIds + ")";
+  }
+
+  private String getSourceFileName(String uuid) {
+    if (isNotBlank(uuid)) {
+      var sourceFile = sourceFilesService.fetchAuthoritySources().get(UUID.fromString(uuid));
+      if (sourceFile != null) {
+        return sourceFile.name();
+      }
+    }
+    return "Not specified";
   }
 }
