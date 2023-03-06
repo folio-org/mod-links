@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class InstanceAuthorityStatServiceDelegate {
 
+  private static final String NOT_SPECIFIED_SOURCE_FILE = "Not specified";
   private final AuthorityDataStatService dataStatService;
   private final AuthoritySourceFilesService sourceFilesService;
   private final AuthorityDataStatMapper dataStatMapper;
@@ -108,6 +109,6 @@ public class InstanceAuthorityStatServiceDelegate {
         return sourceFile.name();
       }
     }
-    return "Not specified";
+    return NOT_SPECIFIED_SOURCE_FILE;
   }
 }
