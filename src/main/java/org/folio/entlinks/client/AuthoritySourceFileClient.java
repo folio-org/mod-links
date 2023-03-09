@@ -12,7 +12,7 @@ public interface AuthoritySourceFileClient {
 
 
   @GetMapping(produces = APPLICATION_JSON_VALUE)
-  AuthoritySourceFiles fetchAuthoritySourceFiles();
+  AuthoritySourceFiles fetchAuthoritySourceFiles(int limit);
 
   record AuthoritySourceFile(UUID id, String baseUrl, String name) { }
 
