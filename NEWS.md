@@ -1,3 +1,10 @@
+## v1.1.0 xxxx-xx-xx
+### APIs versions
+* Provides `instance-authority-links v2.0`
+
+### Features
+* Remove field and subfields from links endpoint, use linking rule ([MODELINKS-47](https://issues.folio.org/browse/MODELINKS-47))
+
 ## v1.0.0 Released 2023-02-21
 ### APIs versions
 * Provides `instance-authority-links v1.0`

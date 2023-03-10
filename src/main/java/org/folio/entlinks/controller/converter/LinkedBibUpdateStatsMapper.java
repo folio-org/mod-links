@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 public interface LinkedBibUpdateStatsMapper {
 
   @Mapping(target = "authorityNaturalId", source = "authorityData.naturalId")
+  @Mapping(target = "bibRecordTag", source = "linkingRule.bibField")
   BibStatsDto convertToDto(InstanceAuthorityLink source);
 
   default List<BibStatsDto> convertToDto(List<InstanceAuthorityLink> source) {
