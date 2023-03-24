@@ -21,7 +21,7 @@ public class InstanceStorageService {
 
   private static final String CQL_TEMPLATE = "id==(%s)";
   private static final String CQL_DELIMITER = " or ";
-  private final InstanceStorageProperties instanceStorageProperties = new InstanceStorageProperties();
+  private final InstanceStorageProperties instanceStorageProperties;
   private final InstanceStorageClient client;
 
   public Map<String, String> getInstanceTitles(List<String> instanceIds) {
