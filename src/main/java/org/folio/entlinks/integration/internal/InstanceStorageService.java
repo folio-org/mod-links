@@ -22,7 +22,7 @@ public class InstanceStorageService {
   private static final String CQL_TEMPLATE = "id==(%s)";
   private static final String CQL_DELIMITER = " or ";
 
-  @Value("${folio.instance-storage.batch-size:100}")
+  @Value("${folio.instance-storage.batch-size:50}")
   private int instanceBatchSize;
 
   private final InstanceStorageClient client;
