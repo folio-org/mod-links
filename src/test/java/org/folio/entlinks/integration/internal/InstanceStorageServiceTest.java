@@ -34,7 +34,7 @@ class InstanceStorageServiceTest {
 
   @BeforeEach
   public void setUp() {
-   when(instanceStorageProperties.getBatchSize()).thenReturn(2);
+    when(instanceStorageProperties.getBatchSize()).thenReturn(2);
   }
 
   @Test
