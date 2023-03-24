@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.InstanceStorageClient;
@@ -22,6 +23,7 @@ public class InstanceStorageService {
   private static final String CQL_TEMPLATE = "id==(%s)";
   private static final String CQL_DELIMITER = " or ";
 
+  @Max(90)
   @Value("${folio.instance-storage.batch-size:50}")
   private int instanceBatchSize;
 
