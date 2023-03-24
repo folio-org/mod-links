@@ -113,13 +113,13 @@
     },
     {
       "id": "instance-authority-links-statistics",
-      "version": "1.0",
+      "version": "1.1",
       "handlers": [
         {
           "methods": [
             "GET"
           ],
-          "pathPattern": "/links/authority/stats",
+          "pathPattern": "/links/stats/authority",
           "permissionsRequired": [
             "instance-authority-links.authority-statistics.collection.get"
            ],

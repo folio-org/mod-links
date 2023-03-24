@@ -106,7 +106,7 @@ paths:
         '500':
           $ref: '#/components/responses/serverErrorResponse'
 
-  /links/authority/stats:
+  /links/stats/authority:
     get:
       description: Retrieve authority updates (related to links) statistics
       operationId: getAuthorityLinksStats
@@ -139,6 +139,7 @@ paths:
           description: Max number of items in collection
           schema:
             type: integer
+            minimum: 1
             default: 100
       responses:
         "200":
@@ -187,7 +188,7 @@ paths:
           schema:
             type: integer
             minimum: 1
-            default: 99
+            default: 100
       responses:
         "200":
           description: The linked bib update statistics collection

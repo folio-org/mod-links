@@ -279,7 +279,7 @@ The API enables possibility to retrieve default linking rules.
 
 | METHOD | URL                      | Required permissions                                           | DESCRIPTION                                                     |
 |:-------|:-------------------------|:---------------------------------------------------------------|:----------------------------------------------------------------|
-| GET    | `/links/authority/stats` | `instance-authority-links.authority-statistics.collection.get` | Get Instance to Authority links authority-statistics collection |
+| GET    | `/links/stats/authority` | `instance-authority-links.authority-statistics.collection.get` | Get Instance to Authority links authority-statistics collection |
 
 #### Instance to Authority linking rule parameters
 
@@ -294,7 +294,7 @@ The API enables possibility to retrieve default linking rules.
 
 ##### Retrieve instance to authority links statistics collection:
 
-`GET /links/authority/stats`
+`GET /links/stats/authority`
 
 Response:
 
