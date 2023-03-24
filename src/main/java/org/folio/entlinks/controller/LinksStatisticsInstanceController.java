@@ -3,7 +3,7 @@ package org.folio.entlinks.controller;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.controller.delegate.LinkingServiceDelegate;
-import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.rest.resource.LinkedBibUpdateStatisticsApi;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ public class LinksStatisticsInstanceController implements LinkedBibUpdateStatist
   private final LinkingServiceDelegate delegate;
 
   @Override
-  public ResponseEntity<BibStatsDtoCollection> getLinkedBibUpdateStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+  public ResponseEntity<DataStatsDtoCollection> getLinkedBibUpdateStats(OffsetDateTime fromDate, OffsetDateTime toDate,
                                                                        LinkStatus status, Integer limit) {
     return ResponseEntity.ok(delegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit));
   }

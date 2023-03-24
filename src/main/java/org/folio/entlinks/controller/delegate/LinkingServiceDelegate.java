@@ -16,6 +16,7 @@ import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.controller.converter.LinkedBibUpdateStatsMapper;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
@@ -43,11 +44,11 @@ public class LinkingServiceDelegate {
     return mapper.convertToDto(links);
   }
 
-  public BibStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
-                                        OffsetDateTime toDate, int limit) {
+  public DataStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
+                                                        OffsetDateTime toDate, int limit) {
     validateDateRange(fromDate, toDate);
 
-    var bibStatsCollection = new BibStatsDtoCollection();
+    var bibStatsCollection = new DataStatsDtoCollection();
     var links = linkingService.getLinks(status, fromDate, toDate, limit + 1);
     log.debug("Retrieved links count {}", links.size());
     if (links.size() > limit) {

@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
-import org.folio.entlinks.domain.dto.AuthorityChangeStatDtoCollection;
-import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
-import org.folio.entlinks.domain.dto.Metadata;
+import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
+import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
@@ -34,8 +34,8 @@ public class InstanceAuthorityStatServiceDelegate {
   private final AuthorityDataStatMapper dataStatMapper;
   private final UsersClient usersClient;
 
-  public AuthorityChangeStatDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
-                                                                   AuthorityDataStatActionDto action, Integer limit) {
+  public DataStatsDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+                                                         AuthorityDataStatAction action, Integer limit) {
     List<AuthorityDataStat> dataStatList = dataStatService.fetchDataStats(fromDate, toDate, action, limit + 1);
 
     Optional<AuthorityDataStat> last = Optional.empty();
@@ -49,7 +49,7 @@ public class InstanceAuthorityStatServiceDelegate {
       query.isEmpty() ? ResultList.of(0, Collections.emptyList()) : usersClient.query(query);
     var stats = dataStatList.stream()
       .map(source -> {
-        Metadata metadata = getMetadata(userResultList, source);
+        AuthorityControlMetadata metadata = getMetadata(userResultList, source);
         var authorityDataStatDto = dataStatMapper.convertToDto(source);
 
         if (authorityDataStatDto != null) {
@@ -63,15 +63,15 @@ public class InstanceAuthorityStatServiceDelegate {
       })
       .toList();
 
-    return new AuthorityChangeStatDtoCollection()
+    return new DataStatsDtoCollection()
       .stats(stats)
       .next(last.map(authorityDataStat -> DateUtils.fromTimestamp(authorityDataStat.getStartedAt()))
         .orElse(null));
   }
 
-  private Metadata getMetadata(ResultList<UsersClient.User> userResultList, AuthorityDataStat source) {
+  private AuthorityControlMetadata getMetadata(ResultList<UsersClient.User> userResultList, AuthorityDataStat source) {
     UUID startedByUserId = source.getStartedByUserId();
-    Metadata metadata = new Metadata();
+    AuthorityControlMetadata metadata = new AuthorityControlMetadata();
     metadata.setStartedByUserId(startedByUserId);
     metadata.setStartedAt(DateUtils.fromTimestamp(source.getStartedAt()));
     metadata.setCompletedAt(DateUtils.fromTimestamp(source.getCompletedAt()));
