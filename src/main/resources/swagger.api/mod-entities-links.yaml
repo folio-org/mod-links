@@ -114,10 +114,11 @@ paths:
         - links-data-statistics
       parameters:
         - name: dataStatsType
+          description: Statistic type [authority, instance]
           required: true
           in: path
           schema:
-            $ref: "#/components/schemas/dataStatsType"
+            type: string
         - name: fromDate
           in: query
           required: false

@@ -14,22 +14,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class InstanceAuthorityLinksStatisticsController implements LinksDataStatisticsApi {
+public class LinksDataStatisticsController implements LinksDataStatisticsApi {
 
-  private final InstanceAuthorityStatServiceDelegate delegate;
+  private final InstanceAuthorityStatServiceDelegate instanceAuthorityStatServiceDelegate;
 
-  private final LinkingServiceDelegate delegatee;
+  private final LinkingServiceDelegate linkingServiceDelegate;
 
 
   @Override
-  public ResponseEntity<DataStatsDtoCollection> getLinksDataStats(DataStatsType dataStatsType,
+  public ResponseEntity<DataStatsDtoCollection> getLinksDataStats(String dataStatsType,
                                                                   OffsetDateTime fromDate, OffsetDateTime toDate,
                                                                   LinkAction action, LinkStatus status,
                                                                   Integer limit) {
     return ResponseEntity.ok(
-      switch (dataStatsType) {
-        case INSTANCE -> delegatee.getLinkedBibUpdateStats(status, fromDate, toDate, limit);
-        case AUTHORITY -> delegate.fetchAuthorityLinksStats(fromDate, toDate, action, limit);
+      switch (DataStatsType.fromValue(dataStatsType)) {
+        case INSTANCE -> linkingServiceDelegate
+          .getLinkedBibUpdateStats(status, fromDate, toDate, limit);
+        case AUTHORITY -> instanceAuthorityStatServiceDelegate
+          .fetchAuthorityLinksStats(fromDate, toDate, action, limit);
       }
     );
   }
