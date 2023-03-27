@@ -11,10 +11,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.controller.converter.AuthorityDataStatMapper;
+import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
 import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
+import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
@@ -31,11 +31,11 @@ public class InstanceAuthorityStatServiceDelegate {
   private static final String NOT_SPECIFIED_SOURCE_FILE = "Not specified";
   private final AuthorityDataStatService dataStatService;
   private final AuthoritySourceFilesService sourceFilesService;
-  private final AuthorityDataStatMapper dataStatMapper;
+  private final DataStatsMapper dataStatMapper;
   private final UsersClient usersClient;
 
   public DataStatsDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
-                                                         AuthorityDataStatAction action, Integer limit) {
+                                                         LinkAction action, Integer limit) {
     List<AuthorityDataStat> dataStatList = dataStatService.fetchDataStats(fromDate, toDate, action, limit + 1);
 
     Optional<AuthorityDataStat> last = Optional.empty();

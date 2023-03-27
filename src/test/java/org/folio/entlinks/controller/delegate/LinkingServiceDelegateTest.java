@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
-import org.folio.entlinks.controller.converter.LinkedBibUpdateStatsMapper;
+import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
@@ -52,7 +52,7 @@ class LinkingServiceDelegateTest {
   private @Mock InstanceAuthorityLinkingService linkingService;
   private @Mock InstanceAuthorityLinkMapper mapper;
   private @Mock InstanceStorageService instanceService;
-  private @Mock LinkedBibUpdateStatsMapper statsMapper;
+  private @Mock DataStatsMapper statsMapper;
 
   private @InjectMocks LinkingServiceDelegate delegate;
 
