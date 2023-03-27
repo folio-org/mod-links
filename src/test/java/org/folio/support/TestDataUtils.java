@@ -119,16 +119,13 @@ public class TestDataUtils {
       .failCause(failCause);
   }
 
-  public static List<DataStatsDtoCollectionStatsInner> stats(List<InstanceAuthorityLink> links) {
-    return links.stream()
-      .map(link -> new BibStatsDto()
+  public static BibStatsDto stats(InstanceAuthorityLink link) {
+    return new BibStatsDto()
         .instanceId(link.getInstanceId())
         .bibRecordTag(link.getBibRecordTag())
         .authorityNaturalId(link.getAuthorityData().getNaturalId())
         .updatedAt(fromTimestamp(link.getUpdatedAt()))
-        .errorCause(link.getErrorCause()))
-      .map(dto -> (DataStatsDtoCollectionStatsInner) dto)
-      .toList();
+        .errorCause(link.getErrorCause());
   }
 
   public static DataStatsDtoCollection stats(List<InstanceLinkDto> links, String errorCause, OffsetDateTime next,

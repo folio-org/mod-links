@@ -23,9 +23,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
-import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
+import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
@@ -230,25 +231,30 @@ class LinkingServiceDelegateTest {
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.plus(1, ChronoUnit.DAYS);
     var limit = 2;
-    var stats = stats(linksForStats);
 
     when(linkingService.getLinks(status, fromDate, toDate, limit + 1))
       .thenReturn(linksMock);
-    when(statsMapper.convertToDto(linksForStats))
-      .thenReturn(stats);
     when(instanceService.getInstanceTitles(instanceIds))
       .thenReturn(instanceTitles);
 
-    stats.forEach(bibStatsDto -> {
-      var instanceId = bibStatsDto.getInstanceId();
-      bibStatsDto.setInstanceTitle(instanceTitles.get(instanceId.toString()));
-    });
+    var expectedStats = linksForStats.stream()
+      .map(link -> {
+        var bibStatsDto = stats(link);
+        var instanceId = bibStatsDto.getInstanceId();
+        var instanceTitle = instanceTitles.get(instanceId.toString());
+        bibStatsDto.setInstanceTitle(instanceTitle);
+
+        when(statsMapper.convertToDto(link))
+          .thenReturn(bibStatsDto);
+
+        return (DataStatsDtoCollectionStatsInner) bibStatsDto;
+      }).toList();
 
     var actual = delegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit);
 
     assertThat(actual)
-      .isEqualTo(new BibStatsDtoCollection()
-        .stats(stats)
+      .isEqualTo(new DataStatsDtoCollection()
+        .stats(expectedStats)
         .next(next));
   }
 }

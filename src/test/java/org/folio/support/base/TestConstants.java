@@ -4,7 +4,7 @@ import static org.folio.support.KafkaTestUtils.fullTopicName;
 
 import java.time.OffsetDateTime;
 import lombok.experimental.UtilityClass;
-import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
+import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.dto.LinkStatus;
 
 @UtilityClass
@@ -61,7 +61,7 @@ public class TestConstants {
       + LINKS_STATS_INSTANCE_ENDPOINT_PARAMS.formatted(status, fromDate, toDate);
   }
 
-  public static String authorityStatsEndpoint(AuthorityDataStatActionDto action, OffsetDateTime fromDate,
+  public static String authorityStatsEndpoint(LinkAction action, OffsetDateTime fromDate,
                                               OffsetDateTime toDate, int limit) {
     return AUTH_STATS_ENDPOINT_PATH_PATTERN + AUTH_STATS_ENDPOINT_PARAMS.formatted(action, fromDate, toDate, limit);
   }
