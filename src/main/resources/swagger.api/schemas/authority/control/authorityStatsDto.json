@@ -15,6 +15,7 @@
     },
     "action": {
       "type": "object",
+      "description": "Type of change",
       "$ref": "linkAction.json"
     },
     "naturalIdOld": {
