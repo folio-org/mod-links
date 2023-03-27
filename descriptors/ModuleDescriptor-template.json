@@ -112,36 +112,20 @@
       ]
     },
     {
-      "id": "instance-authority-links-statistics",
+      "id": "links-data-statistics",
       "version": "2.0",
       "handlers": [
         {
           "methods": [
             "GET"
           ],
-          "pathPattern": "/links/stats/authority",
+          "pathPattern": "/links/stats/{dataStatsType}",
           "permissionsRequired": [
-            "instance-authority-links.authority-statistics.collection.get"
-           ],
-          "modulePermissions": [
-             "users.collection.get"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "linked-bib-update-statistics",
-      "version": "1.0",
-      "handlers": [
-        {
-          "methods": [
-            "GET"
-          ],
-          "pathPattern": "/links/stats/instance",
-          "permissionsRequired": [
+            "instance-authority-links.authority-statistics.collection.get",
             "instance-authority-links.instance-statistics.collection.get"
            ],
           "modulePermissions": [
+             "users.collection.get",
             "inventory-storage.instances.collection.get"
           ]
         }
