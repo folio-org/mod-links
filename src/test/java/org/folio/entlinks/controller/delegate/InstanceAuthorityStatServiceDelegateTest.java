@@ -18,8 +18,9 @@ import java.util.Objects;
 import java.util.UUID;
 import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
-import org.folio.entlinks.domain.dto.AuthorityDataStatActionDto;
-import org.folio.entlinks.domain.dto.AuthorityDataStatDto;
+import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
+import org.folio.entlinks.domain.dto.AuthorityStatsDto;
+import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
@@ -96,7 +97,8 @@ class InstanceAuthorityStatServiceDelegateTest {
     assertNotNull(authorityChangeStatDtoCollection.getStats());
     assertEquals(LIMIT_SIZE, authorityChangeStatDtoCollection.getStats().size());
     var resultStatDtos = authorityChangeStatDtoCollection.getStats();
-    for (AuthorityDataStatDto statDto : resultStatDtos) {
+    for (DataStatsDtoCollectionStatsInner statInterface : resultStatDtos) {
+      var statDto = (AuthorityStatsDto) statInterface;
       assertNotNull(statDto.getAction());
       assertNotNull(statDto.getAuthorityId());
       assertNotNull(statDto.getHeadingNew());
@@ -120,8 +122,9 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(org.folio.entlinks.domain.dto.AuthorityDataStatDto::getMetadata)
-      .map(org.folio.entlinks.domain.dto.Metadata::getStartedByUserId)
+      .map(stat -> (AuthorityStatsDto) stat)
+      .map(AuthorityStatsDto::getMetadata)
+      .map(AuthorityControlMetadata::getStartedByUserId)
       .toList();
     assertNull(authorityChangeStatDtoCollection.getNext());
     assertThat(List.of(USER_ID_1, USER_ID_2)).containsAll(resultUserIds);
@@ -145,7 +148,8 @@ class InstanceAuthorityStatServiceDelegateTest {
     assertNotNull(authorityChangeStatDtoCollection.getStats());
     assertEquals(LIMIT_SIZE, authorityChangeStatDtoCollection.getStats().size());
     var resultStatDtos = authorityChangeStatDtoCollection.getStats();
-    for (AuthorityDataStatDto statDto : resultStatDtos) {
+    for (DataStatsDtoCollectionStatsInner statInterface : resultStatDtos) {
+      var statDto = (AuthorityStatsDto) statInterface;
       assertNotNull(statDto.getAction());
       assertNotNull(statDto.getAuthorityId());
       assertNotNull(statDto.getHeadingNew());
@@ -185,8 +189,9 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(org.folio.entlinks.domain.dto.AuthorityDataStatDto::getMetadata)
-      .map(org.folio.entlinks.domain.dto.Metadata::getStartedByUserId)
+      .map(stat -> (AuthorityStatsDto) stat)
+      .map(AuthorityStatsDto::getMetadata)
+      .map(AuthorityControlMetadata::getStartedByUserId)
       .toList();
     assertNull(authorityChangeStatDtoCollection.getNext());
     assertThat(List.of(USER_ID_1, USER_ID_2)).containsAll(resultUserIds);
@@ -207,9 +212,10 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(org.folio.entlinks.domain.dto.AuthorityDataStatDto::getMetadata)
+      .map(stat -> (AuthorityStatsDto) stat)
+      .map(AuthorityStatsDto::getMetadata)
       .filter(Objects::nonNull)
-      .map(org.folio.entlinks.domain.dto.Metadata::getStartedByUserId)
+      .map(AuthorityControlMetadata::getStartedByUserId)
       .toList();
 
     assertNull(authorityChangeStatDtoCollection.getNext());

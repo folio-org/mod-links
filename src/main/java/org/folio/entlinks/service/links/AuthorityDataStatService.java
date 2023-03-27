@@ -146,7 +146,6 @@ public class AuthorityDataStatService {
     return switch (report.getStatus()) {
       case SUCCESS -> InstanceAuthorityLinkStatus.ACTUAL;
       case FAIL -> InstanceAuthorityLinkStatus.ERROR;
-      default -> throw new IllegalArgumentException("Unknown link update report status.");
     };
   }
 
