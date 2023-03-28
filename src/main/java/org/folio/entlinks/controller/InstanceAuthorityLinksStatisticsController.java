@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class LinksDataStatisticsController implements InstanceAuthorityLinksStatisticsApi {
+public class InstanceAuthorityLinksStatisticsController implements InstanceAuthorityLinksStatisticsApi {
   private final InstanceAuthorityStatServiceDelegate instanceAuthorityStatServiceDelegate;
   private final LinkingServiceDelegate linkingServiceDelegate;
 
@@ -28,8 +28,9 @@ public class LinksDataStatisticsController implements InstanceAuthorityLinksStat
   }
 
   @Override
-  public ResponseEntity<BibStatsDtoCollection> getLinksDataStats(OffsetDateTime fromDate, OffsetDateTime toDate,
-                                                                 LinkStatus status, Integer limit) {
+  public ResponseEntity<BibStatsDtoCollection> getLinkedBibUpdateStats(OffsetDateTime fromDate,
+                                                                       OffsetDateTime toDate,
+                                                                       LinkStatus status, Integer limit) {
     return ResponseEntity.ok(
       linkingServiceDelegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit)
     );

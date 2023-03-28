@@ -156,8 +156,8 @@ paths:
 
   /links/stats/instance:
     get:
-      description: Retrieve links data statistics
-      operationId: getLinksDataStats
+      description: Retrieve linked bib update statistics
+      operationId: getLinkedBibUpdateStats
       tags:
         - instance-authority-links-statistics
       parameters:
@@ -382,7 +382,7 @@ components:
     linksChangeEvent:
       type: object
       description: Links change event body
-      x-implements: [ 'org.folio.entlinks.integration.dto.BaseEvent' ]
+      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
       properties:
         jobId:
           description: Links change job ID
@@ -495,7 +495,7 @@ components:
     linkUpdateReport:
       description: Link update report
       type: object
-      x-implements: [ 'org.folio.entlinks.integration.dto.BaseEvent' ]
+      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
       properties:
         jobId:
           description: Linked bibs update job id, UUID
