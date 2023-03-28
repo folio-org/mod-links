@@ -13,8 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
+import org.folio.entlinks.domain.dto.AuthorityStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
@@ -35,9 +34,9 @@ public class InstanceAuthorityStatServiceDelegate {
   private final DataStatsMapper dataStatMapper;
   private final UsersClient usersClient;
 
-  public DataStatsDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
-                                                         LinkAction action, Integer limit) {
-    var authorityStatsCollection = new DataStatsDtoCollection();
+  public AuthorityStatsDtoCollection fetchAuthorityLinksStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+                                                              LinkAction action, Integer limit) {
+    var authorityStatsCollection = new AuthorityStatsDtoCollection();
     var dataStatList = dataStatService.fetchDataStats(fromDate, toDate, action, limit + 1);
     log.debug("Retrieved data stat count {}", dataStatList.size());
 
@@ -56,7 +55,7 @@ public class InstanceAuthorityStatServiceDelegate {
           fillSourceFiles(authorityDataStatDto);
           authorityDataStatDto.setMetadata(getMetadata(users, source));
         }
-        return (DataStatsDtoCollectionStatsInner) authorityDataStatDto;
+        return authorityDataStatDto;
       })
       .toList();
 

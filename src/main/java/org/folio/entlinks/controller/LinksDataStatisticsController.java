@@ -4,35 +4,34 @@ import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.controller.delegate.InstanceAuthorityStatServiceDelegate;
 import org.folio.entlinks.controller.delegate.LinkingServiceDelegate;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.dto.DataStatsType;
+import org.folio.entlinks.domain.dto.AuthorityStatsDtoCollection;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.dto.LinkStatus;
-import org.folio.entlinks.rest.resource.LinksDataStatisticsApi;
+import org.folio.entlinks.rest.resource.InstanceAuthorityLinksStatisticsApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class LinksDataStatisticsController implements LinksDataStatisticsApi {
-
+public class LinksDataStatisticsController implements InstanceAuthorityLinksStatisticsApi {
   private final InstanceAuthorityStatServiceDelegate instanceAuthorityStatServiceDelegate;
-
   private final LinkingServiceDelegate linkingServiceDelegate;
 
+  @Override
+  public ResponseEntity<AuthorityStatsDtoCollection> getAuthorityLinksStats(OffsetDateTime fromDate,
+                                                                            OffsetDateTime toDate,
+                                                                            LinkAction action, Integer limit) {
+    return ResponseEntity.ok(
+      instanceAuthorityStatServiceDelegate.fetchAuthorityLinksStats(fromDate, toDate, action, limit)
+    );
+  }
 
   @Override
-  public ResponseEntity<DataStatsDtoCollection> getLinksDataStats(String dataStatsType,
-                                                                  OffsetDateTime fromDate, OffsetDateTime toDate,
-                                                                  LinkAction action, LinkStatus status,
-                                                                  Integer limit) {
+  public ResponseEntity<BibStatsDtoCollection> getLinksDataStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+                                                                 LinkStatus status, Integer limit) {
     return ResponseEntity.ok(
-      switch (DataStatsType.fromValue(dataStatsType)) {
-        case INSTANCE -> linkingServiceDelegate
-          .getLinkedBibUpdateStats(status, fromDate, toDate, limit);
-        case AUTHORITY -> instanceAuthorityStatServiceDelegate
-          .fetchAuthorityLinksStats(fromDate, toDate, action, limit);
-      }
+      linkingServiceDelegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit)
     );
   }
 }

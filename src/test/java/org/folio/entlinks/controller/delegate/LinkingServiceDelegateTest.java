@@ -25,8 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
@@ -247,13 +246,13 @@ class LinkingServiceDelegateTest {
         when(statsMapper.convertToDto(link))
           .thenReturn(bibStatsDto);
 
-        return (DataStatsDtoCollectionStatsInner) bibStatsDto;
+        return bibStatsDto;
       }).toList();
 
     var actual = delegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit);
 
     assertThat(actual)
-      .isEqualTo(new DataStatsDtoCollection()
+      .isEqualTo(new BibStatsDtoCollection()
         .stats(expectedStats)
         .next(next));
   }

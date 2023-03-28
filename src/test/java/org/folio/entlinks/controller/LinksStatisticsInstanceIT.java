@@ -28,7 +28,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ThreadUtils;
 import org.folio.entlinks.domain.dto.BibStatsDto;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.spring.test.extension.DatabaseCleanup;
@@ -118,7 +118,7 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
 
     var stats1 = stats(links1.getLinks(), null, null, INSTANCE_TITLES.get(0));
     var stats2 = stats(links2.getLinks(), null, null, INSTANCE_TITLES.get(1));
-    var stats = new DataStatsDtoCollection()
+    var stats = new BibStatsDtoCollection()
       .stats(Stream.concat(stats2.getStats().stream(), stats1.getStats().stream()).toList())
         .next(null);
 
@@ -158,7 +158,7 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
       .getStats();
     var next = toDate.minus(1, ChronoUnit.SECONDS);
     var nextStartsWith = next.toString().substring(0, 19);
-    var stats = new DataStatsDtoCollection()
+    var stats = new BibStatsDtoCollection()
       .stats(new LinkedList<>(stats1))
       .next(next);
     stats.getStats().add(stats2.get(0));
@@ -227,9 +227,8 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
   }
 
   @SuppressWarnings("unchecked")
-  private ResultMatcher statsMatch(DataStatsDtoCollection stats) {
+  private ResultMatcher statsMatch(BibStatsDtoCollection stats) {
     var statsMatchers = stats.getStats().stream()
-      .map(stat -> (BibStatsDto) stat)
       .map(LinksStatisticsInstanceIT.StatsMatcher::statsMatch)
       .toArray(Matcher[]::new);
     return jsonPath("$.stats", contains(statsMatchers));

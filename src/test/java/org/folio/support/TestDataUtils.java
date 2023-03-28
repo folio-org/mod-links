@@ -23,8 +23,7 @@ import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDto;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.InventoryEvent;
@@ -128,7 +127,7 @@ public class TestDataUtils {
         .errorCause(link.getErrorCause());
   }
 
-  public static DataStatsDtoCollection stats(List<InstanceLinkDto> links, String errorCause, OffsetDateTime next,
+  public static BibStatsDtoCollection stats(List<InstanceLinkDto> links, String errorCause, OffsetDateTime next,
                                             String instanceTitle) {
     var stats = links.stream()
       .map(link -> new BibStatsDto()
@@ -138,12 +137,11 @@ public class TestDataUtils {
         .instanceTitle(instanceTitle)
         .updatedAt(OffsetDateTime.now())
         .errorCause(errorCause))
-      .map(dto -> (DataStatsDtoCollectionStatsInner) dto)
       .collect(Collectors.toList());
     // because returned by updatedDate desc
     Collections.reverse(stats);
 
-    return new DataStatsDtoCollection()
+    return new BibStatsDtoCollection()
       .stats(stats)
       .next(next);
   }

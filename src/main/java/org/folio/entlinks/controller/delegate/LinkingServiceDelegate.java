@@ -15,8 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.domain.dto.BibStatsDto;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollection;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
@@ -45,11 +44,11 @@ public class LinkingServiceDelegate {
     return mapper.convertToDto(links);
   }
 
-  public DataStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
-                                                        OffsetDateTime toDate, int limit) {
+  public BibStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
+                                                       OffsetDateTime toDate, int limit) {
     validateDateRange(fromDate, toDate);
 
-    var bibStatsCollection = new DataStatsDtoCollection();
+    var bibStatsCollection = new BibStatsDtoCollection();
     var links = linkingService.getLinks(status, fromDate, toDate, limit + 1);
     log.debug("Retrieved links count {}", links.size());
 
@@ -67,7 +66,7 @@ public class LinkingServiceDelegate {
         if (bibDataStatDto != null) {
           fillInstanceTitles(bibDataStatDto, instanceTitles);
         }
-        return (DataStatsDtoCollectionStatsInner) bibDataStatDto;
+        return bibDataStatDto;
       })
       .toList();
 

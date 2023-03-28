@@ -106,19 +106,13 @@ paths:
         '500':
           $ref: '#/components/responses/serverErrorResponse'
 
-  /links/stats/{dataStatsType}:
+  /links/stats/authority:
     get:
-      description: Retrieve links data statistics
-      operationId: getLinksDataStats
+      description: Retrieve authority updates (related to links) statistics
+      operationId: getAuthorityLinksStats
       tags:
-        - links-data-statistics
+        - instance-authority-links-statistics
       parameters:
-        - name: dataStatsType
-          description: Statistic type [authority, instance]
-          required: true
-          in: path
-          schema:
-            type: string
         - name: fromDate
           in: query
           required: false
@@ -139,6 +133,48 @@ paths:
           description: Action to filter by
           schema:
             $ref: "#/components/schemas/linkAction"
+        - name: limit
+          in: query
+          required: false
+          description: Max number of items in collection
+          schema:
+            type: integer
+            minimum: 1
+            default: 100
+      responses:
+        '200':
+          description: The authority updates statistics collection
+          content:
+            application/json:
+              schema:
+                description: Collection of authority updates statistics
+                $ref: '#/components/schemas/authorityStatsDtoCollection'
+        '400':
+          $ref: '#/components/responses/badRequestResponse'
+        '500':
+          $ref: '#/components/responses/serverErrorResponse'
+
+  /links/stats/instance:
+    get:
+      description: Retrieve links data statistics
+      operationId: getLinksDataStats
+      tags:
+        - instance-authority-links-statistics
+      parameters:
+        - name: fromDate
+          in: query
+          required: false
+          description: Start date to seek from
+          schema:
+            type: string
+            format: date-time
+        - name: toDate
+          in: query
+          required: false
+          description: End date to seek to
+          schema:
+            type: string
+            format: date-time
         - name: status
           in: query
           required: false
@@ -155,12 +191,11 @@ paths:
             default: 100
       responses:
         '200':
-          description: The authority updates statistics collection
+          description: The linked bib update statistics collection
           content:
             application/json:
               schema:
-                description: Collection of authority updates statistics
-                $ref: '#/components/schemas/dataStatsDtoCollection'
+                $ref: '#/components/schemas/bibStatsDtoCollection'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '500':
@@ -344,14 +379,10 @@ components:
     linkStatus:
       $ref: schemas/authority/control/linkStatus.json
 
-    dataStatsType:
-      type: string
-      enum: [ instance, authority ]
-
     linksChangeEvent:
       type: object
       description: Links change event body
-      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
+      x-implements: [ 'org.folio.entlinks.integration.dto.BaseEvent' ]
       properties:
         jobId:
           description: Links change job ID
@@ -433,7 +464,7 @@ components:
           description: Subfield value. If empty - then remove
           type: string
 
-    dataStatsDtoCollection:
+    bibStatsDtoCollection:
       description: Collection of changes statistic
       type: object
       properties:
@@ -441,9 +472,21 @@ components:
           description: Changes statistic
           type: array
           items:
-            oneOf:
-              - $ref: schemas/authority/control/authorityStatsDto.json
-              - $ref: schemas/authority/control/bibStatsDto.json
+            $ref: schemas/authority/control/bibStatsDto.json
+        next:
+          description: Next response item date to seek by
+          type: string
+          format: date-time
+
+    authorityStatsDtoCollection:
+      description: Collection of authority changes statistic
+      type: object
+      properties:
+        stats:
+          description: Authority changes statistic
+          type: array
+          items:
+            $ref: schemas/authority/control/authorityStatsDto.json
         next:
           description: Next response item date to seek by
           type: string
@@ -452,7 +495,7 @@ components:
     linkUpdateReport:
       description: Link update report
       type: object
-      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
+      x-implements: [ 'org.folio.entlinks.integration.dto.BaseEvent' ]
       properties:
         jobId:
           description: Linked bibs update job id, UUID

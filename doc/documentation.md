@@ -24,11 +24,12 @@
       * [Instance to Authority linking rule parameters](#instance-to-authority-linking-rule-parameters)
       * [Examples](#examples-1)
         * [Retrieve instance to authority linking rules collection:](#retrieve-instance-to-authority-linking-rules-collection-)
-    * [API links-data-statistics](#api-links-data-statistics)
-      * [Linked data statistics parameters](#linked-data-statistics-parameters)
+    * [API instance-authority-links-statistics](#api-instance-authority-links-statistics)
       * [Examples](#examples-2)
         * [Retrieve instance to authority links statistics collection:](#retrieve-instance-to-authority-links-statistics-collection-)
+          * [Instance to Authority links statistics parameters](#instance-to-authority-links-statistics-parameters)
         * [Retrieve linked bib updates statistics collection:](#retrieve-linked-bib-updates-statistics-collection-)
+          * [Linked bib updates statistics parameters](#linked-bib-updates-statistics-parameters)
 <!-- TOC -->
 
 ## Compiling
@@ -274,22 +275,14 @@ Response:
 ]
 ```
 
-### API links-data-statistics
+### API instance-authority-links-statistics
 
-The API enables possibility to retrieve default linking rules.
+The API provides statistics for instance to authority links statistics
 
 | METHOD | URL                      | Required permissions                                           | DESCRIPTION                                                     |
 |:-------|:-------------------------|:---------------------------------------------------------------|:----------------------------------------------------------------|
 | GET    | `/links/stats/authority` | `instance-authority-links.authority-statistics.collection.get` | Get Instance to Authority links authority-statistics collection |
 | GET    | `/links/stats/instance`  | `instance-authority-links.instance-statistics.collection.get`  | Get linked bib update statistics collection                     |
-
-#### Linked data statistics parameters
-
-* `fromDate` - Start date to seek from
-* `toDate` - End date to seek from
-* `action` - Action to filter by (authority)
-* `status` - Link status to filter by (instance)
-* `limit` - Max number of items in collection
 
 #### Examples
 
@@ -299,6 +292,13 @@ The API enables possibility to retrieve default linking rules.
 ##### Retrieve instance to authority links statistics collection:
 
 `GET /links/stats/authority`
+
+###### Instance to Authority links statistics parameters
+
+* `fromDate` - Start date to seek from
+* `toDate` - End date to seek from
+* `action` - Action to filter by
+* `limit` - Max number of items in collection
 
 Response:
 
@@ -359,6 +359,13 @@ Response:
 ##### Retrieve linked bib updates statistics collection:
 
 `GET /links/stats/instance`
+
+###### Linked bib updates statistics parameters
+
+* `fromDate` - Start date to seek from
+* `toDate` - End date to seek to
+* `status` - Link status to filter by
+* `limit` - Max number of items in collection
 
 Response:
 

@@ -20,7 +20,6 @@ import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
-import org.folio.entlinks.domain.dto.DataStatsDtoCollectionStatsInner;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
@@ -97,8 +96,7 @@ class InstanceAuthorityStatServiceDelegateTest {
     assertNotNull(authorityChangeStatDtoCollection.getStats());
     assertEquals(LIMIT_SIZE, authorityChangeStatDtoCollection.getStats().size());
     var resultStatDtos = authorityChangeStatDtoCollection.getStats();
-    for (DataStatsDtoCollectionStatsInner statInterface : resultStatDtos) {
-      var statDto = (AuthorityStatsDto) statInterface;
+    for (AuthorityStatsDto statDto : resultStatDtos) {
       assertNotNull(statDto.getAction());
       assertNotNull(statDto.getAuthorityId());
       assertNotNull(statDto.getHeadingNew());
@@ -122,7 +120,6 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(stat -> (AuthorityStatsDto) stat)
       .map(AuthorityStatsDto::getMetadata)
       .map(AuthorityControlMetadata::getStartedByUserId)
       .toList();
@@ -148,8 +145,7 @@ class InstanceAuthorityStatServiceDelegateTest {
     assertNotNull(authorityChangeStatDtoCollection.getStats());
     assertEquals(LIMIT_SIZE, authorityChangeStatDtoCollection.getStats().size());
     var resultStatDtos = authorityChangeStatDtoCollection.getStats();
-    for (DataStatsDtoCollectionStatsInner statInterface : resultStatDtos) {
-      var statDto = (AuthorityStatsDto) statInterface;
+    for (AuthorityStatsDto statDto  : resultStatDtos) {
       assertNotNull(statDto.getAction());
       assertNotNull(statDto.getAuthorityId());
       assertNotNull(statDto.getHeadingNew());
@@ -189,7 +185,6 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(stat -> (AuthorityStatsDto) stat)
       .map(AuthorityStatsDto::getMetadata)
       .map(AuthorityControlMetadata::getStartedByUserId)
       .toList();
@@ -212,7 +207,6 @@ class InstanceAuthorityStatServiceDelegateTest {
 
     var resultUserIds = authorityChangeStatDtoCollection.getStats()
       .stream()
-      .map(stat -> (AuthorityStatsDto) stat)
       .map(AuthorityStatsDto::getMetadata)
       .filter(Objects::nonNull)
       .map(AuthorityControlMetadata::getStartedByUserId)

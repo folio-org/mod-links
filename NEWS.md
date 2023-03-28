@@ -1,7 +1,6 @@
-## v1.1.0 In progress
+## v2.0.0 In progress
 ### APIs versions
-* Provides `links-data-statistics v2.0`
-* Removes `instance-authority-links-statistics v1.0`
+* Provides `instance-authority-links-statistics v2.0`
 * Removes `linked-bib-update-statistics v1.0`
 
 ## v1.0.0 Released 2023-02-21
