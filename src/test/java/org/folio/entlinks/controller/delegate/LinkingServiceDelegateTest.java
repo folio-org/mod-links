@@ -138,7 +138,7 @@ class LinkingServiceDelegateTest {
     var limit = 2;
 
     var exception = Assertions.assertThrows(RequestBodyValidationException.class,
-      () -> delegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit));
+      () -> delegate.getLinkedBibUpdateStats(fromDate, toDate, status, limit));
 
     assertThat(exception)
       .hasMessage("'to' date should be not less than 'from' date.")
@@ -230,26 +230,21 @@ class LinkingServiceDelegateTest {
     var fromDate = OffsetDateTime.now();
     var toDate = fromDate.plus(1, ChronoUnit.DAYS);
     var limit = 2;
+    var expectedStats = stats(linksForStats);
 
     when(linkingService.getLinks(status, fromDate, toDate, limit + 1))
       .thenReturn(linksMock);
+    when(statsMapper.convertToDto(linksForStats))
+      .thenReturn(expectedStats);
     when(instanceService.getInstanceTitles(instanceIds))
       .thenReturn(instanceTitles);
 
-    var expectedStats = linksForStats.stream()
-      .map(link -> {
-        var bibStatsDto = stats(link);
-        var instanceId = bibStatsDto.getInstanceId();
-        var instanceTitle = instanceTitles.get(instanceId.toString());
-        bibStatsDto.setInstanceTitle(instanceTitle);
+    expectedStats.forEach(bibStatsDto -> {
+      var instanceId = bibStatsDto.getInstanceId();
+      bibStatsDto.setInstanceTitle(instanceTitles.get(instanceId.toString()));
+    });
 
-        when(statsMapper.convertToDto(link))
-          .thenReturn(bibStatsDto);
-
-        return bibStatsDto;
-      }).toList();
-
-    var actual = delegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit);
+    var actual = delegate.getLinkedBibUpdateStats(fromDate, toDate, status, limit);
 
     assertThat(actual)
       .isEqualTo(new BibStatsDtoCollection()

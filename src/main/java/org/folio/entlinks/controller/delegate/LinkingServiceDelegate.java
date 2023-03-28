@@ -21,7 +21,6 @@ import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
-import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.internal.InstanceStorageService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -44,8 +43,8 @@ public class LinkingServiceDelegate {
     return mapper.convertToDto(links);
   }
 
-  public BibStatsDtoCollection getLinkedBibUpdateStats(LinkStatus status, OffsetDateTime fromDate,
-                                                       OffsetDateTime toDate, int limit) {
+  public BibStatsDtoCollection getLinkedBibUpdateStats(OffsetDateTime fromDate, OffsetDateTime toDate,
+                                                       LinkStatus status, int limit) {
     validateDateRange(fromDate, toDate);
 
     var bibStatsCollection = new BibStatsDtoCollection();
@@ -58,17 +57,8 @@ public class LinkingServiceDelegate {
       links = links.subList(0, limit);
     }
 
-    var instanceTitles = getInstanceTitles(links);
-    var stats = links.stream()
-      .map(link -> {
-        var bibDataStatDto = statsMapper.convertToDto(link);
-
-        if (bibDataStatDto != null) {
-          fillInstanceTitles(bibDataStatDto, instanceTitles);
-        }
-        return bibDataStatDto;
-      })
-      .toList();
+    var stats = statsMapper.convertToDto(links);
+    fillInstanceTitles(stats);
 
     return bibStatsCollection.stats(stats);
   }
@@ -138,24 +128,26 @@ public class LinkingServiceDelegate {
     }
   }
 
-  private Map<String, String> getInstanceTitles(List<InstanceAuthorityLink> links) {
-    var instanceIds = links.stream()
-      .map(InstanceAuthorityLink::getInstanceId)
+  private void fillInstanceTitles(List<BibStatsDto> bibStatsList) {
+    var instanceIds = bibStatsList.stream()
+      .map(BibStatsDto::getInstanceId)
       .map(UUID::toString)
       .distinct()
       .toList();
 
-    return instanceService.getInstanceTitles(instanceIds);
-  }
+    var instanceTitles = instanceService.getInstanceTitles(instanceIds);
 
-  private void fillInstanceTitles(BibStatsDto bibStatsDto, Map<String, String> instanceTitles) {
-    var instanceId = bibStatsDto.getInstanceId().toString();
-    var title = instanceTitles.get(instanceId);
 
-    if (isBlank(title)) {
-      log.warn("Title for instance {} is blank", instanceId);
-      return;
-    }
-    bibStatsDto.setInstanceTitle(title);
+    bibStatsList.forEach(bibStatsDto -> {
+      var instanceId = bibStatsDto.getInstanceId().toString();
+      var title = instanceTitles.get(instanceId);
+
+      if (isBlank(title)) {
+        log.warn("Title for instance {} is blank", instanceId);
+        return;
+      }
+
+      bibStatsDto.setInstanceTitle(title);
+    });
   }
 }

@@ -32,7 +32,7 @@ public class InstanceAuthorityLinksStatisticsController implements InstanceAutho
                                                                        OffsetDateTime toDate,
                                                                        LinkStatus status, Integer limit) {
     return ResponseEntity.ok(
-      linkingServiceDelegate.getLinkedBibUpdateStats(status, fromDate, toDate, limit)
+      linkingServiceDelegate.getLinkedBibUpdateStats(fromDate, toDate, status, limit)
     );
   }
 }
