@@ -65,7 +65,7 @@ public class InstanceAuthorityLinkUpdateService {
   private void processEventsByChangeType(List<AuthorityChangeHolder> changeHolders) {
     var changesByType = changeHolders.stream()
       .filter(changeHolder -> {
-        if (changeHolder.getNumberOfLinks() > 0) {
+        if (changeHolder.getNumberOfLinks() > 0 || changeHolder.getChangeType() == AuthorityChangeType.DELETE) {
           return true;
         } else {
           log.info("Skip message. Authority record [id: {}] doesn't have links", changeHolder.getAuthorityId());

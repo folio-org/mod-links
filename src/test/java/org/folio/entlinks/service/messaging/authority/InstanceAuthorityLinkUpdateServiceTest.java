@@ -107,4 +107,25 @@ class InstanceAuthorityLinkUpdateServiceTest {
     assertThat(messages).hasSize(1);
     assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
   }
+
+  @Test
+  void handleAuthoritiesChanges_positive_deleteEventWhenNoLinksExist() {
+    final var id = UUID.randomUUID();
+    final var inventoryEvents = List.of(new InventoryEvent().id(id)
+      .type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")));
+
+    var changeEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
+
+    when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Collections.emptyMap());
+    when(deleteHandler.handle(any())).thenReturn(List.of(changeEvent));
+
+    service.handleAuthoritiesChanges(inventoryEvents);
+
+    verify(eventProducer).sendMessages(argumentCaptor.capture());
+    verify(authorityDataStatService).createInBatch(anyList());
+
+    var messages = argumentCaptor.getValue();
+    assertThat(messages).hasSize(1);
+    assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+  }
 }
