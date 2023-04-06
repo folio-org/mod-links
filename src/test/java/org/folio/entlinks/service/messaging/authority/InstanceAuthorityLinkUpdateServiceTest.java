@@ -93,7 +93,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
 
   @ParameterizedTest
   @MethodSource("linksTestCases")
-  void handleAuthoritiesChanges_positive_deleteEventWithAndWithoutLinks(Map<UUID, Integer> map) {
+  void handleAuthoritiesChanges_positive_deleteEventWithAndWithoutLinks(Map<UUID, Integer> map, int messageSize) {
     final var inventoryEvents = List.of(new InventoryEvent().id(ID)
       .type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")));
 
@@ -104,18 +104,24 @@ class InstanceAuthorityLinkUpdateServiceTest {
 
     service.handleAuthoritiesChanges(inventoryEvents);
 
-    verify(eventProducer).sendMessages(argumentCaptor.capture());
-    verify(authorityDataStatService).createInBatch(anyList());
-
-    var messages = argumentCaptor.getValue();
-    assertThat(messages).hasSize(1);
-    assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+    if (messageSize != 0) {
+      // when authority has links
+      verify(eventProducer).sendMessages(argumentCaptor.capture());
+      verify(authorityDataStatService).createInBatch(anyList());
+      var messages = argumentCaptor.getValue();
+      assertThat(messages).hasSize(messageSize);
+      assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+    } else {
+      // when authority doesn’t have links
+      verify(eventProducer, never()).sendMessages(argumentCaptor.capture());
+      verify(authorityDataStatService).createInBatch(anyList());
+    }
   }
 
   public static Stream<Arguments> linksTestCases() {
     return Stream.of(
-      Arguments.of(Map.of(ID, 1)),
-      Arguments.of(Collections.emptyMap())
+      Arguments.of(Map.of(ID, 1), 1),
+      Arguments.of(Collections.emptyMap(), 0)
     );
   }
 }
