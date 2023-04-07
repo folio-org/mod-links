@@ -96,12 +96,15 @@ class InstanceAuthorityLinkUpdateServiceTest {
   @MethodSource("linksTestCases")
   void handleAuthoritiesChanges_positive_eventsWhenLinksExistAndNoLinks(List<InventoryEvent> eventList,
                                                                         Map<UUID, Integer> linksById,
-                                                                        List<LinksChangeEvent.TypeEnum> msgList) {
+                                                                        List<LinksChangeEvent.TypeEnum> msgList,
+                                                                        boolean hasUpdate) {
     when(linkingService.countLinksByAuthorityIds(Set.of(ID, ID1))).thenReturn(linksById);
-    var updateEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
     var deleteEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
-    when(updateHandler.handle(anyList())).thenReturn(List.of(updateEvent));
     when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent));
+    if (hasUpdate) {
+      var updateEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
+      when(updateHandler.handle(anyList())).thenReturn(List.of(updateEvent));
+    }
 
     service.handleAuthoritiesChanges(eventList);
 
@@ -121,15 +124,24 @@ class InstanceAuthorityLinkUpdateServiceTest {
   }
 
   public static Stream<Arguments> linksTestCases() {
+    List<InventoryEvent> deleteEventList = List.of(
+      new InventoryEvent().id(ID).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")),
+      new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
+    );
+
     List<InventoryEvent> eventList = List.of(
       new InventoryEvent().id(ID).type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")),
       new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
     );
 
     return Stream.of(
-      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.UPDATE)),
-      Arguments.of(eventList, Map.of(ID, 0, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE)),
-      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList())
+      Arguments.of(deleteEventList, Map.of(ID, 1, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE), false),
+      Arguments.of(deleteEventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.DELETE), false),
+      Arguments.of(deleteEventList, Map.of(ID, 0, ID1, 0), Collections.emptyList(), false),
+
+      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.UPDATE), true),
+      Arguments.of(eventList, Map.of(ID, 0, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE), true),
+      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList(), true)
     );
   }
 }
