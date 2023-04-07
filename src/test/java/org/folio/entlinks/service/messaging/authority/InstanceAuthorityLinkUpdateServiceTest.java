@@ -103,6 +103,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent, deleteEvent1));
 
     service.handleAuthoritiesChanges(eventList);
+    verify(deleteHandler).handle(anyList());
 
     if (msgList.size() != 0) {
       // when authority has links
