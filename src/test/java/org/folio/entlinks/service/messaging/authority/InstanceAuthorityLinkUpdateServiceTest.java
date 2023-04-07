@@ -38,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class InstanceAuthorityLinkUpdateServiceTest {
 
   private static final UUID ID = UUID.randomUUID();
+  private static final UUID ID1 = UUID.randomUUID();
   private @Captor ArgumentCaptor<List<LinksChangeEvent>> argumentCaptor;
 
   private @Mock EventProducer<LinksChangeEvent> eventProducer;
@@ -93,24 +94,25 @@ class InstanceAuthorityLinkUpdateServiceTest {
 
   @ParameterizedTest
   @MethodSource("linksTestCases")
-  void handleAuthoritiesChanges_positive_deleteEventWithAndWithoutLinks(Map<UUID, Integer> map, int messageSize) {
-    final var inventoryEvents = List.of(new InventoryEvent().id(ID)
-      .type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")));
+  void handleAuthoritiesChanges_positive_eventsWhenLinksExistAndNoLinks(List<InventoryEvent> eventList,
+                                                                        Map<UUID, Integer> linksById,
+                                                                        List<LinksChangeEvent.TypeEnum> msgList) {
+    when(linkingService.countLinksByAuthorityIds(Set.of(ID, ID1))).thenReturn(linksById);
+    var updateEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
+    var deleteEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
+    when(updateHandler.handle(anyList())).thenReturn(List.of(updateEvent));
+    when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent));
 
-    var changeEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
+    service.handleAuthoritiesChanges(eventList);
 
-    when(linkingService.countLinksByAuthorityIds(Set.of(ID))).thenReturn(map);
-    when(deleteHandler.handle(any())).thenReturn(List.of(changeEvent));
-
-    service.handleAuthoritiesChanges(inventoryEvents);
-
-    if (messageSize != 0) {
+    if (msgList.size() != 0) {
       // when authority has links
       verify(eventProducer).sendMessages(argumentCaptor.capture());
       verify(authorityDataStatService).createInBatch(anyList());
       var messages = argumentCaptor.getValue();
-      assertThat(messages).hasSize(messageSize);
-      assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+      assertThat(messages).hasSize(msgList.size());
+      assertThat(messages.get(0).getType()).isEqualTo(msgList.get(0));
+
     } else {
       // when authority doesn’t have links
       verify(eventProducer, never()).sendMessages(argumentCaptor.capture());
@@ -119,9 +121,15 @@ class InstanceAuthorityLinkUpdateServiceTest {
   }
 
   public static Stream<Arguments> linksTestCases() {
+    List<InventoryEvent> eventList = List.of(
+      new InventoryEvent().id(ID).type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")),
+      new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
+    );
+
     return Stream.of(
-      Arguments.of(Map.of(ID, 1), 1),
-      Arguments.of(Collections.emptyMap(), 0)
+      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.UPDATE)),
+      Arguments.of(eventList, Map.of(ID, 0, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE)),
+      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList())
     );
   }
 }
