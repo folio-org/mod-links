@@ -63,6 +63,7 @@ public class InstanceAuthorityLinkUpdateService {
   }
 
   private void processEventsByChangeType(List<AuthorityChangeHolder> changeHolders) {
+    var authorityIdByLinks = getAuthorityIdByLinks(changeHolders);
     var changesByType = changeHolders.stream()
       .collect(Collectors.groupingBy(AuthorityChangeHolder::getChangeType));
 
@@ -74,21 +75,26 @@ public class InstanceAuthorityLinkUpdateService {
         return;
       } else {
         var changeHolderList = eventsByTypeEntry.getValue();
-        var linksEvents = handler.handle(changeHolderList);
-        if (isLinksExist(changeHolderList)) {
+        var linksEvents = handler.handle(changeHolderList).stream()
+          .filter(it -> authorityIdByLinks.contains(it.getAuthorityId())).toList();
+        if (linksEvents.size() > 0) {
           sendEvents(linksEvents, type);
-        } else {
-          log.info("Skip message. Authority record doesn't have links [event type: {}]", type);
         }
       }
     }
   }
 
-  private boolean isLinksExist(List<AuthorityChangeHolder> changeHolders) {
+  private List<UUID> getAuthorityIdByLinks(List<AuthorityChangeHolder> changeHolders) {
     return changeHolders.stream()
       .filter(Objects::nonNull)
-      .map(AuthorityChangeHolder::getNumberOfLinks)
-      .reduce(0, Integer::sum) > 0;
+      .filter(changeHolder -> {
+        if (changeHolder.getNumberOfLinks() > 0) {
+          return true;
+        } else {
+          log.info("Skip message. Authority record [id: {}] doesn't have links", changeHolder.getAuthorityId());
+          return false;
+        }
+      }).map(AuthorityChangeHolder::getAuthorityId).toList();
   }
 
 

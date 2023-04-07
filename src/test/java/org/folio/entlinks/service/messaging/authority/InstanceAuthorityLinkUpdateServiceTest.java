@@ -65,7 +65,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     final var inventoryEvents = List.of(new InventoryEvent().id(id)
       .type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")));
 
-    var expected = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
+    var expected = new LinksChangeEvent().authorityId(id).type(LinksChangeEvent.TypeEnum.UPDATE);
     when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Map.of(id, 1));
     when(updateHandler.handle(anyList())).thenReturn(List.of(expected));
 
@@ -96,15 +96,11 @@ class InstanceAuthorityLinkUpdateServiceTest {
   @MethodSource("linksTestCases")
   void handleAuthoritiesChanges_positive_eventsWhenLinksExistAndNoLinks(List<InventoryEvent> eventList,
                                                                         Map<UUID, Integer> linksById,
-                                                                        List<LinksChangeEvent.TypeEnum> msgList,
-                                                                        boolean hasUpdate) {
+                                                                        List<LinksChangeEvent.TypeEnum> msgList) {
     when(linkingService.countLinksByAuthorityIds(Set.of(ID, ID1))).thenReturn(linksById);
-    var deleteEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
-    when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent));
-    if (hasUpdate) {
-      var updateEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
-      when(updateHandler.handle(anyList())).thenReturn(List.of(updateEvent));
-    }
+    var deleteEvent = new LinksChangeEvent().authorityId(ID).type(LinksChangeEvent.TypeEnum.DELETE);
+    var deleteEvent1 = new LinksChangeEvent().authorityId(ID1).type(LinksChangeEvent.TypeEnum.DELETE);
+    when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent, deleteEvent1));
 
     service.handleAuthoritiesChanges(eventList);
 
@@ -124,24 +120,14 @@ class InstanceAuthorityLinkUpdateServiceTest {
   }
 
   public static Stream<Arguments> linksTestCases() {
-    List<InventoryEvent> deleteEventList = List.of(
+    List<InventoryEvent> eventList = List.of(
       new InventoryEvent().id(ID).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")),
       new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
     );
 
-    List<InventoryEvent> eventList = List.of(
-      new InventoryEvent().id(ID).type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")),
-      new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
-    );
-
     return Stream.of(
-      Arguments.of(deleteEventList, Map.of(ID, 1, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE), false),
-      Arguments.of(deleteEventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.DELETE), false),
-      Arguments.of(deleteEventList, Map.of(ID, 0, ID1, 0), Collections.emptyList(), false),
-
-      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.UPDATE), true),
-      Arguments.of(eventList, Map.of(ID, 0, ID1, 1), List.of(LinksChangeEvent.TypeEnum.DELETE), true),
-      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList(), true)
+      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.DELETE)),
+      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList())
     );
   }
 }
