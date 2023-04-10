@@ -108,6 +108,7 @@ public class AuthorityChangeHolder {
       .authorityData(AuthorityData.builder()
         .id(getAuthorityId())
         .naturalId(getNewNaturalId() == null ? getOldNaturalId() : getNewNaturalId())
+        .deleted(this.getAuthorityDataStatAction().equals(AuthorityDataStatAction.DELETE))
         .build())
       .authorityNaturalIdOld(getOldNaturalId())
       .authorityNaturalIdNew(getNewNaturalId())

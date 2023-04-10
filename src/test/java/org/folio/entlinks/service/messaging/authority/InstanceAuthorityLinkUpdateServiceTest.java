@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
@@ -25,9 +24,6 @@ import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -37,8 +33,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class InstanceAuthorityLinkUpdateServiceTest {
 
-  private static final UUID ID = UUID.randomUUID();
-  private static final UUID ID1 = UUID.randomUUID();
   private @Captor ArgumentCaptor<List<LinksChangeEvent>> argumentCaptor;
 
   private @Mock EventProducer<LinksChangeEvent> eventProducer;
@@ -65,7 +59,7 @@ class InstanceAuthorityLinkUpdateServiceTest {
     final var inventoryEvents = List.of(new InventoryEvent().id(id)
       .type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")));
 
-    var expected = new LinksChangeEvent().authorityId(id).type(LinksChangeEvent.TypeEnum.UPDATE);
+    var expected = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.UPDATE);
     when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Map.of(id, 1));
     when(updateHandler.handle(anyList())).thenReturn(List.of(expected));
 
@@ -81,10 +75,11 @@ class InstanceAuthorityLinkUpdateServiceTest {
 
   @Test
   void handleAuthoritiesChanges_positive_updateEventWhenNoLinksExist() {
-    final var inventoryEvents = List.of(new InventoryEvent().id(ID)
+    final var id = UUID.randomUUID();
+    final var inventoryEvents = List.of(new InventoryEvent().id(id)
       .type("UPDATE")._new(new AuthorityInventoryRecord().naturalId("new")));
 
-    when(linkingService.countLinksByAuthorityIds(Set.of(ID))).thenReturn(Collections.emptyMap());
+    when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Collections.emptyMap());
 
     service.handleAuthoritiesChanges(inventoryEvents);
 
@@ -92,43 +87,24 @@ class InstanceAuthorityLinkUpdateServiceTest {
     verify(authorityDataStatService).createInBatch(anyList());
   }
 
-  @ParameterizedTest
-  @MethodSource("linksTestCases")
-  void handleAuthoritiesChanges_positive_eventsWhenLinksExistAndNoLinks(List<InventoryEvent> eventList,
-                                                                        Map<UUID, Integer> linksById,
-                                                                        List<LinksChangeEvent.TypeEnum> msgList) {
-    when(linkingService.countLinksByAuthorityIds(Set.of(ID, ID1))).thenReturn(linksById);
-    var deleteEvent = new LinksChangeEvent().authorityId(ID).type(LinksChangeEvent.TypeEnum.DELETE);
-    var deleteEvent1 = new LinksChangeEvent().authorityId(ID1).type(LinksChangeEvent.TypeEnum.DELETE);
-    when(deleteHandler.handle(any())).thenReturn(List.of(deleteEvent, deleteEvent1));
+  @Test
+  void handleAuthoritiesChanges_positive_deleteEvent() {
+    final var id = UUID.randomUUID();
+    final var inventoryEvents = List.of(new InventoryEvent().id(id)
+      .type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")));
 
-    service.handleAuthoritiesChanges(eventList);
-    verify(deleteHandler).handle(anyList());
+    var changeEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
 
-    if (msgList.size() != 0) {
-      // when authority has links
-      verify(eventProducer).sendMessages(argumentCaptor.capture());
-      verify(authorityDataStatService).createInBatch(anyList());
-      var messages = argumentCaptor.getValue();
-      assertThat(messages).hasSize(msgList.size());
-      assertThat(messages.get(0).getType()).isEqualTo(msgList.get(0));
+    when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Map.of(id, 1));
+    when(deleteHandler.handle(any())).thenReturn(List.of(changeEvent));
 
-    } else {
-      // when authority doesn’t have links
-      verify(eventProducer, never()).sendMessages(argumentCaptor.capture());
-      verify(authorityDataStatService).createInBatch(anyList());
-    }
-  }
+    service.handleAuthoritiesChanges(inventoryEvents);
 
-  public static Stream<Arguments> linksTestCases() {
-    List<InventoryEvent> eventList = List.of(
-      new InventoryEvent().id(ID).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old")),
-      new InventoryEvent().id(ID1).type("DELETE").old(new AuthorityInventoryRecord().naturalId("old"))
-    );
+    verify(eventProducer).sendMessages(argumentCaptor.capture());
+    verify(authorityDataStatService).createInBatch(anyList());
 
-    return Stream.of(
-      Arguments.of(eventList, Map.of(ID, 1, ID1, 0), List.of(LinksChangeEvent.TypeEnum.DELETE)),
-      Arguments.of(eventList, Map.of(ID, 0, ID1, 0), Collections.emptyList())
-    );
+    var messages = argumentCaptor.getValue();
+    assertThat(messages).hasSize(1);
+    assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
   }
 }
