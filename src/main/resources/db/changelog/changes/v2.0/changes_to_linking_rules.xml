@@ -50,12 +50,6 @@
 
     <sql>
       UPDATE instance_authority_linking_rule
-      SET auto_linking_enabled = 'true'
-      WHERE bib_field in ('100', '110', '111', '130', '240', '700', '710', '711', '730', '800', '810', '811', '830')
-    </sql>
-
-    <sql>
-      UPDATE instance_authority_linking_rule
       SET auto_linking_enabled = 'false'
       WHERE bib_field in ('600', '610', '611', '630', '650', '651', '655')
     </sql>
@@ -71,7 +65,9 @@
 
     <comment>Add not null constraint to auto_linking_enabled in instance_authority_linking_rule</comment>
 
-    <addNotNullConstraint tableName="instance_authority_linking_rule" columnName="auto_linking_enabled"/>
+    <addNotNullConstraint tableName="instance_authority_linking_rule"
+                          columnName="auto_linking_enabled"
+                          defaultNullValue="true"/>
   </changeSet>
 
 </databaseChangeLog>
