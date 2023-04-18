@@ -8,7 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.domain.repository.LinkingRulesRepository;
 import org.folio.entlinks.exception.LinkingRuleNotFoundException;
-import org.folio.entlinks.service.CachingService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class InstanceAuthorityLinkingRulesService {
 
   private final LinkingRulesRepository repository;
-  private final CachingService cachingService;
 
   public List<InstanceAuthorityLinkingRule> getLinkingRules() {
     log.info("Loading linking rules");
@@ -41,6 +40,7 @@ public class InstanceAuthorityLinkingRulesService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = AUTHORITY_LINKING_RULES_CACHE, allEntries = true)
   public void patchLinkingRule(Integer ruleId, InstanceAuthorityLinkingRule linkingRulePatch) {
     log.info("Patch linking rule [ruleId: {}, change: {}]", ruleId, linkingRulePatch);
     var existedLinkingRule = repository.findById(ruleId)
@@ -50,6 +50,5 @@ public class InstanceAuthorityLinkingRulesService {
       existedLinkingRule.setAutoLinkingEnabled(linkingRulePatch.getAutoLinkingEnabled());
     }
     repository.save(existedLinkingRule);
-    cachingService.invalidateCache(AUTHORITY_LINKING_RULES_CACHE);
   }
 }
