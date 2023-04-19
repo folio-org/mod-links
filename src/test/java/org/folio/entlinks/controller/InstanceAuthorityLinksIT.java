@@ -3,32 +3,41 @@ package org.folio.entlinks.controller;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.folio.support.JsonTestUtils.asJson;
+import static org.folio.support.MatchUtils.statsMatch;
 import static org.folio.support.TestDataUtils.Link.TAGS;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
+import static org.folio.support.TestDataUtils.stats;
 import static org.folio.support.base.TestConstants.authoritiesLinksCountEndpoint;
 import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
+import static org.folio.support.base.TestConstants.linksStatsInstanceEndpoint;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
+import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
+import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
+import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.exception.type.ErrorCode;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
@@ -43,6 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @IntegrationTest
 @DatabaseCleanup(tables = DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE)
@@ -219,6 +229,24 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
+  void updateInstanceLinks_positive_ignoreReadOnlyFields() {
+    var instanceId = randomUUID();
+    var incomingLinks = linksDtoCollection(linksDto(instanceId,
+      Link.of(InstanceAuthorityLinkStatus.ERROR, "test")));
+    doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
+
+    var expectedLinks = linksDto(instanceId,
+      Link.of(InstanceAuthorityLinkStatus.ACTUAL, null));
+
+    var stats = bibStatsCollection(expectedLinks);
+
+    perform(statsGetRequest())
+      .andExpect(statsMatch(hasSize(1)))
+      .andExpect(statsMatch(stats));
+  }
+
+  @Test
+  @SneakyThrows
   void updateInstanceLinks_negative_whenInstanceIdIsNotSameForIncomingLinks() {
     var instanceId = randomUUID();
     var incomingLinks = linksDtoCollection(linksDto(randomUUID(),
@@ -359,6 +387,16 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
     return jsonPath("$.links", containsInAnyOrder(linkMatchers));
   }
 
+  private MockHttpServletRequestBuilder statsGetRequest() {
+    var toDate = OffsetDateTime.now();
+    var fromDate = toDate.minus(1, ChronoUnit.DAYS);
+    return get(linksStatsInstanceEndpoint(LinkStatus.ACTUAL, fromDate, toDate));
+  }
+
+  private BibStatsDtoCollection bibStatsCollection(List<InstanceLinkDto> links) {
+    return stats(links, null, null, null);
+  }
+
   private static final class LinkMatcher extends BaseMatcher<InstanceLinkDto> {
 
     private final InstanceLinkDto expectedLink;
@@ -378,7 +416,9 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
         return Objects.equals(expectedLink.getAuthorityId().toString(), actualLink.get("authorityId"))
           && Objects.equals(expectedLink.getAuthorityNaturalId(), actualLink.get("authorityNaturalId"))
           && Objects.equals(expectedLink.getInstanceId().toString(), actualLink.get("instanceId"))
-          && Objects.equals(expectedLink.getLinkingRuleId(), actualLink.get("linkingRuleId"));
+          && Objects.equals(expectedLink.getLinkingRuleId(), actualLink.get("linkingRuleId"))
+          && Objects.equals(expectedLink.getStatus(), actualLink.get("status"))
+          && Objects.equals(expectedLink.getErrorCause(), actualLink.get("errorCause"));
       }
 
       return false;

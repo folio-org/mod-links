@@ -239,6 +239,12 @@ components:
         linkingRuleId:
           type: integer
           description: ID of linking rule by which link should be created
+        status:
+          type: string
+          description: Status of the link. Read-only
+        errorCause:
+          type: string
+          description: Link update error cause (if present). Read-only
       required:
         - authorityId
         - authorityNaturalId

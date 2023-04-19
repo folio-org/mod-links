@@ -1,12 +1,12 @@
 package org.folio.entlinks.controller;
 
 import static java.util.Collections.singletonList;
+import static org.folio.support.MatchUtils.statsMatch;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
 import static org.folio.support.TestDataUtils.stats;
 import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
 import static org.folio.support.base.TestConstants.linksStatsInstanceEndpoint;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,15 +19,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ThreadUtils;
-import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.exception.type.ErrorCode;
@@ -36,9 +32,6 @@ import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
 import org.folio.support.TestDataUtils;
 import org.folio.support.base.IntegrationTestBase;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -220,51 +213,6 @@ class LinksStatisticsInstanceIT extends IntegrationTestBase {
       return jsonPath("$.next").doesNotExist();
     }
     return jsonPath("$.next", is(next));
-  }
-
-  private ResultMatcher statsMatch(Matcher<Collection<? extends BibStatsDto>> matcher) {
-    return jsonPath("$.stats", matcher);
-  }
-
-  @SuppressWarnings("unchecked")
-  private ResultMatcher statsMatch(BibStatsDtoCollection stats) {
-    var statsMatchers = stats.getStats().stream()
-      .map(LinksStatisticsInstanceIT.StatsMatcher::statsMatch)
-      .toArray(Matcher[]::new);
-    return jsonPath("$.stats", contains(statsMatchers));
-  }
-
-  private static final class StatsMatcher extends BaseMatcher<BibStatsDto> {
-
-    private final BibStatsDto expectedStats;
-
-    private StatsMatcher(BibStatsDto expectedStats) {
-      this.expectedStats = expectedStats;
-    }
-
-    static LinksStatisticsInstanceIT.StatsMatcher statsMatch(BibStatsDto expectedStats) {
-      return new LinksStatisticsInstanceIT.StatsMatcher(expectedStats);
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public boolean matches(Object actual) {
-      if (actual instanceof LinkedHashMap actualStats) {
-        return Objects.equals(expectedStats.getInstanceId().toString(), actualStats.get("instanceId"))
-          && Objects.equals(expectedStats.getAuthorityNaturalId(), actualStats.get("authorityNaturalId"))
-          && Objects.equals(expectedStats.getBibRecordTag(), actualStats.get("bibRecordTag"))
-          && Objects.equals(expectedStats.getInstanceTitle(), actualStats.get("instanceTitle"))
-          && expectedStats.getUpdatedAt().isAfter(OffsetDateTime.parse((String) actualStats.get("updatedAt")))
-          && Objects.equals(expectedStats.getErrorCause(), actualStats.get("errorCause"));
-      }
-
-      return false;
-    }
-
-    @Override
-    public void describeTo(Description description) {
-      description.appendValue(expectedStats);
-    }
   }
 
 }

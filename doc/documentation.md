@@ -165,11 +165,9 @@ Response:
       "authorityId": "0794f296-4094-4243-b9af-bb4bf51cbfae",
       "authorityNaturalId": "n92099941",
       "instanceId": "b2658a84-912b-4ed9-83d7-e8201f4d27ec",
-      "bibRecordTag": "100",
-      "bibRecordSubfields": [
-        "a",
-        "b"
-      ]
+      "linkingRuleId": 1,
+      "status": "ERROR",
+      "errorCause": "Some error"
     }
   ],
   "totalRecords": 1
@@ -189,21 +187,13 @@ Response:
       "authorityId": "875e86cf-599d-4293-b966-b34ac6a6d19e",
       "authorityNaturalId": "no50047988",
       "instanceId": "b2658a84-912b-4ed9-83d7-e8201f4d27ec",
-      "bibRecordTag": "700",
-      "bibRecordSubfields": [
-        "a",
-        "b"
-      ]
+      "linkingRuleId": 2
     },
     {
       "authorityId": "77398964-ee2d-4b28-ba2b-e30851d5d963",
       "authorityNaturalId": "mp96352145",
       "instanceId": "b2658a84-912b-4ed9-83d7-e8201f4d27ec",
-      "bibRecordTag": "710",
-      "bibRecordSubfields": [
-        "a",
-        "b"
-      ]
+      "linkingRuleId": 1
     }
   ]
 }
