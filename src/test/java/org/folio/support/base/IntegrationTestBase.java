@@ -30,6 +30,7 @@ import org.folio.spring.test.extension.EnablePostgres;
 import org.folio.spring.test.extension.impl.OkapiConfiguration;
 import org.folio.support.DatabaseHelper;
 import org.folio.tenant.domain.dto.TenantAttributes;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
