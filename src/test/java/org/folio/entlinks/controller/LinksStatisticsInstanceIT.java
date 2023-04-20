@@ -1,6 +1,10 @@
 package org.folio.entlinks.controller;
 
 import static java.util.Collections.singletonList;
+import static org.folio.support.MatchUtils.errorCodeMatch;
+import static org.folio.support.MatchUtils.errorMessageMatch;
+import static org.folio.support.MatchUtils.errorTotalMatch;
+import static org.folio.support.MatchUtils.errorTypeMatch;
 import static org.folio.support.MatchUtils.statsMatch;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;

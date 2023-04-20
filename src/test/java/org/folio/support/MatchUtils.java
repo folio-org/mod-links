@@ -1,6 +1,7 @@
 package org.folio.support;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.time.OffsetDateTime;
@@ -17,6 +18,26 @@ import org.springframework.test.web.servlet.ResultMatcher;
 
 @UtilityClass
 public class MatchUtils {
+
+  public static ResultMatcher errorParameterMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].parameters.[0].key", errorMessageMatcher);
+  }
+
+  public static ResultMatcher errorTypeMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].type", errorMessageMatcher);
+  }
+
+  public static ResultMatcher errorCodeMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].code", errorMessageMatcher);
+  }
+
+  public static ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {
+    return jsonPath("$.errors.[0].message", errorMessageMatcher);
+  }
+
+  public static ResultMatcher errorTotalMatch(int errorTotal) {
+    return jsonPath("$.total_records", is(errorTotal));
+  }
 
   public static ResultMatcher statsMatch(Matcher<Collection<? extends BibStatsDto>> matcher) {
     return jsonPath("$.stats", matcher);

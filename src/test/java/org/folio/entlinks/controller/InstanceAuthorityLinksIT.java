@@ -3,37 +3,34 @@ package org.folio.entlinks.controller;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.folio.support.JsonTestUtils.asJson;
-import static org.folio.support.MatchUtils.statsMatch;
+import static org.folio.support.MatchUtils.errorCodeMatch;
+import static org.folio.support.MatchUtils.errorMessageMatch;
+import static org.folio.support.MatchUtils.errorParameterMatch;
+import static org.folio.support.MatchUtils.errorTotalMatch;
+import static org.folio.support.MatchUtils.errorTypeMatch;
 import static org.folio.support.TestDataUtils.Link.TAGS;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
-import static org.folio.support.TestDataUtils.stats;
 import static org.folio.support.base.TestConstants.authoritiesLinksCountEndpoint;
 import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
-import static org.folio.support.base.TestConstants.linksStatsInstanceEndpoint;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
-import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
-import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
@@ -52,7 +49,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @IntegrationTest
 @DatabaseCleanup(tables = DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE)
@@ -235,14 +231,13 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
       Link.of(InstanceAuthorityLinkStatus.ERROR, "test")));
     doPut(linksInstanceEndpoint(), incomingLinks, instanceId);
 
-    var expectedLinks = linksDto(instanceId,
-      Link.of(InstanceAuthorityLinkStatus.ACTUAL, null));
+    var expectedLinks = linksDtoCollection(linksDto(instanceId,
+      Link.of(InstanceAuthorityLinkStatus.ACTUAL, null)));
 
-    var stats = bibStatsCollection(expectedLinks);
-
-    perform(statsGetRequest())
-      .andExpect(statsMatch(hasSize(1)))
-      .andExpect(statsMatch(stats));
+    doGet(linksInstanceEndpoint(), instanceId)
+      .andExpect(linksMatch(hasSize(1)))
+      .andExpect(linksMatch(expectedLinks))
+      .andExpect(totalRecordsMatch(1));
   }
 
   @Test
@@ -385,16 +380,6 @@ class InstanceAuthorityLinksIT extends IntegrationTestBase {
       .map(LinkMatcher::linkMatch)
       .toArray(Matcher[]::new);
     return jsonPath("$.links", containsInAnyOrder(linkMatchers));
-  }
-
-  private MockHttpServletRequestBuilder statsGetRequest() {
-    var toDate = OffsetDateTime.now();
-    var fromDate = toDate.minus(1, ChronoUnit.DAYS);
-    return get(linksStatsInstanceEndpoint(LinkStatus.ACTUAL, fromDate, toDate));
-  }
-
-  private BibStatsDtoCollection bibStatsCollection(List<InstanceLinkDto> links) {
-    return stats(links, null, null, null);
   }
 
   private static final class LinkMatcher extends BaseMatcher<InstanceLinkDto> {

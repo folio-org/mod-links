@@ -241,15 +241,18 @@ components:
           description: ID of linking rule by which link should be created
         status:
           type: string
-          description: Status of the link. Read-only
+          readOnly: true
+          description: Status of the link
         errorCause:
           type: string
-          description: Link update error cause (if present). Read-only
+          readOnly: true
+          description: Link update error cause (if present)
       required:
         - authorityId
         - authorityNaturalId
         - instanceId
         - linkingRuleId
+        - status
 
     uuidCollection:
       type: object
