@@ -1,14 +1,13 @@
-name: Conventional Commits
-
-on:
-  pull_request:
-    branches: [ master ]
+on: [push]
 
 jobs:
-  build:
-    name: Conventional Commits
+  cog_check_job:
     runs-on: ubuntu-latest
+    name: check conventional commit compliance
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@main
+        with:
+          fetch-depth: 0
 
-      - uses: webiny/action-conventional-commits@v1.1.0
+      - name: Conventional commits check
+        uses: oknozor/cocogitto-action@v2
