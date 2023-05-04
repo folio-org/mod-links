@@ -56,8 +56,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 @IntegrationTest
 @DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_DATA_STAT_TABLE,
-  DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE,
-  DatabaseHelper.AUTHORITY_DATA_TABLE})
+                           DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE,
+                           DatabaseHelper.AUTHORITY_DATA_TABLE})
 class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
 
   private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
@@ -231,7 +231,7 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
 
     OffsetDateTime now = OffsetDateTime.now();
     String millisStr = String.valueOf(now.getNano()).substring(0, 3);
-    long duration = (1000 - Integer.parseInt(millisStr));
+    long duration = 1000 - Integer.parseInt(millisStr);
     ThreadUtils.sleep(Duration.ofMillis(duration));
 
     final var fromDate = OffsetDateTime.now();
