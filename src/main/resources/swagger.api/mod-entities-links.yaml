@@ -456,7 +456,13 @@ components:
       $ref: schemas/authorityInventoryRecord.json
 
     sourceRecord:
-      $ref: schemas/sourceRecord.json
+      $ref: schemas/mod-source-record-storage/sourceRecord.json
+
+    strippedParsedRecordCollection:
+      $ref: schemas/mod-source-record-storage/strippedParsedRecordCollection.json
+
+    fetchParsedRecordsBatchRequest:
+      $ref: schemas/mod-source-record-storage/fetchParsedRecordsBatchRequest.json
 
     linkAction:
       $ref: schemas/authority/control/linkAction.json
@@ -465,7 +471,10 @@ components:
       $ref: schemas/authority/control/linkStatus.json
 
     srsRecordsContentCollection:
-      $ref: schemas/authority/control/automate/linking/srsRecordsContentCollection.json
+      $ref: schemas/authority/control/srsRecordsContentCollection.json
+
+    authoritySearchResult:
+      $ref: schemas/mod-search/authoritySearchResult.json
 
     linksChangeEvent:
       type: object
