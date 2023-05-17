@@ -129,6 +129,25 @@
       ]
     },
     {
+      "id": "instance-authority-links-suggestions",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/links-suggestions/marc",
+          "permissionsRequired": [
+            "instance-authority-links.suggestions.post"
+          ],
+          "modulePermissions": [
+            "source-storage.records.fetch",
+            "search.authorities.collection.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "_tenant",
       "version": "2.0",
       "interfaceType": "system",

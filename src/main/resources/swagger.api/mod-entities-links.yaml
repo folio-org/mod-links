@@ -157,6 +157,30 @@ paths:
         '500':
           $ref: '#/components/responses/serverErrorResponse'
 
+  /links-suggestions/marc:
+    post:
+      description: Retrieve links suggestions for marc records
+      operationId: suggestLinksForMarcRecord
+      tags:
+        - links-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/srsRecordsContentCollection"
+        required: true
+      responses:
+        '200':
+          description: The marc records with links suggestion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/srsRecordsContentCollection"
+        '400':
+          $ref: '#/components/responses/badRequestResponse'
+        '500':
+          $ref: '#/components/responses/serverErrorResponse'
+
   /links/stats/authority:
     get:
       description: Retrieve authority updates (related to links) statistics
@@ -439,6 +463,9 @@ components:
 
     linkStatus:
       $ref: schemas/authority/control/linkStatus.json
+
+    srsRecordsContentCollection:
+      $ref: schemas/authority/control/automate/linking/srsRecordsContentCollection.json
 
     linksChangeEvent:
       type: object
