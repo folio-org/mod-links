@@ -12,6 +12,7 @@ import org.folio.entlinks.domain.dto.ParsedRecord;
 import org.folio.entlinks.domain.dto.SourceRecord;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
+import org.folio.entlinks.integration.marc.LinkedMarcJsonReader;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.Record;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,14 @@ public class AuthoritySourceRecordService {
   private Record extractMarcRecord(ParsedRecord parsedRecord) {
     try (var input = IOUtils.toInputStream(objectMapper.writeValueAsString(parsedRecord), UTF_8)) {
       return new MarcJsonReader(input).next();
+    } catch (Exception e) {
+      throw new FolioIntegrationException("Failed to get content of source record", e);
+    }
+  }
+
+  private Record extractLinkedMarcRecord(ParsedRecord parsedRecord) {
+    try (var input = IOUtils.toInputStream(objectMapper.writeValueAsString(parsedRecord), UTF_8)) {
+      return new LinkedMarcJsonReader(input).next();
     } catch (Exception e) {
       throw new FolioIntegrationException("Failed to get content of source record", e);
     }

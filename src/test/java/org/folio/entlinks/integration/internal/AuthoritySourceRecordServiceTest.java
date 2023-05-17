@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.client.SourceStorageClient;
+import org.folio.entlinks.domain.dto.ParsedRecord;
 import org.folio.entlinks.domain.dto.SourceRecord;
-import org.folio.entlinks.domain.dto.SourceRecordParsedRecord;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
 import org.folio.spring.test.type.UnitTest;
@@ -42,7 +42,11 @@ class AuthoritySourceRecordServiceTest {
                 {
                   "a": "  2001000234"
                 }
-              ]
+              ],
+              "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
+              "authorityNaturalId": "12345",
+              "linkingRuleId": 1,
+              "linkStatus": "ACTUAL"
             }
           }
         ],
@@ -85,7 +89,7 @@ class AuthoritySourceRecordServiceTest {
     var sourceRecord = new SourceRecord()
       .recordId(authorityId)
       .snapshotId(snapshotId)
-      .parsedRecord(mapper.readValue(VALID_SOURCE_CONTENT, SourceRecordParsedRecord.class));
+      .parsedRecord(mapper.readValue(VALID_SOURCE_CONTENT, ParsedRecord.class));
 
     when(sourceStorageClient.getMarcAuthorityById(authorityId)).thenReturn(sourceRecord);
 
@@ -128,7 +132,7 @@ class AuthoritySourceRecordServiceTest {
     var sourceRecord = new SourceRecord()
       .recordId(authorityId)
       .snapshotId(snapshotId)
-      .parsedRecord(mapper.readValue(INVALID_SOURCE_CONTENT, SourceRecordParsedRecord.class));
+      .parsedRecord(mapper.readValue(INVALID_SOURCE_CONTENT, ParsedRecord.class));
 
     when(sourceStorageClient.getMarcAuthorityById(authorityId)).thenReturn(sourceRecord);
 
