@@ -21,6 +21,9 @@ public class InstanceAuthorityLinkingRulesService {
 
   private final LinkingRulesRepository repository;
 
+  @Cacheable(cacheNames = AUTHORITY_LINKING_RULES_CACHE,
+             key = "@folioExecutionContext.tenantId",
+             unless = "#result.isEmpty()")
   public List<InstanceAuthorityLinkingRule> getLinkingRules() {
     log.info("Loading linking rules");
     return repository.findAll(Sort.by("id").ascending());
