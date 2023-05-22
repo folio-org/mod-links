@@ -167,7 +167,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/srsRecordsContentCollection"
+              $ref: "#/components/schemas/parsedRecordContentCollection"
         required: true
       responses:
         '200':
@@ -175,7 +175,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/srsRecordsContentCollection"
+                $ref: "#/components/schemas/parsedRecordContentCollection"
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '500':
@@ -461,6 +461,9 @@ components:
     strippedParsedRecordCollection:
       $ref: schemas/mod-source-record-storage/strippedParsedRecordCollection.json
 
+    parsedRecordContentCollection:
+      $ref: schemas/mod-source-record-storage/parsedRecordContentCollection.json
+
     fetchParsedRecordsBatchRequest:
       $ref: schemas/mod-source-record-storage/fetchParsedRecordsBatchRequest.json
 
@@ -469,9 +472,6 @@ components:
 
     linkStatus:
       $ref: schemas/authority/control/linkStatus.json
-
-    srsRecordsContentCollection:
-      $ref: schemas/authority/control/srsRecordsContentCollection.json
 
     authoritySearchResult:
       $ref: schemas/mod-search/authoritySearchResult.json

@@ -12,15 +12,15 @@
       "properties": {
         "idType": {
           "description": "External id type",
-          "type": "string",
           "$ref": "externalIdType.json"
         },
         "ids": {
           "type": "array",
           "uniqueItems": true,
+          "description": "List of external ids",
           "items": {
             "description": "External id",
-            "$ref": "uuid.json"
+            "$ref": "../uuid.json"
           }
         }
       }

@@ -13,8 +13,8 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.SearchClient;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.controller.converter.DataMapper;
-import org.folio.entlinks.domain.dto.ParsedLinkedRecord;
-import org.folio.entlinks.domain.dto.SrsRecordsContentCollection;
+import org.folio.entlinks.domain.dto.ParsedRecordContent;
+import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
@@ -35,16 +35,15 @@ public class LinksSuggestionsServiceDelegate {
   private final SearchClient searchClient;
   private final DataMapper dataMapper;
 
-  public SrsRecordsContentCollection suggestLinksForMarcRecord(List<ParsedLinkedRecord> parsedRecords) {
+  public ParsedRecordContentCollection suggestLinksForMarcRecord(ParsedRecordContentCollection contentCollection) {
+    var parsedRecords = contentCollection.getRecords();
     var rules = rulesToBibFieldMap(linkingRulesService.getLinkingRules());
     var naturalIds = extractNaturalIdsOfLinkableFields(parsedRecords, rules);
     var authorities = fetchAuthorityParsedRecords(naturalIds);
 
-    var bibsWithAuthoritySuggestions = suggestionService
-      .suggestAuthoritiesForBibRecords(parsedRecords, authorities.getRecords(), rules);
+    suggestionService.fillLinkDetailsWithSuggestedAuthorities(parsedRecords, authorities.getRecords(), rules);
 
-    return new SrsRecordsContentCollection()
-      .records(bibsWithAuthoritySuggestions);
+    return contentCollection;
   }
 
   private StrippedParsedRecordCollection fetchAuthorityParsedRecords(Set<String> naturalIds) {
@@ -73,12 +72,12 @@ public class LinksSuggestionsServiceDelegate {
       .collect(Collectors.toSet());
   }
 
-  private Set<String> extractNaturalIdsOfLinkableFields(List<ParsedLinkedRecord> records,
+  private Set<String> extractNaturalIdsOfLinkableFields(List<ParsedRecordContent> records,
                                                         Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     return records.stream()
-      .flatMap(record -> record.getContent().getFields().entrySet().stream())
+      .flatMap(bibRecord -> bibRecord.getFields().entrySet().stream())
       .filter(field -> nonNull(rules.get(field.getKey())))
-      .map(field -> field.getValue().getNaturalId())
+      .map(field -> field.getValue().getLinkDetails().getNaturalId())
       .collect(Collectors.toSet());
   }
 

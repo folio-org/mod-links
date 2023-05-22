@@ -1,17 +1,16 @@
 package org.folio.entlinks.service.links;
 
 import static java.util.Objects.nonNull;
-import static org.folio.entlinks.domain.dto.FieldContent.LinksStatusEnum.ACTUAL;
-import static org.folio.entlinks.domain.dto.FieldContent.LinksStatusEnum.ERROR;
-import static org.folio.entlinks.domain.dto.FieldContent.LinksStatusEnum.NEW;
+import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
+import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
+import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
 
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContent;
-import org.folio.entlinks.domain.dto.ParsedLinkedRecord;
-import org.folio.entlinks.domain.dto.ParsedRecord;
+import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.springframework.stereotype.Service;
@@ -24,22 +23,19 @@ public class LinksSuggestionService {
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
 
   /**
-   * Validate bib and authority fields by linking rules and suggest available links.
+   * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
    *
    * @param bibs        list of bib records
    * @param authorities list of authorities that can be suggested as link for bib fields
    * @param rules       linking rules
    *                    <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
-   * @return list of bib records with suggested links {@link ParsedRecord}.
    */
-  public List<ParsedLinkedRecord> suggestAuthoritiesForBibRecords(List<ParsedLinkedRecord> bibs,
-                                                                List<StrippedParsedRecord> authorities,
-                                                                Map<String, List<InstanceAuthorityLinkingRule>> rules) {
+  public void fillLinkDetailsWithSuggestedAuthorities(List<ParsedRecordContent> bibs,
+                                                      List<StrippedParsedRecord> authorities,
+                                                      Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     bibs.stream()
-      .flatMap(bib -> bib.getContent().getFields().entrySet().stream())
+      .flatMap(bib -> bib.getFields().entrySet().stream())
       .forEach(bibField -> suggestAuthorityForBibField(bibField.getValue(), authorities, rules.get(bibField.getKey())));
-
-    return bibs;
   }
 
   private void suggestAuthorityForBibField(FieldContent bibField,
@@ -63,21 +59,21 @@ public class LinksSuggestionService {
   }
 
   private void fillErrorDetails(FieldContent bibField, String errorCode) {
-    bibField.setLinksStatus(ERROR);
-    bibField.setErrorStatusCode(errorCode);
+    bibField.getLinkDetails().setLinksStatus(ERROR);
+    bibField.getLinkDetails().setErrorStatusCode(errorCode);
   }
 
   private void fillLinkDetails(FieldContent bibField,
                                StrippedParsedRecord authority,
                                InstanceAuthorityLinkingRule rule) {
-    if (bibField.getRuleId() != null) {
-      bibField.setLinksStatus(ACTUAL);
+    if (bibField.getLinkDetails().getRuleId() != null) {
+      bibField.getLinkDetails().setLinksStatus(ACTUAL);
     } else {
-      bibField.setLinksStatus(NEW);
+      bibField.getLinkDetails().setLinksStatus(NEW);
     }
     actualizeBibSubfields(bibField, authority, rule);
-    bibField.setRuleId(rule.getId());
-    bibField.setAuthorityId(authority.getId());
+    bibField.getLinkDetails().setRuleId(rule.getId());
+    bibField.getLinkDetails().setAuthorityId(authority.getId());
     //TODO: set naturalId from mod-search OR make SRS returns naturalId
   }
 

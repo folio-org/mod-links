@@ -7,7 +7,7 @@
   "properties": {
     "id": {
       "description": "UUID",
-      "$ref": "uuid.json"
+      "$ref": "../uuid.json"
     },
     "externalIdsHolder": {
       "description": "Container for identifiers of external entities",
@@ -30,7 +30,22 @@
     },
     "parsedRecord": {
       "description": "Parsed record",
-      "$ref": "parsedLinkedRecord.json"
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "UUID",
+          "$ref": "../uuid.json"
+        },
+        "content": {
+          "description": "Parsed record content, e.g. MARC record",
+          "$ref": "parsedRecordContent.json"
+        }
+      },
+      "required": [
+        "content"
+      ]
     }
   },
   "required": [

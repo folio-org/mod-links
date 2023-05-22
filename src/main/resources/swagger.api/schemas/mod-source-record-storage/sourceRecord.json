@@ -6,15 +6,30 @@
   "properties": {
     "recordId": {
       "description": "UUID",
-      "$ref": "uuid.json"
+      "$ref": "../uuid.json"
     },
     "snapshotId": {
       "description": "UUID",
-      "$ref": "uuid.json"
+      "$ref": "../uuid.json"
     },
     "parsedRecord": {
       "description": "Parsed record",
-      "$ref": "parsedRecord.json"
+      "type": "object",
+      "title": "SourceParsedRecord",
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "UUID",
+          "$ref": "../uuid.json"
+        },
+        "content": {
+          "description": "Parsed record content, e.g. MARC record"
+        }
+      },
+      "required": [
+        "content"
+      ]
     }
   }
 }

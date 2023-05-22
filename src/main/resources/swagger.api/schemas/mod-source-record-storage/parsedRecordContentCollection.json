@@ -8,7 +8,7 @@
       "type": "array",
       "items": {
         "description": "Parsed record content, e.g. MARC record",
-        "$ref": "../../mod-source-record-storage/parsedLinkedRecord.json"
+        "$ref": "parsedRecordContent.json"
       }
     }
   }
