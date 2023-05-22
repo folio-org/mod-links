@@ -33,8 +33,8 @@ public class LinksSuggestionService {
    * @return list of bib records with suggested links {@link ParsedRecord}.
    */
   public List<ParsedLinkedRecord> suggestAuthoritiesForBibRecords(List<ParsedLinkedRecord> bibs,
-                                                                  List<StrippedParsedRecord> authorities,
-                                                                  Map<String, List<InstanceAuthorityLinkingRule>> rules) {
+                                                                List<StrippedParsedRecord> authorities,
+                                                                Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     bibs.stream()
       .flatMap(bib -> bib.getContent().getFields().entrySet().stream())
       .forEach(bibField -> suggestAuthorityForBibField(bibField.getValue(), authorities, rules.get(bibField.getKey())));
