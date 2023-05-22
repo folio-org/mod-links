@@ -10,7 +10,56 @@
       "format": "uuid"
     },
     "content": {
-      "description": "Parsed record content, e.g. MARC record"
+      "description": "Parsed record content, e.g. MARC record",
+      "properties": {
+        "fields": {
+          "description": "External id",
+          "type": "object",
+          "title": "FieldContent",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "ind1": {
+                "type": "string"
+              },
+              "ind2": {
+                "type": "string"
+              },
+              "subfields": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "authorityId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "naturalId": {
+                "type": "string"
+              },
+              "linksStatus": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "ACTUAL",
+                  "ERROR"
+                ]
+              },
+              "ruleId": {
+                "type": "integer"
+              },
+              "errorStatusCode": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "leader": {
+          "description": "Parsed record content, e.g. MARC record",
+          "type": "string"
+        }
+      }
     }
   },
   "required": [

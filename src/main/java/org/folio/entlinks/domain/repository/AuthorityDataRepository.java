@@ -1,6 +1,7 @@
 package org.folio.entlinks.domain.repository;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,7 @@ public interface AuthorityDataRepository extends JpaRepository<AuthorityData, UU
   @Modifying
   @Query("update AuthorityData a set a.deleted = true where a.id in :ids")
   void updateDeletedByIdIn(@Param("ids") Collection<UUID> ids);
+
+  @Query("select a.id where a.naturalId in :naturalIds")
+  Set<UUID> findIdsByNaturalIds(@Param("naturalIds") Collection<String> naturalIds);
 }

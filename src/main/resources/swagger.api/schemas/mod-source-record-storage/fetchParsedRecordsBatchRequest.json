@@ -1,23 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Describes entity to fetch exact fields of parsed records by external IDs",
-  "javaType": "org.folio.rest.jaxrs.model.FetchParsedRecordsBatchRequest",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "conditions": {
-      "description": "Conditions for fetching records by external IDs",
       "type": "object",
+      "title": "FetchConditions",
+      "description": "Conditions for fetching records by external IDs",
+      "additionalProperties": false,
       "properties": {
         "idType": {
           "description": "External id type",
-          "type": "string"
+          "type": "string",
+          "$ref": "externalIdType.json"
         },
         "ids": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "description": "External id",
-            "type": "string"
+            "$ref": "uuid.json"
           }
         }
       }
@@ -27,7 +30,8 @@
       "type": "array",
       "items": {
         "type": "object",
-        "description": "Fields range to provide",
+        "title": "FieldRange",
+        "description": "Field range to provide",
         "additionalProperties": false,
         "properties": {
           "from": {
