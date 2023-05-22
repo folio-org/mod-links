@@ -10,6 +10,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.ParsedLinkedRecord;
 import org.folio.entlinks.domain.dto.ParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
@@ -31,9 +32,9 @@ public class LinksSuggestionService {
    *                    <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
    * @return list of bib records with suggested links {@link ParsedRecord}.
    */
-  public List<ParsedRecord> suggestAuthoritiesForBibRecords(List<ParsedRecord> bibs,
-                                                            List<StrippedParsedRecord> authorities,
-                                                            Map<String, List<InstanceAuthorityLinkingRule>> rules) {
+  public List<ParsedLinkedRecord> suggestAuthoritiesForBibRecords(List<ParsedLinkedRecord> bibs,
+                                                                  List<StrippedParsedRecord> authorities,
+                                                                  Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     bibs.stream()
       .flatMap(bib -> bib.getContent().getFields().entrySet().stream())
       .forEach(bibField -> suggestAuthorityForBibField(bibField.getValue(), authorities, rules.get(bibField.getKey())));

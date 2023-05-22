@@ -42,11 +42,7 @@ class AuthoritySourceRecordServiceTest {
                 {
                   "a": "  2001000234"
                 }
-              ],
-              "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
-              "authorityNaturalId": "12345",
-              "linkingRuleId": 1,
-              "linkStatus": "ACTUAL"
+              ]
             }
           }
         ],

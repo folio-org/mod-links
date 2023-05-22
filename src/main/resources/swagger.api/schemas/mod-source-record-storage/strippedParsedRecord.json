@@ -30,7 +30,7 @@
     },
     "parsedRecord": {
       "description": "Parsed record",
-      "$ref": "parsedRecord.json"
+      "$ref": "parsedLinkedRecord.json"
     }
   },
   "required": [

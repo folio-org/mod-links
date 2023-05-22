@@ -13,7 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.SearchClient;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.controller.converter.DataMapper;
-import org.folio.entlinks.domain.dto.ParsedRecord;
+import org.folio.entlinks.domain.dto.ParsedLinkedRecord;
 import org.folio.entlinks.domain.dto.SrsRecordsContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.entity.AuthorityData;
@@ -35,7 +35,7 @@ public class LinksSuggestionsServiceDelegate {
   private final SearchClient searchClient;
   private final DataMapper dataMapper;
 
-  public SrsRecordsContentCollection suggestLinksForMarcRecord(List<ParsedRecord> parsedRecords) {
+  public SrsRecordsContentCollection suggestLinksForMarcRecord(List<ParsedLinkedRecord> parsedRecords) {
     var rules = rulesToBibFieldMap(linkingRulesService.getLinkingRules());
     var naturalIds = extractNaturalIdsOfLinkableFields(parsedRecords, rules);
     var authorities = fetchAuthorityParsedRecords(naturalIds);
@@ -73,7 +73,7 @@ public class LinksSuggestionsServiceDelegate {
       .collect(Collectors.toSet());
   }
 
-  private Set<String> extractNaturalIdsOfLinkableFields(List<ParsedRecord> records,
+  private Set<String> extractNaturalIdsOfLinkableFields(List<ParsedLinkedRecord> records,
                                                         Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     return records.stream()
       .flatMap(record -> record.getContent().getFields().entrySet().stream())
