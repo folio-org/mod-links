@@ -70,8 +70,9 @@ public class LinksSuggestionService {
         } else {
           var authority = suitableAuthorities.get(0);
           var naturalId = extractNaturalId(authorityData, authority.getId());
+          var linkDetails = getLinkDetails(bibField, authority, naturalId, rule);
           actualizeBibSubfields(bibField, authority, naturalId, rule);
-          bibField.setLinkDetails(getLinkDetails(bibField, authority, naturalId, rule));
+          bibField.setLinkDetails(linkDetails);
         }
       }
     }
