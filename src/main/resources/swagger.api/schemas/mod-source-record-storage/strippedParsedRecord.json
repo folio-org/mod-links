@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Stripped parsed record DTO Schema",
-  "javaType": "org.folio.rest.jaxrs.model.StrippedParsedRecord",
   "type": "object",
   "additionalProperties": false,
   "properties": {

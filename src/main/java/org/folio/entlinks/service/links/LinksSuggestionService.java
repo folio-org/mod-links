@@ -10,8 +10,11 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
+import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
+import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +28,21 @@ public class LinksSuggestionService {
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
    *
-   * @param bibs        list of bib records
-   * @param authorities list of authorities that can be suggested as link for bib fields
+   * @param bibs        collection of bib records {@link ParsedRecordContent}
+   * @param authorities collection of authorities {@link StrippedParsedRecord} that can be suggested as link
    * @param rules       linking rules
    *                    <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
    */
-  public void fillLinkDetailsWithSuggestedAuthorities(List<ParsedRecordContent> bibs,
-                                                      List<StrippedParsedRecord> authorities,
+  public void fillLinkDetailsWithSuggestedAuthorities(ParsedRecordContentCollection bibs,
+                                                      StrippedParsedRecordCollection authorities,
                                                       Map<String, List<InstanceAuthorityLinkingRule>> rules) {
-    bibs.stream()
-      .flatMap(bib -> bib.getFields().entrySet().stream())
-      .forEach(bibField -> suggestAuthorityForBibField(bibField.getValue(), authorities, rules.get(bibField.getKey())));
+    if (nonNull(authorities) && !authorities.getRecords().isEmpty()) {
+      bibs.getRecords().stream()
+        .flatMap(bib -> bib.getFields().entrySet().stream())
+        .forEach(bibField -> {
+          suggestAuthorityForBibField(bibField.getValue(), authorities.getRecords(), rules.get(bibField.getKey()));
+        });
+    }
   }
 
   private void suggestAuthorityForBibField(FieldContent bibField,
@@ -48,33 +55,39 @@ public class LinksSuggestionService {
           .toList();
 
         if (suitableAuthorities.isEmpty()) {
-          fillErrorDetails(bibField, NO_SUGGESTIONS_ERROR_CODE);
+          var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
+          bibField.setLinkDetails(errorDetails);
         } else if (suitableAuthorities.size() > 1) {
-          fillErrorDetails(bibField, MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+          var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+          bibField.setLinkDetails(errorDetails);
         } else {
-          fillLinkDetails(bibField, suitableAuthorities.get(0), rule);
+          var authority = suitableAuthorities.get(0);
+          actualizeBibSubfields(bibField, authority, rule);
+          bibField.setLinkDetails(getLinkDetails(bibField, authority, rule));
         }
       }
     }
   }
 
-  private void fillErrorDetails(FieldContent bibField, String errorCode) {
-    bibField.getLinkDetails().setLinksStatus(ERROR);
-    bibField.getLinkDetails().setErrorStatusCode(errorCode);
+  private LinkDetails getErrorDetails(String errorCode) {
+    return new LinkDetails().linksStatus(ERROR).errorStatusCode(errorCode);
   }
 
-  private void fillLinkDetails(FieldContent bibField,
-                               StrippedParsedRecord authority,
-                               InstanceAuthorityLinkingRule rule) {
-    if (bibField.getLinkDetails().getRuleId() != null) {
-      bibField.getLinkDetails().setLinksStatus(ACTUAL);
+  private LinkDetails getLinkDetails(FieldContent bibField,
+                                     StrippedParsedRecord authority,
+                                     InstanceAuthorityLinkingRule rule) {
+    var linkDetails = bibField.getLinkDetails();
+
+    if (linkDetails == null) {
+      linkDetails = new LinkDetails();
+      linkDetails.setLinksStatus(NEW);
     } else {
-      bibField.getLinkDetails().setLinksStatus(NEW);
+      linkDetails.setLinksStatus(ACTUAL);
     }
-    actualizeBibSubfields(bibField, authority, rule);
-    bibField.getLinkDetails().setRuleId(rule.getId());
-    bibField.getLinkDetails().setAuthorityId(authority.getId());
+    linkDetails.setRuleId(rule.getId());
+    linkDetails.setAuthorityId(authority.getId());
     //TODO: set naturalId from mod-search OR make SRS returns naturalId
+    return linkDetails;
   }
 
   private void actualizeBibSubfields(FieldContent bibField,
@@ -86,7 +99,7 @@ public class LinksSuggestionService {
       .getSubfields();
 
     bibSubfields.putAll(authoritySubfields);
-    //bibSubfields.put("0", authority.getNaturalId());
+    //TODO: bibSubfields.put("0", authority.getNaturalId());
     bibSubfields.put("9", authority.getId().toString());
   }
 

@@ -17,7 +17,7 @@ public class LinksSuggestionsController implements LinksSuggestionsApi {
   public ResponseEntity<ParsedRecordContentCollection> suggestLinksForMarcRecord(
     ParsedRecordContentCollection parsedRecordContentCollection) {
     return ResponseEntity.ok(
-      serviceDelegate.suggestLinksForMarcRecord(parsedRecordContentCollection)
+      serviceDelegate.suggestLinksForMarcRecords(parsedRecordContentCollection)
     );
   }
 }
