@@ -18,6 +18,7 @@ import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
 import org.folio.entlinks.domain.dto.SubfieldModification;
+import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -43,21 +44,22 @@ class LinksSuggestionsServiceTest {
     var authority = getStrippedAuthorityRecord("100");
     var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
     assertEquals(LinkStatus.NEW, linkDetails.getLinksStatus());
     assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
-    //   assertEquals(linkDetails.getNaturalId(), NATURAL_ID);
+    assertEquals(NATURAL_ID, linkDetails.getNaturalId());
     assertEquals(1, linkDetails.getRuleId());
     assertNull(linkDetails.getErrorStatusCode());
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    //  assertEquals(bibSubfields.get("0"), NATURAL_ID);
+    assertEquals(NATURAL_ID, bibSubfields.get("0"));
     assertTrue(bibSubfields.containsKey("a"));
   }
 
@@ -68,21 +70,22 @@ class LinksSuggestionsServiceTest {
     var authority = getStrippedAuthorityRecord("100");
     var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
     assertEquals(LinkStatus.ACTUAL, linkDetails.getLinksStatus());
     assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
-    //   assertEquals(linkDetails.getNaturalId(), AUTHORITY_ID);
+    assertEquals(NATURAL_ID, linkDetails.getNaturalId());
     assertEquals(1, linkDetails.getRuleId());
     assertNull(linkDetails.getErrorStatusCode());
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    //  assertEquals(bibSubfields.get("0"), NATURAL_ID);
+    assertEquals(NATURAL_ID, bibSubfields.get("0"));
     assertTrue(bibSubfields.containsKey("a"));
   }
 
@@ -93,9 +96,10 @@ class LinksSuggestionsServiceTest {
     var authority = getStrippedAuthorityRecord("100", emptyMap());
     var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
@@ -110,9 +114,10 @@ class LinksSuggestionsServiceTest {
     var secondAuthority = getStrippedAuthorityRecord("100");
     var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority, secondAuthority), 2);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
@@ -129,9 +134,10 @@ class LinksSuggestionsServiceTest {
     var authority = getStrippedAuthorityRecord("110");
     var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());

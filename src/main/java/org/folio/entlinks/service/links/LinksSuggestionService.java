@@ -7,6 +7,7 @@ import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContent;
@@ -15,6 +16,7 @@ import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
+import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.springframework.stereotype.Service;
 
@@ -28,24 +30,30 @@ public class LinksSuggestionService {
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
    *
-   * @param bibs        collection of bib records {@link ParsedRecordContent}
-   * @param authorities collection of authorities {@link StrippedParsedRecord} that can be suggested as link
-   * @param rules       linking rules
-   *                    <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
+   * @param bibs          collection of bib records {@link ParsedRecordContent}
+   * @param authorities   collection of authorities {@link StrippedParsedRecord} that can be suggested as link
+   * @param authorityData collection of authoritiesData to retrieve naturalIds
+   * @param rules         linking rules
+   *                      <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
    */
   public void fillLinkDetailsWithSuggestedAuthorities(ParsedRecordContentCollection bibs,
                                                       StrippedParsedRecordCollection authorities,
+                                                      List<AuthorityData> authorityData,
                                                       Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     if (nonNull(authorities) && !authorities.getRecords().isEmpty()) {
       bibs.getRecords().stream()
         .flatMap(bib -> bib.getFields().entrySet().stream())
-        .forEach(bibField ->
-          suggestAuthorityForBibField(bibField.getValue(), authorities.getRecords(), rules.get(bibField.getKey())));
+        .forEach(bibField -> suggestAuthorityForBibField(
+          bibField.getValue(),
+          authorities.getRecords(),
+          authorityData,
+          rules.get(bibField.getKey())));
     }
   }
 
   private void suggestAuthorityForBibField(FieldContent bibField,
                                            List<StrippedParsedRecord> authorities,
+                                           List<AuthorityData> authorityData,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
       if (rule.getAutoLinkingEnabled()) {
@@ -61,8 +69,9 @@ public class LinksSuggestionService {
           bibField.setLinkDetails(errorDetails);
         } else {
           var authority = suitableAuthorities.get(0);
-          actualizeBibSubfields(bibField, authority, rule);
-          bibField.setLinkDetails(getLinkDetails(bibField, authority, rule));
+          var naturalId = extractNaturalId(authorityData, authority.getId());
+          actualizeBibSubfields(bibField, authority, naturalId, rule);
+          bibField.setLinkDetails(getLinkDetails(bibField, authority, naturalId, rule));
         }
       }
     }
@@ -73,7 +82,7 @@ public class LinksSuggestionService {
   }
 
   private LinkDetails getLinkDetails(FieldContent bibField,
-                                     StrippedParsedRecord authority,
+                                     StrippedParsedRecord authority, String naturalId,
                                      InstanceAuthorityLinkingRule rule) {
     var linkDetails = bibField.getLinkDetails();
 
@@ -85,12 +94,12 @@ public class LinksSuggestionService {
     }
     linkDetails.setRuleId(rule.getId());
     linkDetails.setAuthorityId(authority.getId());
-    //TODO: set naturalId from mod-search OR make SRS returns naturalId
+    linkDetails.setNaturalId(naturalId);
     return linkDetails;
   }
 
   private void actualizeBibSubfields(FieldContent bibField,
-                                     StrippedParsedRecord authority,
+                                     StrippedParsedRecord authority, String naturalId,
                                      InstanceAuthorityLinkingRule rule) {
     var bibSubfields = bibField.getSubfields();
     var authoritySubfields = authority.getParsedRecord().getContent().getFields()
@@ -98,7 +107,7 @@ public class LinksSuggestionService {
       .getSubfields();
 
     bibSubfields.putAll(authoritySubfields);
-    //TODO: bibSubfields.put("0", authority.getNaturalId());
+    bibSubfields.put("0", naturalId);
     bibSubfields.put("9", authority.getId().toString());
   }
 
@@ -126,5 +135,13 @@ public class LinksSuggestionService {
       }
     }
     return true;
+  }
+
+  private String extractNaturalId(List<AuthorityData> authorityData, UUID authorityId) {
+    return authorityData.stream()
+      .filter(data -> data.getId().equals(authorityId))
+      .map(AuthorityData::getNaturalId)
+      .findAny()
+      .orElse(null);
   }
 }

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +80,7 @@ class LinksSuggestionsServiceDelegateTest {
     when(searchClient.searchAuthorities(EXPECTED_SEARCH_QUERY, false)).thenReturn(authorities);
 
     when(dataMapper.convertToData(authority)).thenReturn(authorityData.get(0));
-    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new HashSet<>());
+    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new ArrayList<>());
     when(dataRepository.saveAll(authorityData)).thenReturn(authorityData);
 
     when(sourceStorageClient
@@ -96,20 +96,22 @@ class LinksSuggestionsServiceDelegateTest {
     verify(searchClient).searchAuthorities(EXPECTED_SEARCH_QUERY, false);
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
     verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, Map.of("100", rules));
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData,
+        Map.of("100", rules));
   }
 
   @Test
   void suggestLinksForMarcRecords_shouldRetrieveAuthoritiesFromTable() {
     var records = List.of(getRecord("100"));
     var rules = List.of(getRule("100"));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
     var fetchRequest = getBatchFetchRequestForAuthority(AUTHORITY_ID);
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
     when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AUTHORITY_FIELD);
     when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AUTHORITY_FIELD);
 
-    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(Set.of(AUTHORITY_ID));
+    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(authorityData);
     when(sourceStorageClient
       .buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD))
       .thenReturn(fetchRequest);
@@ -124,7 +126,8 @@ class LinksSuggestionsServiceDelegateTest {
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
     verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, Map.of("100", rules));
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData,
+        Map.of("100", rules));
   }
 
   @Test
@@ -133,7 +136,7 @@ class LinksSuggestionsServiceDelegateTest {
     var rules = List.of(getRule("110"));
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
-    when(dataRepository.findIdsByNaturalIds(emptySet())).thenReturn(emptySet());
+    when(dataRepository.findIdsByNaturalIds(emptySet())).thenReturn(emptyList());
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(record));
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
@@ -143,7 +146,8 @@ class LinksSuggestionsServiceDelegateTest {
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient, times(0)).fetchParsedRecordsInBatch(any());
     verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, Map.of("110", rules));
+      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, emptyList(),
+        Map.of("110", rules));
   }
 
   @Test

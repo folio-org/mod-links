@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,19 +37,26 @@ public class LinksSuggestionsServiceDelegate {
   public ParsedRecordContentCollection suggestLinksForMarcRecords(ParsedRecordContentCollection contentCollection) {
     var rules = rulesToBibFieldMap(linkingRulesService.getLinkingRules());
     var naturalIds = extractNaturalIdsOfLinkableFields(contentCollection, rules);
-    var authorities = fetchAuthorityParsedRecords(naturalIds);
+    var authorities = findAuthoritiesByNaturalIds(naturalIds);
+    var marcAuthorities = fetchAuthorityParsedRecords(authorities);
 
-    suggestionService.fillLinkDetailsWithSuggestedAuthorities(contentCollection, authorities, rules);
+    suggestionService
+      .fillLinkDetailsWithSuggestedAuthorities(contentCollection, marcAuthorities, authorities, rules);
 
     return contentCollection;
   }
 
-  private StrippedParsedRecordCollection fetchAuthorityParsedRecords(Set<String> naturalIds) {
-    var ids = dataRepository.findIdsByNaturalIds(naturalIds);
-    if (ids.size() != naturalIds.size()) {
-      ids.addAll(searchAndSaveAuthoritiesIds(naturalIds));
+  private List<AuthorityData> findAuthoritiesByNaturalIds(Set<String> naturalIds) {
+    var authorityData = dataRepository.findIdsByNaturalIds(naturalIds);
+    if (authorityData.size() != naturalIds.size()) {
+      authorityData.addAll(searchAndSaveAuthoritiesIds(naturalIds));
     }
-    if (!ids.isEmpty()) {
+    return authorityData;
+  }
+
+  private StrippedParsedRecordCollection fetchAuthorityParsedRecords(List<AuthorityData> authorityData) {
+    if (nonNull(authorityData) && !authorityData.isEmpty()) {
+      var ids = authorityData.stream().map(AuthorityData::getId).collect(Collectors.toSet());
       var authorityFetchRequest = sourceStorageClient.buildBatchFetchRequestForAuthority(ids,
         linkingRulesService.getMinAuthorityField(),
         linkingRulesService.getMaxAuthorityField());
@@ -60,7 +66,7 @@ public class LinksSuggestionsServiceDelegate {
     return new StrippedParsedRecordCollection(Collections.emptyList(), 0);
   }
 
-  private Set<UUID> searchAndSaveAuthoritiesIds(Set<String> naturalIds) {
+  private List<AuthorityData> searchAndSaveAuthoritiesIds(Set<String> naturalIds) {
     var query = searchClient.buildNaturalIdsQuery(naturalIds);
 
     var authorityData = searchClient.searchAuthorities(query, false)
@@ -68,9 +74,7 @@ public class LinksSuggestionsServiceDelegate {
       .map(dataMapper::convertToData)
       .toList();
 
-    return dataRepository.saveAll(authorityData).stream()
-      .map(AuthorityData::getId)
-      .collect(Collectors.toSet());
+    return dataRepository.saveAll(authorityData);
   }
 
   private Set<String> extractNaturalIdsOfLinkableFields(ParsedRecordContentCollection contentCollection,
