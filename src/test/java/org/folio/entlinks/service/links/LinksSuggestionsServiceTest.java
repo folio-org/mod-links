@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-public class LinksSuggestionsServiceTest {
+class LinksSuggestionsServiceTest {
 
   private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
@@ -49,16 +49,16 @@ public class LinksSuggestionsServiceTest {
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
-    assertEquals(linkDetails.getLinksStatus(), LinkStatus.NEW);
-    assertEquals(linkDetails.getAuthorityId(), AUTHORITY_ID);
+    assertEquals(LinkStatus.NEW, linkDetails.getLinksStatus());
+    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
     //   assertEquals(linkDetails.getNaturalId(), NATURAL_ID);
-    assertEquals(linkDetails.getRuleId(), 1);
+    assertEquals(1, linkDetails.getRuleId());
     assertNull(linkDetails.getErrorStatusCode());
 
     var bibSubfields = bibField.getSubfields();
-    assertTrue(bibSubfields.containsKey("a"));
-    assertEquals(bibSubfields.get("9"), AUTHORITY_ID.toString());
+    assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
     //  assertEquals(bibSubfields.get("0"), NATURAL_ID);
+    assertTrue(bibSubfields.containsKey("a"));
   }
 
   @Test
@@ -74,16 +74,16 @@ public class LinksSuggestionsServiceTest {
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
-    assertEquals(linkDetails.getLinksStatus(), LinkStatus.ACTUAL);
-    assertEquals(linkDetails.getAuthorityId(), AUTHORITY_ID);
+    assertEquals(LinkStatus.ACTUAL, linkDetails.getLinksStatus());
+    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
     //   assertEquals(linkDetails.getNaturalId(), AUTHORITY_ID);
-    assertEquals(linkDetails.getRuleId(), 1);
+    assertEquals(1, linkDetails.getRuleId());
     assertNull(linkDetails.getErrorStatusCode());
 
     var bibSubfields = bibField.getSubfields();
-    assertTrue(bibSubfields.containsKey("a"));
-    assertEquals(bibSubfields.get("9"), AUTHORITY_ID.toString());
+    assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
     //  assertEquals(bibSubfields.get("0"), NATURAL_ID);
+    assertTrue(bibSubfields.containsKey("a"));
   }
 
   @Test
@@ -98,8 +98,8 @@ public class LinksSuggestionsServiceTest {
       .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
-    assertEquals(linkDetails.getLinksStatus(), LinkStatus.ERROR);
-    assertEquals(linkDetails.getErrorStatusCode(), NO_SUGGESTIONS_ERROR_CODE);
+    assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
+    assertEquals(NO_SUGGESTIONS_ERROR_CODE, linkDetails.getErrorStatusCode());
   }
 
   @Test
@@ -115,8 +115,8 @@ public class LinksSuggestionsServiceTest {
       .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
-    assertEquals(linkDetails.getLinksStatus(), LinkStatus.ERROR);
-    assertEquals(linkDetails.getErrorStatusCode(), MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+    assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
+    assertEquals(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE, linkDetails.getErrorStatusCode());
     assertNull(linkDetails.getAuthorityId());
     assertNull(linkDetails.getNaturalId());
     assertNull(linkDetails.getRuleId());
@@ -134,8 +134,8 @@ public class LinksSuggestionsServiceTest {
       .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
-    assertEquals(linkDetails.getLinksStatus(), LinkStatus.ERROR);
-    assertEquals(linkDetails.getErrorStatusCode(), NO_SUGGESTIONS_ERROR_CODE);
+    assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
+    assertEquals(NO_SUGGESTIONS_ERROR_CODE, linkDetails.getErrorStatusCode());
   }
 
   private StrippedParsedRecord getStrippedAuthorityRecord(String authorityField) {

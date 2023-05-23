@@ -39,9 +39,8 @@ public class LinksSuggestionService {
     if (nonNull(authorities) && !authorities.getRecords().isEmpty()) {
       bibs.getRecords().stream()
         .flatMap(bib -> bib.getFields().entrySet().stream())
-        .forEach(bibField -> {
-          suggestAuthorityForBibField(bibField.getValue(), authorities.getRecords(), rules.get(bibField.getKey()));
-        });
+        .forEach(bibField ->
+          suggestAuthorityForBibField(bibField.getValue(), authorities.getRecords(), rules.get(bibField.getKey())));
     }
   }
 

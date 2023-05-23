@@ -6,7 +6,6 @@ import static java.util.Collections.emptySet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +45,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-public class LinksSuggestionsServiceDelegateTest {
+class LinksSuggestionsServiceDelegateTest {
 
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
   private static final String NATURAL_ID = "12345";
@@ -94,7 +93,7 @@ public class LinksSuggestionsServiceDelegateTest {
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
     verify(dataRepository).saveAll(authorityData);
-    verify(searchClient).searchAuthorities(eq(EXPECTED_SEARCH_QUERY), eq(false));
+    verify(searchClient).searchAuthorities(EXPECTED_SEARCH_QUERY, false);
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
     verify(suggestionService)
       .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, Map.of("100", rules));
