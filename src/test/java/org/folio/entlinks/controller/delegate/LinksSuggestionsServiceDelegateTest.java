@@ -117,10 +117,10 @@ public class LinksSuggestionsServiceDelegateTest {
     when(sourceStorageClient.fetchParsedRecordsInBatch(fetchRequest)).thenReturn(
       new StrippedParsedRecordCollection(emptyList(), 1));
 
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
+    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
     verify(dataRepository).findIdsByNaturalIds(Set.of(NATURAL_ID));
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
@@ -136,10 +136,10 @@ public class LinksSuggestionsServiceDelegateTest {
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
     when(dataRepository.findIdsByNaturalIds(emptySet())).thenReturn(emptySet());
 
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(record));
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
+    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
     verify(dataRepository).findIdsByNaturalIds(emptySet());
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient, times(0)).fetchParsedRecordsInBatch(any());
