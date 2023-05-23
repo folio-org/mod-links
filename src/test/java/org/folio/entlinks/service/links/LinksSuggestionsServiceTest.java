@@ -49,14 +49,13 @@ public class LinksSuggestionsServiceTest {
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
-    var bibSubfields = bibField.getSubfields();
-
     assertEquals(linkDetails.getLinksStatus(), LinkStatus.NEW);
     assertEquals(linkDetails.getAuthorityId(), AUTHORITY_ID);
     //   assertEquals(linkDetails.getNaturalId(), NATURAL_ID);
     assertEquals(linkDetails.getRuleId(), 1);
     assertNull(linkDetails.getErrorStatusCode());
 
+    var bibSubfields = bibField.getSubfields();
     assertTrue(bibSubfields.containsKey("a"));
     assertEquals(bibSubfields.get("9"), AUTHORITY_ID.toString());
     //  assertEquals(bibSubfields.get("0"), NATURAL_ID);
@@ -75,14 +74,13 @@ public class LinksSuggestionsServiceTest {
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
-    var bibSubfields = bibField.getSubfields();
-
     assertEquals(linkDetails.getLinksStatus(), LinkStatus.ACTUAL);
     assertEquals(linkDetails.getAuthorityId(), AUTHORITY_ID);
     //   assertEquals(linkDetails.getNaturalId(), AUTHORITY_ID);
     assertEquals(linkDetails.getRuleId(), 1);
     assertNull(linkDetails.getErrorStatusCode());
 
+    var bibSubfields = bibField.getSubfields();
     assertTrue(bibSubfields.containsKey("a"));
     assertEquals(bibSubfields.get("9"), AUTHORITY_ID.toString());
     //  assertEquals(bibSubfields.get("0"), NATURAL_ID);

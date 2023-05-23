@@ -51,8 +51,8 @@ public class LinksSuggestionsServiceDelegateTest {
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
   private static final String NATURAL_ID = "12345";
   private static final String EXPECTED_SEARCH_QUERY = "authRefType=Authorized and naturalId=" + NATURAL_ID;
-  private static final String MIN_AVAILABLE_AUTHORITY_FIELD = "100";
-  private static final String MAX_AVAILABLE_AUTHORITY_FIELD = "150";
+  private static final String MIN_AUTHORITY_FIELD = "100";
+  private static final String MAX_AUTHORITY_FIELD = "150";
 
   private @Mock InstanceAuthorityLinkingRulesService linkingRulesService;
   private @Mock LinksSuggestionService suggestionService;
@@ -74,8 +74,8 @@ public class LinksSuggestionsServiceDelegateTest {
     var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
-    when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AVAILABLE_AUTHORITY_FIELD);
-    when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AVAILABLE_AUTHORITY_FIELD);
+    when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AUTHORITY_FIELD);
+    when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AUTHORITY_FIELD);
 
     when(searchClient.buildNaturalIdsQuery(Set.of(NATURAL_ID))).thenReturn(EXPECTED_SEARCH_QUERY);
     when(searchClient.searchAuthorities(EXPECTED_SEARCH_QUERY, false)).thenReturn(authorities);
@@ -84,7 +84,8 @@ public class LinksSuggestionsServiceDelegateTest {
     when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new HashSet<>());
     when(dataRepository.saveAll(authorityData)).thenReturn(authorityData);
 
-    when(sourceStorageClient.buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AVAILABLE_AUTHORITY_FIELD, MAX_AVAILABLE_AUTHORITY_FIELD))
+    when(sourceStorageClient
+      .buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD))
       .thenReturn(fetchRequest);
     when(sourceStorageClient.fetchParsedRecordsInBatch(fetchRequest)).thenReturn(
       strippedParsedRecords);
@@ -103,20 +104,20 @@ public class LinksSuggestionsServiceDelegateTest {
   void suggestLinksForMarcRecords_shouldRetrieveAuthoritiesFromTable() {
     var records = List.of(getRecord("100"));
     var rules = List.of(getRule("100"));
-
     var fetchRequest = getBatchFetchRequestForAuthority(AUTHORITY_ID);
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
-    when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AVAILABLE_AUTHORITY_FIELD);
-    when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AVAILABLE_AUTHORITY_FIELD);
+    when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AUTHORITY_FIELD);
+    when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AUTHORITY_FIELD);
 
     when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(Set.of(AUTHORITY_ID));
-    when(sourceStorageClient.buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AVAILABLE_AUTHORITY_FIELD, MAX_AVAILABLE_AUTHORITY_FIELD))
+    when(sourceStorageClient
+      .buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD))
       .thenReturn(fetchRequest);
     when(sourceStorageClient.fetchParsedRecordsInBatch(fetchRequest)).thenReturn(
       new StrippedParsedRecordCollection(emptyList(), 1));
 
+    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
@@ -131,11 +132,11 @@ public class LinksSuggestionsServiceDelegateTest {
   void suggestLinksForMarcRecords_shouldNotFetchAuthorities_ifNoNaturalIdsWasFound() {
     var record = new ParsedRecordContent(emptyMap(), "record without naturalId");
     var rules = List.of(getRule("110"));
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
     when(dataRepository.findIdsByNaturalIds(emptySet())).thenReturn(emptySet());
 
+    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(record));
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
@@ -186,7 +187,7 @@ public class LinksSuggestionsServiceDelegateTest {
   }
 
   private FetchParsedRecordsBatchRequest getBatchFetchRequestForAuthority(UUID externalIds) {
-    var fieldRange = List.of(new FieldRange(MIN_AVAILABLE_AUTHORITY_FIELD, MAX_AVAILABLE_AUTHORITY_FIELD));
+    var fieldRange = List.of(new FieldRange(MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD));
     var fetchConditions = new FetchConditions()
       .idType(ExternalIdType.AUTHORITY)
       .ids(Set.of(externalIds));
