@@ -110,6 +110,11 @@ public class LinksSuggestionService {
     bibSubfields.putAll(authoritySubfields);
     bibSubfields.put("0", naturalId);
     bibSubfields.put("9", authority.getId().toString());
+
+    rule.getSubfieldModifications().forEach(modification -> {
+      var modifiedSubfield = bibSubfields.remove(modification.getSource());
+      bibSubfields.put(modification.getTarget(), modifiedSubfield);
+    });
   }
 
   private boolean validateAuthorityFields(StrippedParsedRecord authority, InstanceAuthorityLinkingRule rule) {
