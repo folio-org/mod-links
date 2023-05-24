@@ -546,10 +546,12 @@ Response:
                 "9": "b9a5f035-de63-4e2c-92c2-07240c88b817"
               }
             ],
-            "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
-            "authorityNaturalId": "12345",
-            "linkingRuleId": 1,
-            "linkStatus": "ACTUAL"
+            "linkDetails": {
+              "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
+              "authorityNaturalId": "12345",
+              "linkingRuleId": 1,
+              "linkStatus": "ACTUAL"
+            }
           }
         },
         {
@@ -567,10 +569,12 @@ Response:
                 "9": "b9a5f035-de63-4e2c-92c2-07240c88b817"
               }
             ],
-            "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
-            "authorityNaturalId": "12345",
-            "linkingRuleId": 1,
-            "linkStatus": "NEW"
+            "linkDetails": {
+              "authorityId": "b9a5f035-de63-4e2c-92c2-07240c88b817",
+              "authorityNaturalId": "12345",
+              "linkingRuleId": 1,
+              "linkStatus": "NEW"
+            }
           }
         },
         {
@@ -582,8 +586,10 @@ Response:
                 "a": "Wolfgang Amadeus"
               }
             ],
-            "linkStatus": "ERROR",
-            "errorStatusCode": "101"
+            "linkDetails": {
+              "linkStatus": "ERROR",
+              "errorStatusCode": "101"
+            }
           }
         }
       ],

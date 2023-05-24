@@ -11,6 +11,7 @@
 * Add PATCH and GET instance-authority linking rule endpoints ([MODELINKS-80](https://issues.folio.org/browse/MODELINKS-80))
 * Extend GET /links/instances/{id} with link status, errorCause ([MODELINKS-68](https://issues.folio.org/browse/MODELINKS-68))
 * Implement endpoint to suggest links for MARC-bibliographic record ([MODELINKS-82](https://issues.folio.org/browse/MODELINKS-82))
+
 ## v1.0.0 Released 2023-02-21
 ### APIs versions
 * Provides `instance-authority-links v1.0`
