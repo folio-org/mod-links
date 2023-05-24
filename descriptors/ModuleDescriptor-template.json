@@ -221,6 +221,11 @@
       "description": "Get instance-authority links (Instance) statistics"
     },
     {
+      "permissionName": "instance-authority-links.suggestions.post",
+      "displayName": "Marc Links Suggestions - retrieve links suggestions for marc record",
+      "description": "Retrieve instance-authority links suggestions"
+    },
+    {
       "permissionName": "instance-authority-links.instances.all",
       "displayName": "Entities Links - all instance-authority links permissions",
       "description": "Entire set of permissions needed to use instance-links operations",
@@ -232,7 +237,8 @@
         "instance-authority.linking-rules.item.get",
         "instance-authority.linking-rules.item.patch",
         "instance-authority-links.authority-statistics.collection.get",
-        "instance-authority-links.instance-statistics.collection.get"
+        "instance-authority-links.instance-statistics.collection.get",
+        "instance-authority-links.suggestions.post"
       ]
     }
   ],
