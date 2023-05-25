@@ -14,13 +14,13 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config --local user.email "pavlo_smahin@epam.com"
-          git config --local user.name "Pavlo Smahin"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
 
       - name: Install git-chglog
         run: |
-          curl -sSL https://github.com/git-chglog/git-chglog/releases/latest/download/git-chglog_linux_amd64 -o git-chglog
-          chmod +x git-chglog
+          wget https://github.com/git-chglog/git-chglog/releases/latest/download/git-chglog_linux_amd64.tar.gz
+          tar xzf git-chglog_linux_amd64.tar.gz
           sudo mv git-chglog /usr/local/bin/
 
       - name: Generate Changelog
