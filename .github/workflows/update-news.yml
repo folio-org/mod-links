@@ -20,7 +20,7 @@ jobs:
       - name: Install git-chglog
         run: |
           wget https://github.com/git-chglog/git-chglog/archive/refs/tags/v0.15.4.tar.gz
-          tar xzf git-chglog-0.15.4.tar.gz
+          tar xzf v0.15.4.tar.gz
           sudo mv git-chglog /usr/local/bin/
 
       - name: Generate Changelog
