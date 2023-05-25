@@ -20,5 +20,5 @@ public interface AuthorityDataRepository extends JpaRepository<AuthorityData, UU
   void updateDeletedByIdIn(@Param("ids") Collection<UUID> ids);
 
   @Query("select a from AuthorityData a where a.naturalId in :naturalIds")
-  List<AuthorityData> findIdsByNaturalIds(@Param("naturalIds") Collection<String> naturalIds);
+  List<AuthorityData> findByNaturalIds(@Param("naturalIds") Collection<String> naturalIds);
 }

@@ -49,7 +49,7 @@ class LinksSuggestionsServiceDelegateTest {
 
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
   private static final String NATURAL_ID = "12345";
-  private static final String EXPECTED_SEARCH_QUERY = "authRefType=Authorized and naturalId=" + NATURAL_ID;
+  private static final String EXPECTED_SEARCH_QUERY = "authRefType=Authorized and (naturalId=" + NATURAL_ID + ')';
   private static final String MIN_AUTHORITY_FIELD = "100";
   private static final String MAX_AUTHORITY_FIELD = "150";
 
@@ -80,7 +80,7 @@ class LinksSuggestionsServiceDelegateTest {
     when(searchClient.searchAuthorities(EXPECTED_SEARCH_QUERY, false)).thenReturn(authorities);
 
     when(dataMapper.convertToData(authority)).thenReturn(authorityData.get(0));
-    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new ArrayList<>());
+    when(dataRepository.findByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new ArrayList<>());
     when(dataRepository.saveAll(authorityData)).thenReturn(authorityData);
 
     when(sourceStorageClient
@@ -111,7 +111,7 @@ class LinksSuggestionsServiceDelegateTest {
     when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AUTHORITY_FIELD);
     when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AUTHORITY_FIELD);
 
-    when(dataRepository.findIdsByNaturalIds(Set.of(NATURAL_ID))).thenReturn(authorityData);
+    when(dataRepository.findByNaturalIds(Set.of(NATURAL_ID))).thenReturn(authorityData);
     when(sourceStorageClient
       .buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD))
       .thenReturn(fetchRequest);
@@ -122,7 +122,7 @@ class LinksSuggestionsServiceDelegateTest {
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
     var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
-    verify(dataRepository).findIdsByNaturalIds(Set.of(NATURAL_ID));
+    verify(dataRepository).findByNaturalIds(Set.of(NATURAL_ID));
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
     verify(suggestionService)
@@ -136,13 +136,13 @@ class LinksSuggestionsServiceDelegateTest {
     var rules = List.of(getRule("110"));
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
-    when(dataRepository.findIdsByNaturalIds(emptySet())).thenReturn(emptyList());
+    when(dataRepository.findByNaturalIds(emptySet())).thenReturn(emptyList());
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(record));
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
     var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
-    verify(dataRepository).findIdsByNaturalIds(emptySet());
+    verify(dataRepository).findByNaturalIds(emptySet());
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient, times(0)).fetchParsedRecordsInBatch(any());
     verify(suggestionService)
@@ -160,7 +160,7 @@ class LinksSuggestionsServiceDelegateTest {
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
     delegate.suggestLinksForMarcRecords(parsedContentCollection);
 
-    verify(dataRepository).findIdsByNaturalIds(emptySet());
+    verify(dataRepository).findByNaturalIds(emptySet());
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient, times(0)).fetchParsedRecordsInBatch(any());
   }
@@ -182,6 +182,7 @@ class LinksSuggestionsServiceDelegateTest {
     rule.setId(1);
     rule.setBibField(bibField);
     rule.setAuthorityField("100");
+    rule.setAutoLinkingEnabled(true);
     rule.setAuthoritySubfields(new char[] {'a', 'b'});
     rule.setSubfieldModifications(List.of(modification));
     rule.setSubfieldsExistenceValidations(existence);

@@ -2,10 +2,13 @@ package org.folio.entlinks.controller.delegate;
 
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static org.apache.commons.collections4.CollectionUtils.removeAll;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +50,14 @@ public class LinksSuggestionsServiceDelegate {
   }
 
   private List<AuthorityData> findAuthoritiesByNaturalIds(Set<String> naturalIds) {
-    var authorityData = dataRepository.findIdsByNaturalIds(naturalIds);
+    var authorityData = dataRepository.findByNaturalIds(naturalIds);
     if (authorityData.size() != naturalIds.size()) {
-      authorityData.addAll(searchAndSaveAuthoritiesIds(naturalIds));
+      var existNaturalIds = authorityData.stream()
+        .map(AuthorityData::getNaturalId)
+        .collect(Collectors.toSet());
+
+      var naturalIdsToSearch = new HashSet<>(removeAll(naturalIds, existNaturalIds));
+      authorityData.addAll(searchAndSaveAuthorities(naturalIdsToSearch));
     }
     return authorityData;
   }
@@ -66,7 +74,7 @@ public class LinksSuggestionsServiceDelegate {
     return new StrippedParsedRecordCollection(Collections.emptyList(), 0);
   }
 
-  private List<AuthorityData> searchAndSaveAuthoritiesIds(Set<String> naturalIds) {
+  private List<AuthorityData> searchAndSaveAuthorities(Set<String> naturalIds) {
     var query = searchClient.buildNaturalIdsQuery(naturalIds);
 
     var authorityData = searchClient.searchAuthorities(query, false)
@@ -81,9 +89,18 @@ public class LinksSuggestionsServiceDelegate {
                                                         Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     return contentCollection.getRecords().stream()
       .flatMap(bibRecord -> bibRecord.getFields().entrySet().stream())
-      .filter(field -> nonNull(rules.get(field.getKey())))
+      .filter(field -> nonNull(field.getValue().getLinkDetails()))
+      .filter(field -> isAutoLinkingEnabled(rules.get(field.getKey())))
       .map(field -> field.getValue().getLinkDetails().getNaturalId())
+      .filter(Objects::nonNull)
       .collect(Collectors.toSet());
+  }
+
+  private boolean isAutoLinkingEnabled(List<InstanceAuthorityLinkingRule> rules) {
+    if (nonNull(rules)) {
+      return rules.stream().anyMatch(InstanceAuthorityLinkingRule::getAutoLinkingEnabled);
+    }
+    return false;
   }
 
   private Map<String, List<InstanceAuthorityLinkingRule>> rulesToBibFieldMap(List<InstanceAuthorityLinkingRule> rules) {
