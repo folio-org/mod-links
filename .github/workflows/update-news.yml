@@ -1,0 +1,38 @@
+name: Update News
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract version from pom.xml
+        id: extract-version
+        run: |
+          echo "::set-output name=version::$(xmllint --xpath 'string(/project/version)' pom.xml)"
+
+      - name: Update Changelog
+        run: |
+          npm install -g conventional-changelog-cli
+          npx conventional-changelog -p lerna -i NEWS.md -s -r 0 --release-count 0 --tag-prefix v${{ steps.extract-version.outputs.version }}
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "pavlo_smahin@epam.com"
+          git config --local user.name "Pavlo Smahin"
+          git commit -am "chore: update changelog" --no-verify
+          git push
