@@ -17,15 +17,17 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.x
+
       - name: Install git-chglog
-        run: |
-          wget https://github.com/git-chglog/git-chglog/archive/refs/tags/v0.15.4.tar.gz
-          tar -xvzf v0.15.4.tar.gz
-          sudo mv git-chglog-0.15.4 /usr/local/bin/
+        run: go get github.com/git-chglog/git-chglog/cmd/git-chglog
 
       - name: Generate Changelog
         run: |
-          git-chglog --output CHANGELOG.md --template-path changelog.tpl
+          $GOPATH/bin/git-chglog --output CHANGELOG.md --template-path changelog.tpl
 
       - name: Commit and push changes
         run: |
