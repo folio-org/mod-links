@@ -23,7 +23,7 @@ jobs:
           go-version: 1.x
 
       - name: Install git-chglog
-        run: go get github.com/git-chglog/git-chglog/cmd/git-chglog
+        run: go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
 
       - name: Generate Changelog
         run: |
