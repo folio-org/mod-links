@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.folio.entlinks.client.AuthoritySourceFileClient.AuthoritySourceFile;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.SubfieldModification;
@@ -17,10 +19,12 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
@@ -29,16 +33,23 @@ class LinksSuggestionsServiceTest {
 
   private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
+  private static final String NATURAL_ID = "e12345";
+  private static final String BASE_URL = "baseUrl";
+  private static final String SOURCE_FILE_NAME = "sourceFileName";
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
-  private static final String NATURAL_ID = "12345";
+  private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
 
-  private @Spy LinksSuggestionService linksSuggestionService;
+  private @Mock AuthoritySourceFilesService sourceFilesService;
+  private @InjectMocks LinksSuggestionService linksSuggestionService;
 
   @Test
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withNewLink() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
     var authority = getAuthorityParsedRecordContent("100");
+    var sourceFile = new AuthoritySourceFile(SOURCE_FILE_ID, BASE_URL, SOURCE_FILE_NAME, codes("e1"));
+
+    when(sourceFilesService.fetchAuthoritySourceFile(NATURAL_ID)).thenReturn(sourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
@@ -53,7 +64,7 @@ class LinksSuggestionsServiceTest {
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    assertEquals(NATURAL_ID, bibSubfields.get("0"));
+    assertEquals(BASE_URL + '/' + NATURAL_ID, bibSubfields.get("0"));
     assertFalse(bibSubfields.containsKey("a"));
     assertTrue(bibSubfields.containsKey("b"));
   }
@@ -63,6 +74,9 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
     var authority = getAuthorityParsedRecordContent("100");
+    var sourceFile = new AuthoritySourceFile(SOURCE_FILE_ID, BASE_URL, SOURCE_FILE_NAME, codes("e1"));
+
+    when(sourceFilesService.fetchAuthoritySourceFile(NATURAL_ID)).thenReturn(sourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
@@ -77,7 +91,7 @@ class LinksSuggestionsServiceTest {
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    assertEquals(NATURAL_ID, bibSubfields.get("0"));
+    assertEquals(BASE_URL + '/' + NATURAL_ID, bibSubfields.get("0"));
     assertFalse(bibSubfields.containsKey("a"));
     assertTrue(bibSubfields.containsKey("b"));
   }
@@ -165,5 +179,9 @@ class LinksSuggestionsServiceTest {
     rule.setSubfieldsExistenceValidations(existence);
 
     return Map.of(bibField, List.of(rule));
+  }
+
+  private List<String> codes(String... codes) {
+    return List.of(codes);
   }
 }

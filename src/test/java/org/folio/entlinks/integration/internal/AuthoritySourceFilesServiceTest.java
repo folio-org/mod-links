@@ -66,7 +66,7 @@ class AuthoritySourceFilesServiceTest {
 
     assertThatThrownBy(() -> service.fetchAuthoritySources())
       .isInstanceOf(FolioIntegrationException.class)
-      .hasMessage("Authority source files are empty.");
+      .hasMessage("Authority source files are empty");
   }
 
   @Test

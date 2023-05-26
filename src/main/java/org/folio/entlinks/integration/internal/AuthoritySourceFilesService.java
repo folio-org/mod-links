@@ -31,6 +31,9 @@ public class AuthoritySourceFilesService {
       .collect(Collectors.toMap(AuthoritySourceFile::id, file -> file));
   }
 
+  @Cacheable(cacheNames = AUTHORITY_SOURCE_FILES_CACHE,
+    key = "@folioExecutionContext.tenantId + ':' + #naturalId",
+    unless = "#result.isEmpty()")
   public AuthoritySourceFile fetchAuthoritySourceFile(String naturalId) {
     return fetchAuthoritySourceFiles().stream()
       .filter(file -> file.codes().stream().anyMatch(naturalId::startsWith))
@@ -46,10 +49,12 @@ public class AuthoritySourceFilesService {
         .authoritySourceFiles();
 
       if (authoritySourceFiles.isEmpty()) {
-        log.info("Authority source files are empty");
         throw new FolioIntegrationException("Authority source files are empty");
       }
       return authoritySourceFiles;
+    } catch (FolioIntegrationException e) {
+      log.warn(e.getMessage());
+      throw new FolioIntegrationException(e.getMessage());
     } catch (Exception e) {
       log.warn("Failed to fetch authority source files");
       throw new FolioIntegrationException("Failed to fetch authority source files", e);
