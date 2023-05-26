@@ -1,6 +1,5 @@
 package org.folio.entlinks.service.links;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
@@ -11,11 +10,13 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class LinksSuggestionService {
   private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
+  private final AuthoritySourceFilesService sourceFilesService;
 
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
@@ -102,7 +104,7 @@ public class LinksSuggestionService {
       .getSubfields();
 
     bibSubfields.putAll(authoritySubfields);
-    bibSubfields.put("0", authority.getNaturalId());
+    bibSubfields.put("0", getSubfield0Value(authority.getNaturalId()));
     bibSubfields.put("9", authority.getId().toString());
 
     rule.getSubfieldModifications().forEach(modification -> {
@@ -134,5 +136,14 @@ public class LinksSuggestionService {
       }
     }
     return true;
+  }
+
+  private String getSubfield0Value(String naturalId) {
+    var subfield0Value = "";
+    var sourceFile = sourceFilesService.fetchAuthoritySourceFile(naturalId);
+    if (sourceFile != null) {
+      subfield0Value = StringUtils.appendIfMissing(sourceFile.baseUrl(), "/");
+    }
+    return subfield0Value + naturalId;
   }
 }

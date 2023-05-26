@@ -23,26 +23,35 @@ public class AuthoritySourceFilesService {
   private final AuthoritySourceFileClient client;
 
   @Cacheable(cacheNames = AUTHORITY_SOURCE_FILES_CACHE,
-             key = "@folioExecutionContext.tenantId",
-             unless = "#result.isEmpty()")
+    key = "@folioExecutionContext.tenantId",
+    unless = "#result.isEmpty()")
   public Map<UUID, AuthoritySourceFile> fetchAuthoritySources() throws FolioIntegrationException {
-    log.info("Fetching authority source files");
-    var authoritySourceFiles = fetchAuthoritySourceFiles();
-    if (authoritySourceFiles.isEmpty()) {
-      throw new FolioIntegrationException("Authority source files are empty.");
-    }
-
-    return authoritySourceFiles.stream()
+    return fetchAuthoritySourceFiles().stream()
       .filter(file -> nonNull(file.id()) && nonNull(file.baseUrl()))
       .collect(Collectors.toMap(AuthoritySourceFile::id, file -> file));
   }
 
+  public AuthoritySourceFile fetchAuthoritySourceFile(String naturalId) {
+    return fetchAuthoritySourceFiles().stream()
+      .filter(file -> file.codes().stream().anyMatch(naturalId::startsWith))
+      .findFirst()
+      .orElse(null);
+  }
+
   private List<AuthoritySourceFile> fetchAuthoritySourceFiles() {
+    log.info("Fetching authority source files");
     try {
-      return client
+      var authoritySourceFiles = client
         .fetchAuthoritySourceFiles(SOURCE_FILES_LIMIT)
         .authoritySourceFiles();
+
+      if (authoritySourceFiles.isEmpty()) {
+        log.info("Authority source files are empty");
+        throw new FolioIntegrationException("Authority source files are empty");
+      }
+      return authoritySourceFiles;
     } catch (Exception e) {
+      log.warn("Failed to fetch authority source files");
       throw new FolioIntegrationException("Failed to fetch authority source files", e);
     }
   }

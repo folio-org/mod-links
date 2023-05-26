@@ -133,13 +133,13 @@ class LinksSuggestionsServiceTest {
   }
 
   private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField, Map<String, String> subfields) {
-    var field = new FieldParsedContent("","", subfields, null);
+    var field = new FieldParsedContent("//", "//", subfields, null);
     var fields = Map.of(authorityField, field);
     return new AuthorityParsedContent(AUTHORITY_ID, NATURAL_ID, "", fields);
   }
 
   private SourceParsedContent getBibParsedRecordContent(String bibField, LinkDetails linkDetails) {
-    var field = new FieldParsedContent("","", new HashMap<>(), linkDetails);
+    var field = new FieldParsedContent("//", "//", new HashMap<>(), linkDetails);
     var fields = Map.of(bibField, field);
     return new SourceParsedContent(UUID.randomUUID(), "", fields);
   }
