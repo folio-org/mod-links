@@ -1,23 +1,21 @@
 package org.folio.entlinks.service.links;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.domain.dto.FieldContent;
 import org.folio.entlinks.domain.dto.LinkDetails;
-import org.folio.entlinks.domain.dto.ParsedRecordContent;
-import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
-import org.folio.entlinks.domain.dto.StrippedParsedRecord;
-import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
-import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
+import org.folio.entlinks.integration.dto.AuthorityParsedContent;
+import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -30,35 +28,31 @@ public class LinksSuggestionService {
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
    *
-   * @param bibs          collection of bib records {@link ParsedRecordContent}
-   * @param authorities   collection of authorities {@link StrippedParsedRecord} that can be suggested as link
-   * @param authorityData collection of authoritiesData to retrieve naturalIds
-   * @param rules         linking rules
-   *                      <p>Key - {@link String} as bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
+   * @param marcBibsContent        list of bib records {@link SourceParsedContent}
+   * @param marcAuthoritiesContent list of authorities {@link AuthorityParsedContent} that can be suggested as link
+   * @param rules                  linking rules
+   *                               <p>Key - bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
    */
-  public void fillLinkDetailsWithSuggestedAuthorities(ParsedRecordContentCollection bibs,
-                                                      StrippedParsedRecordCollection authorities,
-                                                      List<AuthorityData> authorityData,
+  public void fillLinkDetailsWithSuggestedAuthorities(List<SourceParsedContent> marcBibsContent,
+                                                      List<AuthorityParsedContent> marcAuthoritiesContent,
                                                       Map<String, List<InstanceAuthorityLinkingRule>> rules) {
-    if (nonNull(authorities) && !authorities.getRecords().isEmpty()) {
-      bibs.getRecords().stream()
-        .flatMap(bib -> bib.getFields().entrySet().stream())
+    if (!isEmpty(marcAuthoritiesContent)) {
+      marcBibsContent.stream()
+        .flatMap(bibContent -> bibContent.getFields().entrySet().stream())
         .forEach(bibField -> suggestAuthorityForBibField(
           bibField.getValue(),
-          authorities.getRecords(),
-          authorityData,
+          marcAuthoritiesContent,
           rules.get(bibField.getKey())));
     }
   }
 
-  private void suggestAuthorityForBibField(FieldContent bibField,
-                                           List<StrippedParsedRecord> authorities,
-                                           List<AuthorityData> authorityData,
+  private void suggestAuthorityForBibField(FieldParsedContent bibField,
+                                           List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
       if (rule.getAutoLinkingEnabled()) {
-        var suitableAuthorities = authorities.stream()
-          .filter(authority -> validateAuthorityFields(authority, rule))
+        var suitableAuthorities = marcAuthoritiesContent.stream()
+          .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
           .toList();
 
         if (suitableAuthorities.isEmpty()) {
@@ -69,46 +63,46 @@ public class LinksSuggestionService {
           bibField.setLinkDetails(errorDetails);
         } else {
           var authority = suitableAuthorities.get(0);
-          var naturalId = extractNaturalId(authorityData, authority.getId());
-          var linkDetails = getLinkDetails(bibField, authority, naturalId, rule);
-          actualizeBibSubfields(bibField, authority, naturalId, rule);
+          var linkDetails = getLinkDetails(bibField, authority, rule);
+          actualizeBibSubfields(bibField, authority, rule);
           bibField.setLinkDetails(linkDetails);
+          break;
         }
       }
     }
+  }
+
+  private LinkDetails getLinkDetails(FieldParsedContent bibField,
+                                     AuthorityParsedContent authority,
+                                     InstanceAuthorityLinkingRule rule) {
+    var linkDetails = bibField.getLinkDetails();
+
+    if (nonNull(linkDetails)) {
+      linkDetails.setLinksStatus(ACTUAL);
+    } else {
+      linkDetails = new LinkDetails();
+      linkDetails.setLinksStatus(NEW);
+    }
+    linkDetails.setRuleId(rule.getId());
+    linkDetails.setAuthorityId(authority.getId());
+    linkDetails.setNaturalId(authority.getNaturalId());
+    return linkDetails;
   }
 
   private LinkDetails getErrorDetails(String errorCode) {
     return new LinkDetails().linksStatus(ERROR).errorStatusCode(errorCode);
   }
 
-  private LinkDetails getLinkDetails(FieldContent bibField,
-                                     StrippedParsedRecord authority, String naturalId,
-                                     InstanceAuthorityLinkingRule rule) {
-    var linkDetails = bibField.getLinkDetails();
-
-    if (linkDetails == null) {
-      linkDetails = new LinkDetails();
-      linkDetails.setLinksStatus(NEW);
-    } else {
-      linkDetails.setLinksStatus(ACTUAL);
-    }
-    linkDetails.setRuleId(rule.getId());
-    linkDetails.setAuthorityId(authority.getId());
-    linkDetails.setNaturalId(naturalId);
-    return linkDetails;
-  }
-
-  private void actualizeBibSubfields(FieldContent bibField,
-                                     StrippedParsedRecord authority, String naturalId,
+  private void actualizeBibSubfields(FieldParsedContent bibField,
+                                     AuthorityParsedContent authority,
                                      InstanceAuthorityLinkingRule rule) {
     var bibSubfields = bibField.getSubfields();
-    var authoritySubfields = authority.getParsedRecord().getContent().getFields()
+    var authoritySubfields = authority.getFields()
       .get(rule.getAuthorityField())
       .getSubfields();
 
     bibSubfields.putAll(authoritySubfields);
-    bibSubfields.put("0", naturalId);
+    bibSubfields.put("0", authority.getNaturalId());
     bibSubfields.put("9", authority.getId().toString());
 
     rule.getSubfieldModifications().forEach(modification -> {
@@ -117,9 +111,8 @@ public class LinksSuggestionService {
     });
   }
 
-  private boolean validateAuthorityFields(StrippedParsedRecord authority, InstanceAuthorityLinkingRule rule) {
-    var fields = authority.getParsedRecord().getContent().getFields();
-    var authorityField = fields.get(rule.getAuthorityField());
+  private boolean validateAuthorityFields(AuthorityParsedContent authorityContent, InstanceAuthorityLinkingRule rule) {
+    var authorityField = authorityContent.getFields().get(rule.getAuthorityField());
 
     if (nonNull(authorityField)) {
       return validateAuthoritySubfields(authorityField, rule);
@@ -127,7 +120,7 @@ public class LinksSuggestionService {
     return false;
   }
 
-  private boolean validateAuthoritySubfields(FieldContent authorityField,
+  private boolean validateAuthoritySubfields(FieldParsedContent authorityField,
                                              InstanceAuthorityLinkingRule rule) {
     var existValidation = rule.getSubfieldsExistenceValidations();
     if (!existValidation.isEmpty()) {
@@ -141,13 +134,5 @@ public class LinksSuggestionService {
       }
     }
     return true;
-  }
-
-  private String extractNaturalId(List<AuthorityData> authorityData, UUID authorityId) {
-    return authorityData.stream()
-      .filter(data -> data.getId().equals(authorityId))
-      .map(AuthorityData::getNaturalId)
-      .findAny()
-      .orElse(null);
   }
 }

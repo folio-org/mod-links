@@ -1,7 +1,6 @@
 package org.folio.entlinks.controller.delegate;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -18,6 +17,7 @@ import java.util.UUID;
 import org.folio.entlinks.client.SearchClient;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.controller.converter.DataMapper;
+import org.folio.entlinks.controller.converter.SourceContentMapper;
 import org.folio.entlinks.domain.dto.Authority;
 import org.folio.entlinks.domain.dto.AuthoritySearchResult;
 import org.folio.entlinks.domain.dto.ExternalIdType;
@@ -39,8 +39,10 @@ import org.folio.entlinks.service.links.LinksSuggestionService;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
@@ -53,13 +55,14 @@ class LinksSuggestionsServiceDelegateTest {
   private static final String MIN_AUTHORITY_FIELD = "100";
   private static final String MAX_AUTHORITY_FIELD = "150";
 
+  private @Spy SourceContentMapper contentMapper = Mappers.getMapper(SourceContentMapper.class);
+  private @Spy DataMapper dataMapper = Mappers.getMapper(DataMapper.class);
   private @Mock InstanceAuthorityLinkingRulesService linkingRulesService;
   private @Mock LinksSuggestionService suggestionService;
   private @Mock AuthorityDataRepository dataRepository;
   private @Mock SourceStorageClient sourceStorageClient;
   private @Mock SearchClient searchClient;
-  private @Mock DataMapper dataMapper;
-  private @InjectMocks LinksSuggestionsServiceDelegate delegate;
+  private @InjectMocks LinksSuggestionsServiceDelegate serviceDelegate;
 
   @Test
   void suggestLinksForMarcRecords_shouldSaveAuthoritiesFromSearch() {
@@ -79,7 +82,6 @@ class LinksSuggestionsServiceDelegateTest {
     when(searchClient.buildNaturalIdsQuery(Set.of(NATURAL_ID))).thenReturn(EXPECTED_SEARCH_QUERY);
     when(searchClient.searchAuthorities(EXPECTED_SEARCH_QUERY, false)).thenReturn(authorities);
 
-    when(dataMapper.convertToData(authority)).thenReturn(authorityData.get(0));
     when(dataRepository.findByNaturalIds(Set.of(NATURAL_ID))).thenReturn(new ArrayList<>());
     when(dataRepository.saveAll(authorityData)).thenReturn(authorityData);
 
@@ -90,14 +92,11 @@ class LinksSuggestionsServiceDelegateTest {
       strippedParsedRecords);
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
-    delegate.suggestLinksForMarcRecords(parsedContentCollection);
+    serviceDelegate.suggestLinksForMarcRecords(parsedContentCollection);
 
     verify(dataRepository).saveAll(authorityData);
     verify(searchClient).searchAuthorities(EXPECTED_SEARCH_QUERY, false);
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
-    verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData,
-        Map.of("100", rules));
   }
 
   @Test
@@ -119,35 +118,27 @@ class LinksSuggestionsServiceDelegateTest {
       new StrippedParsedRecordCollection(emptyList(), 1));
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
-    delegate.suggestLinksForMarcRecords(parsedContentCollection);
+    serviceDelegate.suggestLinksForMarcRecords(parsedContentCollection);
 
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 1);
     verify(dataRepository).findByNaturalIds(Set.of(NATURAL_ID));
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
-    verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData,
-        Map.of("100", rules));
   }
 
   @Test
   void suggestLinksForMarcRecords_shouldNotFetchAuthorities_ifNoNaturalIdsWasFound() {
-    var record = new ParsedRecordContent(emptyMap(), "record without naturalId");
+    var record = new ParsedRecordContent(emptyList(), "record without naturalId");
     var rules = List.of(getRule("110"));
 
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
     when(dataRepository.findByNaturalIds(emptySet())).thenReturn(emptyList());
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(record));
-    delegate.suggestLinksForMarcRecords(parsedContentCollection);
+    serviceDelegate.suggestLinksForMarcRecords(parsedContentCollection);
 
-    var strippedParsedRecords = new StrippedParsedRecordCollection(emptyList(), 0);
     verify(dataRepository).findByNaturalIds(emptySet());
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
     verify(sourceStorageClient, times(0)).fetchParsedRecordsInBatch(any());
-    verify(suggestionService)
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, emptyList(),
-        Map.of("110", rules));
   }
 
   @Test
@@ -158,7 +149,7 @@ class LinksSuggestionsServiceDelegateTest {
     when(linkingRulesService.getLinkingRules()).thenReturn(rules);
 
     var parsedContentCollection = new ParsedRecordContentCollection().records(records);
-    delegate.suggestLinksForMarcRecords(parsedContentCollection);
+    serviceDelegate.suggestLinksForMarcRecords(parsedContentCollection);
 
     verify(dataRepository).findByNaturalIds(emptySet());
     verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
@@ -167,11 +158,11 @@ class LinksSuggestionsServiceDelegateTest {
 
   private ParsedRecordContent getRecord(String bibField) {
     var field = new FieldContent();
-    field.setSubfields(Map.of("a", "test"));
+    field.setSubfields(List.of(Map.of("a", "test")));
     field.setLinkDetails(new LinkDetails().naturalId(NATURAL_ID));
 
     var fields = Map.of(bibField, field);
-    return new ParsedRecordContent(fields, "default leader");
+    return new ParsedRecordContent(List.of(fields), "default leader");
   }
 
   private InstanceAuthorityLinkingRule getRule(String bibField) {

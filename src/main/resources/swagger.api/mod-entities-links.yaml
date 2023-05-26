@@ -461,11 +461,14 @@ components:
     strippedParsedRecordCollection:
       $ref: schemas/mod-source-record-storage/strippedParsedRecordCollection.json
 
+    fetchParsedRecordsBatchRequest:
+      $ref: schemas/mod-source-record-storage/fetchParsedRecordsBatchRequest.json
+
     parsedRecordContentCollection:
       $ref: schemas/mod-source-record-storage/parsedRecordContentCollection.json
 
-    fetchParsedRecordsBatchRequest:
-      $ref: schemas/mod-source-record-storage/fetchParsedRecordsBatchRequest.json
+    parsedRecordContent:
+      $ref: schemas/mod-source-record-storage/parsedRecordContent.json
 
     linkAction:
       $ref: schemas/authority/control/linkAction.json

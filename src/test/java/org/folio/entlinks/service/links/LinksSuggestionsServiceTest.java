@@ -2,24 +2,21 @@ package org.folio.entlinks.service.links;
 
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.folio.entlinks.domain.dto.FieldContent;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.LinkStatus;
-import org.folio.entlinks.domain.dto.ParsedRecordContent;
-import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
-import org.folio.entlinks.domain.dto.RecordType;
-import org.folio.entlinks.domain.dto.StrippedParsedRecord;
-import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
-import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
 import org.folio.entlinks.domain.dto.SubfieldModification;
-import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
+import org.folio.entlinks.integration.dto.AuthorityParsedContent;
+import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,13 +38,10 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withNewLink() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getStrippedAuthorityRecord("100");
-    var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
-    var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
-    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var authority = getAuthorityParsedRecordContent("100");
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
@@ -60,20 +54,18 @@ class LinksSuggestionsServiceTest {
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
     assertEquals(NATURAL_ID, bibSubfields.get("0"));
-    assertTrue(bibSubfields.containsKey("a"));
+    assertFalse(bibSubfields.containsKey("a"));
+    assertTrue(bibSubfields.containsKey("b"));
   }
 
   @Test
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withActualLink() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
-    var authority = getStrippedAuthorityRecord("100");
-    var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
-    var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
-    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var authority = getAuthorityParsedRecordContent("100");
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
 
     var bibField = bib.getFields().get("100");
     var linkDetails = bibField.getLinkDetails();
@@ -86,20 +78,18 @@ class LinksSuggestionsServiceTest {
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
     assertEquals(NATURAL_ID, bibSubfields.get("0"));
-    assertTrue(bibSubfields.containsKey("a"));
+    assertFalse(bibSubfields.containsKey("a"));
+    assertTrue(bibSubfields.containsKey("b"));
   }
 
   @Test
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withError_whenRequiredAuthoritySubfieldNotExist() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getStrippedAuthorityRecord("100", emptyMap());
-    var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
-    var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
-    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var authority = getAuthorityParsedRecordContent("100", emptyMap());
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
@@ -110,14 +100,11 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withErrorMoreThenOneAuthoritiesFound() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
-    var authority = getStrippedAuthorityRecord("100");
-    var secondAuthority = getStrippedAuthorityRecord("100");
-    var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority, secondAuthority), 2);
-    var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
-    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var authority = getAuthorityParsedRecordContent("100");
+    var secondAuthority = getAuthorityParsedRecordContent("100");
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority, secondAuthority), rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
@@ -131,35 +118,30 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withErrorNoAuthoritiesFound() {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getStrippedAuthorityRecord("110");
-    var strippedParsedRecords = new StrippedParsedRecordCollection(List.of(authority), 1);
-    var parsedContentCollection = new ParsedRecordContentCollection().records(List.of(bib));
-    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var authority = getAuthorityParsedRecordContent("110");
 
     linksSuggestionService
-      .fillLinkDetailsWithSuggestedAuthorities(parsedContentCollection, strippedParsedRecords, authorityData, rules);
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
 
     var linkDetails = bib.getFields().get("100").getLinkDetails();
     assertEquals(LinkStatus.ERROR, linkDetails.getLinksStatus());
     assertEquals(NO_SUGGESTIONS_ERROR_CODE, linkDetails.getErrorStatusCode());
   }
 
-  private StrippedParsedRecord getStrippedAuthorityRecord(String authorityField) {
-    return getStrippedAuthorityRecord(authorityField, Map.of("a", "test"));
+  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField) {
+    return getAuthorityParsedRecordContent(authorityField, Map.of("a", "test"));
   }
 
-  private StrippedParsedRecord getStrippedAuthorityRecord(String authorityField, Map<String, String> subfields) {
-    var field = new FieldContent().subfields(subfields);
+  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField, Map<String, String> subfields) {
+    var field = new FieldParsedContent("","", subfields, null);
     var fields = Map.of(authorityField, field);
-    var strippedAuthorityContent = new ParsedRecordContent(fields, "default leader");
-    var strippedAuthority = new StrippedParsedRecordParsedRecord(strippedAuthorityContent);
-    return new StrippedParsedRecord(AUTHORITY_ID, RecordType.MARC_AUTHORITY, strippedAuthority);
+    return new AuthorityParsedContent(AUTHORITY_ID, NATURAL_ID, "", fields);
   }
 
-  private ParsedRecordContent getBibParsedRecordContent(String bibField, LinkDetails linkDetails) {
-    var field = new FieldContent().linkDetails(linkDetails);
+  private SourceParsedContent getBibParsedRecordContent(String bibField, LinkDetails linkDetails) {
+    var field = new FieldParsedContent("","", new HashMap<>(), linkDetails);
     var fields = Map.of(bibField, field);
-    return new ParsedRecordContent(fields, "default leader");
+    return new SourceParsedContent(UUID.randomUUID(), "", fields);
   }
 
   private LinkDetails getActualLinksDetails() {

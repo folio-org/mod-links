@@ -5,30 +5,39 @@
   "additionalProperties": false,
   "properties": {
     "fields": {
-      "description": "Map of marc fields",
-      "title": "FieldContent",
-      "type": "object",
-      "additionalProperties": {
+      "description": "List of fields",
+      "type": "array",
+      "items": {
+        "description": "Map of marc fields",
+        "title": "FieldContent",
         "type": "object",
-        "properties": {
-          "ind1": {
-            "description": "Identifier 1",
-            "type": "string"
-          },
-          "ind2": {
-            "description": "Identifier 2",
-            "type": "string"
-          },
-          "subfields": {
-            "type": "object",
-            "description": "Map of subfields",
-            "additionalProperties": {
+        "maxProperties": 1,
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "ind1": {
+              "description": "Identifier 1",
               "type": "string"
+            },
+            "ind2": {
+              "description": "Identifier 2",
+              "type": "string"
+            },
+            "subfields": {
+              "description": "List of subfields",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": "Map of subfields",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "linkDetails": {
+              "description": "Link details",
+              "$ref": "../authority/control/linkDetails.json"
             }
-          },
-          "linkDetails": {
-            "description": "Link details",
-            "$ref": "../authority/control/linkDetails.json"
           }
         }
       }
