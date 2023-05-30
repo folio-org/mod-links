@@ -94,10 +94,14 @@ public class LinksSuggestionsServiceDelegate {
                                                         Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     return contentCollection.stream()
       .flatMap(bibRecord -> bibRecord.getFields().entrySet().stream())
-      .filter(field -> isNaturalIdPresent(field.getValue()))
       .filter(field -> isAutoLinkingEnabled(rules.get(field.getKey())))
-      .map(field -> field.getValue().getLinkDetails().getNaturalId())
+      .map(field -> extractNaturalIdFrom0Subfield(field.getValue().getSubfields()))
       .collect(Collectors.toSet());
+  }
+
+  private String extractNaturalIdFrom0Subfield(Map<String, String> subfields) {
+    var value0 = subfields.get("0");
+    return value0.substring(value0.lastIndexOf('/'), value0.length() - 1);
   }
 
   private boolean isNaturalIdPresent(FieldParsedContent fieldContent) {

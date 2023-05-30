@@ -53,7 +53,7 @@ public interface SourceContentMapper {
 
   default AuthorityParsedContent convertToAuthorityParsedContent(StrippedParsedRecord parsedRecord,
                                                                  List<AuthorityData> authorityData) {
-    var authorityId = parsedRecord.getId();
+    var authorityId = parsedRecord.getExternalIdsHolder().getAuthorityId();
     var naturalId = extractNaturalId(authorityData, authorityId);
     var leader = parsedRecord.getParsedRecord().getContent().getLeader();
     var fields = convertFieldsToOneMap(parsedRecord.getParsedRecord().getContent().getFields());

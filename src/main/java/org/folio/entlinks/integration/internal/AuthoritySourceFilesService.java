@@ -26,37 +26,31 @@ public class AuthoritySourceFilesService {
     key = "@folioExecutionContext.tenantId",
     unless = "#result.isEmpty()")
   public Map<UUID, AuthoritySourceFile> fetchAuthoritySources() throws FolioIntegrationException {
-    return fetchAuthoritySourceFiles().stream()
+    log.info("Fetching authority source files");
+    var authoritySourceFiles = fetchAuthoritySourceFiles();
+    if (authoritySourceFiles.isEmpty()) {
+      throw new FolioIntegrationException("Authority source files are empty.");
+    }
+
+    return authoritySourceFiles.stream()
       .filter(file -> nonNull(file.id()) && nonNull(file.baseUrl()))
       .collect(Collectors.toMap(AuthoritySourceFile::id, file -> file));
   }
 
-  @Cacheable(cacheNames = AUTHORITY_SOURCE_FILES_CACHE,
-    key = "@folioExecutionContext.tenantId + ':' + #naturalId",
-    unless = "#result.isEmpty()")
-  public AuthoritySourceFile fetchAuthoritySourceFile(String naturalId) {
-    return fetchAuthoritySourceFiles().stream()
+  public AuthoritySourceFile findAuthoritySourceFileByNaturalId(Map<UUID, AuthoritySourceFile> files,
+                                                                String naturalId) {
+    return files.values().stream()
       .filter(file -> file.codes().stream().anyMatch(naturalId::startsWith))
       .findFirst()
       .orElse(null);
   }
 
   private List<AuthoritySourceFile> fetchAuthoritySourceFiles() {
-    log.info("Fetching authority source files");
     try {
-      var authoritySourceFiles = client
+      return client
         .fetchAuthoritySourceFiles(SOURCE_FILES_LIMIT)
         .authoritySourceFiles();
-
-      if (authoritySourceFiles.isEmpty()) {
-        throw new FolioIntegrationException("Authority source files are empty");
-      }
-      return authoritySourceFiles;
-    } catch (FolioIntegrationException e) {
-      log.warn(e.getMessage());
-      throw new FolioIntegrationException(e.getMessage());
     } catch (Exception e) {
-      log.warn("Failed to fetch authority source files");
       throw new FolioIntegrationException("Failed to fetch authority source files", e);
     }
   }

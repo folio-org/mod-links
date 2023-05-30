@@ -107,10 +107,13 @@ public class LinksSuggestionService {
     bibSubfields.put("0", getSubfield0Value(authority.getNaturalId()));
     bibSubfields.put("9", authority.getId().toString());
 
-    rule.getSubfieldModifications().forEach(modification -> {
-      var modifiedSubfield = bibSubfields.remove(modification.getSource());
-      bibSubfields.put(modification.getTarget(), modifiedSubfield);
-    });
+    var modifications = rule.getSubfieldModifications();
+    if (nonNull(modifications)) {
+      modifications.forEach(modification -> {
+        var modifiedSubfield = bibSubfields.remove(modification.getSource());
+        bibSubfields.put(modification.getTarget(), modifiedSubfield);
+      });
+    }
   }
 
   private boolean validateAuthorityFields(AuthorityParsedContent authorityContent, InstanceAuthorityLinkingRule rule) {
@@ -140,9 +143,12 @@ public class LinksSuggestionService {
 
   private String getSubfield0Value(String naturalId) {
     var subfield0Value = "";
-    var sourceFile = sourceFilesService.fetchAuthoritySourceFile(naturalId);
-    if (sourceFile != null) {
-      subfield0Value = StringUtils.appendIfMissing(sourceFile.baseUrl(), "/");
+    if (nonNull(naturalId)) {
+      var files = sourceFilesService.fetchAuthoritySources();
+      var sourceFile = sourceFilesService.findAuthoritySourceFileByNaturalId(files, naturalId);
+      if (sourceFile != null) {
+        subfield0Value = StringUtils.appendIfMissing(sourceFile.baseUrl(), "/");
+      }
     }
     return subfield0Value + naturalId;
   }
