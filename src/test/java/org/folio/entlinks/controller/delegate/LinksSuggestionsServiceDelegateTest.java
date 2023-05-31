@@ -50,10 +50,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class LinksSuggestionsServiceDelegateTest {
 
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
-  private static final String NATURAL_ID = "12345";
-  private static final String EXPECTED_SEARCH_QUERY = "authRefType=Authorized and (naturalId=" + NATURAL_ID + ')';
   private static final String MIN_AUTHORITY_FIELD = "100";
   private static final String MAX_AUTHORITY_FIELD = "150";
+  private static final String NATURAL_ID = "e12345";
+  private static final String BASE_URL = "https://base/url/";
+  private static final String EXPECTED_SEARCH_QUERY = "authRefType=Authorized and (naturalId=" + NATURAL_ID + ')';
 
   private @Spy SourceContentMapper contentMapper = Mappers.getMapper(SourceContentMapper.class);
   private @Spy DataMapper dataMapper = Mappers.getMapper(DataMapper.class);
@@ -101,7 +102,33 @@ class LinksSuggestionsServiceDelegateTest {
 
   @Test
   void suggestLinksForMarcRecords_shouldRetrieveAuthoritiesFromTable() {
-    var records = List.of(getRecord("100"));
+    var records = List.of(getRecord("100", Map.of("0", NATURAL_ID)));
+    var rules = List.of(getRule("100"));
+    var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
+    var fetchRequest = getBatchFetchRequestForAuthority(AUTHORITY_ID);
+
+    when(linkingRulesService.getLinkingRules()).thenReturn(rules);
+    when(linkingRulesService.getMinAuthorityField()).thenReturn(MIN_AUTHORITY_FIELD);
+    when(linkingRulesService.getMaxAuthorityField()).thenReturn(MAX_AUTHORITY_FIELD);
+
+    when(dataRepository.findByNaturalIds(Set.of(NATURAL_ID))).thenReturn(authorityData);
+    when(sourceStorageClient
+      .buildBatchFetchRequestForAuthority(Set.of(AUTHORITY_ID), MIN_AUTHORITY_FIELD, MAX_AUTHORITY_FIELD))
+      .thenReturn(fetchRequest);
+    when(sourceStorageClient.fetchParsedRecordsInBatch(fetchRequest)).thenReturn(
+      new StrippedParsedRecordCollection(emptyList(), 1));
+
+    var parsedContentCollection = new ParsedRecordContentCollection().records(records);
+    serviceDelegate.suggestLinksForMarcRecords(parsedContentCollection);
+
+    verify(dataRepository).findByNaturalIds(Set.of(NATURAL_ID));
+    verify(searchClient, times(0)).searchAuthorities(anyString(), anyBoolean());
+    verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
+  }
+
+  @Test
+  void suggestLinksForMarcRecords_shouldExtractNaturalIdFrom0Subfield() {
+    var records = List.of(getRecord("100", Map.of("0", BASE_URL + NATURAL_ID)));
     var rules = List.of(getRule("100"));
     var authorityData = List.of(new AuthorityData(AUTHORITY_ID, NATURAL_ID, false));
     var fetchRequest = getBatchFetchRequestForAuthority(AUTHORITY_ID);
@@ -157,8 +184,12 @@ class LinksSuggestionsServiceDelegateTest {
   }
 
   private ParsedRecordContent getRecord(String bibField) {
+    return getRecord(bibField, Map.of("a", "test"));
+  }
+
+  private ParsedRecordContent getRecord(String bibField, Map<String, String> subfields) {
     var field = new FieldContent();
-    field.setSubfields(List.of(Map.of("a", "test")));
+    field.setSubfields(List.of(subfields));
     field.setLinkDetails(new LinkDetails().naturalId(NATURAL_ID));
 
     var fields = Map.of(bibField, field);

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -95,17 +96,23 @@ public class LinksSuggestionsServiceDelegate {
     return contentCollection.stream()
       .flatMap(bibRecord -> bibRecord.getFields().entrySet().stream())
       .filter(field -> isAutoLinkingEnabled(rules.get(field.getKey())))
-      .map(field -> extractNaturalIdFrom0Subfield(field.getValue().getSubfields()))
+      .map(field -> extractNaturalIdFrom0Subfield(field.getValue()))
+      .filter(Objects::nonNull)
       .collect(Collectors.toSet());
   }
 
-  private String extractNaturalIdFrom0Subfield(Map<String, String> subfields) {
-    var value0 = subfields.get("0");
-    return value0.substring(value0.lastIndexOf('/'), value0.length() - 1);
-  }
-
-  private boolean isNaturalIdPresent(FieldParsedContent fieldContent) {
-    return nonNull(fieldContent.getLinkDetails()) && nonNull(fieldContent.getLinkDetails().getNaturalId());
+  private String extractNaturalIdFrom0Subfield(FieldParsedContent fieldContent) {
+    var value0 = fieldContent.getSubfields().get("0");
+    if (nonNull(value0)) {
+      var slashIndex = value0.lastIndexOf('/');
+      if (slashIndex != -1) {
+        return value0.substring(slashIndex + 1);
+      }
+      return value0;
+    } else if (nonNull(fieldContent.getLinkDetails())) {
+      return fieldContent.getLinkDetails().getNaturalId();
+    }
+    return null;
   }
 
   private boolean isAutoLinkingEnabled(List<InstanceAuthorityLinkingRule> rules) {

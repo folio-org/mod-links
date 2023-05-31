@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -31,13 +33,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LinksSuggestionsServiceTest {
 
+  private static final UUID AUTHORITY_ID = UUID.randomUUID();
+  private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
   private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
   private static final String NATURAL_ID = "e12345";
-  private static final String BASE_URL = "baseUrl";
+  private static final String BASE_URL = "https://base/url/";
   private static final String SOURCE_FILE_NAME = "sourceFileName";
-  private static final UUID AUTHORITY_ID = UUID.randomUUID();
-  private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
 
   private @Mock AuthoritySourceFilesService sourceFilesService;
   private @InjectMocks LinksSuggestionService linksSuggestionService;
@@ -49,7 +51,7 @@ class LinksSuggestionsServiceTest {
     var authority = getAuthorityParsedRecordContent("100");
     var sourceFile = new AuthoritySourceFile(SOURCE_FILE_ID, BASE_URL, SOURCE_FILE_NAME, codes("e1"));
 
-    when(sourceFilesService.fetchAuthoritySourceFile(NATURAL_ID)).thenReturn(sourceFile);
+    when(sourceFilesService.findAuthoritySourceFileByNaturalId(anyMap(), eq(NATURAL_ID))).thenReturn(sourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
@@ -64,7 +66,7 @@ class LinksSuggestionsServiceTest {
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    assertEquals(BASE_URL + '/' + NATURAL_ID, bibSubfields.get("0"));
+    assertEquals(BASE_URL + NATURAL_ID, bibSubfields.get("0"));
     assertFalse(bibSubfields.containsKey("a"));
     assertTrue(bibSubfields.containsKey("b"));
   }
@@ -76,7 +78,7 @@ class LinksSuggestionsServiceTest {
     var authority = getAuthorityParsedRecordContent("100");
     var sourceFile = new AuthoritySourceFile(SOURCE_FILE_ID, BASE_URL, SOURCE_FILE_NAME, codes("e1"));
 
-    when(sourceFilesService.fetchAuthoritySourceFile(NATURAL_ID)).thenReturn(sourceFile);
+    when(sourceFilesService.findAuthoritySourceFileByNaturalId(anyMap(), eq(NATURAL_ID))).thenReturn(sourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
@@ -91,7 +93,7 @@ class LinksSuggestionsServiceTest {
 
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9"));
-    assertEquals(BASE_URL + '/' + NATURAL_ID, bibSubfields.get("0"));
+    assertEquals(BASE_URL + NATURAL_ID, bibSubfields.get("0"));
     assertFalse(bibSubfields.containsKey("a"));
     assertTrue(bibSubfields.containsKey("b"));
   }

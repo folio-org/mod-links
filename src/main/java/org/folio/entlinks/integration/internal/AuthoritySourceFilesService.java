@@ -29,7 +29,7 @@ public class AuthoritySourceFilesService {
     log.info("Fetching authority source files");
     var authoritySourceFiles = fetchAuthoritySourceFiles();
     if (authoritySourceFiles.isEmpty()) {
-      throw new FolioIntegrationException("Authority source files are empty.");
+      throw new FolioIntegrationException("Authority source files are empty");
     }
 
     return authoritySourceFiles.stream()
