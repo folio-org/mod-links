@@ -1,10 +1,11 @@
 package org.folio.entlinks.service.links;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class LinksSuggestionService {
   public void fillLinkDetailsWithSuggestedAuthorities(List<SourceParsedContent> marcBibsContent,
                                                       List<AuthorityParsedContent> marcAuthoritiesContent,
                                                       Map<String, List<InstanceAuthorityLinkingRule>> rules) {
-    if (!isEmpty(marcAuthoritiesContent)) {
+    if (isNotEmpty(marcAuthoritiesContent)) {
       marcBibsContent.stream()
         .flatMap(bibContent -> bibContent.getFields().entrySet().stream())
         .forEach(bibField -> suggestAuthorityForBibField(
@@ -52,7 +53,7 @@ public class LinksSuggestionService {
                                            List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
-      if (rule.getAutoLinkingEnabled()) {
+      if (isTrue(rule.getAutoLinkingEnabled())) {
         var suitableAuthorities = marcAuthoritiesContent.stream()
           .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
           .toList();

@@ -22,7 +22,7 @@ import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 
 @IntegrationTest
-public class LinksSuggestionsIT extends IntegrationTestBase {
+class LinksSuggestionsIT extends IntegrationTestBase {
 
   private static final String BASE_URL = "id.loc.gov/authorities/names/";
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";

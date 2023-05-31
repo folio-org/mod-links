@@ -2,6 +2,7 @@ package org.folio.entlinks.controller.delegate;
 
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.CollectionUtils.removeAll;
 
 import java.util.Collections;
@@ -69,7 +70,7 @@ public class LinksSuggestionsServiceDelegate {
   }
 
   private StrippedParsedRecordCollection fetchAuthorityParsedRecords(List<AuthorityData> authorityData) {
-    if (nonNull(authorityData) && !authorityData.isEmpty()) {
+    if (isNotEmpty(authorityData)) {
       var ids = authorityData.stream().map(AuthorityData::getId).collect(Collectors.toSet());
       var authorityFetchRequest = sourceStorageClient.buildBatchFetchRequestForAuthority(ids,
         linkingRulesService.getMinAuthorityField(),
