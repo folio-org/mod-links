@@ -36,15 +36,15 @@
 
 ### Dependencies
 * Add `java` `17`
-* Add `folio-spring-base` `6.0.1`
+* Add `folio-spring-base` `7.0.0`
 * Add `folio-service-tools` `3.0.0`
-* Add `spring-boot` `3.0.2`
-* Add `spring-kafka` `3.0.2`
-* Add `hypersistence-utils` `3.2.0`
-* Add `mapstruct` `1.5.3.Final`
-* Add `lombok` `1.18.24`
-* Add `marc4j` `2.9.2`
+* Add `spring-boot` `3.0.6`
+* Add `spring-kafka` `3.0.6`
+* Add `hypersistence-utils` `3.3.2`
+* Add `mapstruct` `1.5.5.Final`
+* Add `lombok` `1.18.26`
+* Add `marc4j` `2.9.4`
 * Add `liquibase` `4.19.0`
-* Add `testcontainers` `1.17.6`
+* Add `testcontainers` `1.18.1`
 * Add `wiremock` `2.27.2`
 * Add `awaitility` `4.2.0`

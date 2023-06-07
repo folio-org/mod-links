@@ -4,6 +4,7 @@ import static io.vertx.core.Future.succeededFuture;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,8 +41,6 @@ class ExtendedTenantServiceTest {
   @Mock
   private KafkaAdminService kafkaAdminService;
   @Mock
-  private KafkaAdminClient kafkaAdminClient;
-  @Mock
   private PrepareSystemUserService prepareSystemUserService;
 
   @Test
@@ -60,12 +59,9 @@ class ExtendedTenantServiceTest {
 
   @Test
   void deleteTopicAfterTenantDeletion() {
-    ListTopicsResult topicsResult = new ListTopicsResult(new KafkaFutureImpl<>());
-    when(kafkaAdminClient.listTopics()).thenReturn(topicsResult);
-
+    when(context.getTenantId()).thenReturn(TENANT_ID);
     tenantService.afterTenantDeletion(tenantAttributes());
-
-    verify(kafkaAdminService).deleteTopics(anyCollection());
+    verify(kafkaAdminService).deleteTopics(anyString());
   }
 
   private TenantAttributes tenantAttributes() {
