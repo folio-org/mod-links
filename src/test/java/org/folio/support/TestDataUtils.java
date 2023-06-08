@@ -1,5 +1,7 @@
 package org.folio.support;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus.ACTUAL;
@@ -12,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,11 +28,17 @@ import org.folio.entlinks.domain.dto.AuthorityInventoryRecord;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
+import org.folio.entlinks.domain.dto.ExternalIdsHolder;
+import org.folio.entlinks.domain.dto.FieldContent;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
+import org.folio.entlinks.domain.dto.ParsedRecordContent;
+import org.folio.entlinks.domain.dto.StrippedParsedRecord;
+import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
+import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
@@ -222,17 +231,61 @@ public class TestDataUtils {
     return dto;
   }
 
+  //todo: now provides separate authority for each link. maybe should provide for each authorityId
+  // (then add field for each link with same authority)
+  public static StrippedParsedRecordCollection getAuthorityRecords(List<InstanceAuthorityLink> links) {
+    return getAuthorityRecords(links, true);
+  }
+
+  public static StrippedParsedRecordCollection getAuthorityRecords(List<InstanceAuthorityLink> links, Boolean valid) {
+    return new StrippedParsedRecordCollection()
+      .records(links.stream()
+        .map(link -> {
+          var subfields = new LinkedList<Map<String, String>>();
+          subfields.add(Map.of("a", "test"));
+          var validation = link.getLinkingRule().getSubfieldsExistenceValidations();
+          if (validation != null && valid.equals(validation.get("t"))) {
+            subfields.add(Map.of("t", "test"));
+          }
+
+          return new StrippedParsedRecord()
+            .externalIdsHolder(new ExternalIdsHolder()
+              .authorityId(link.getAuthorityData().getId()))
+            .parsedRecord(new StrippedParsedRecordParsedRecord()
+              .content(new ParsedRecordContent() //todo: subfields to field content?
+                .fields(singletonList(Map.of(link.getLinkingRule().getAuthorityField(),
+                  new FieldContent().subfields(subfields))))));
+        })
+        .toList());
+  }
+
   public record Link(UUID authorityId, String tag, String naturalId,
                      char[] subfields, int linkingRuleId,
                      InstanceAuthorityLinkStatus status, String errorCause) {
 
-    public static final UUID[] AUTH_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID(), randomUUID()};
+    public static final UUID[] AUTH_IDS = new UUID[] {UUID.fromString("845642cf-d4eb-4c2e-a067-db580c9a1abd"),
+      UUID.fromString("1b8867a1-2f1d-4f6a-8023-5abaf980c24c"),
+      UUID.fromString("1c8f571c-eff8-43fa-90a5-2dca70a35f2d"),
+      UUID.fromString("91c3d682-7a6b-4c6f-802b-b2793e591fa4")};
     public static final String[] TAGS = new String[] {"100", "240", "700", "710"};
+    public static final String[] AUTHORITY_TAGS = new String[] {"100", "110"};
+    public static final Map<String, Map<String, Boolean>> SUBFIELD_VALIDATIONS_BY_TAG = Map.of(
+      TAGS[0], Map.of("t", false),
+      TAGS[1], Map.of("t", true),
+      TAGS[2], emptyMap(),
+      TAGS[3], emptyMap()
+    );
     public static final Map<String, Integer> TAGS_TO_RULE_IDS = Map.of(
       TAGS[0], 1,
       TAGS[1], 5,
       TAGS[2], 15,
       TAGS[3], 16
+    );
+    public static final Map<String, String> TAGS_TO_AUTHORITY_TAGS = Map.of(
+      TAGS[0], AUTHORITY_TAGS[0],
+      TAGS[1], AUTHORITY_TAGS[0],
+      TAGS[2], AUTHORITY_TAGS[0],
+      TAGS[3], AUTHORITY_TAGS[1]
     );
     public static final Map<Integer, String> RULE_IDS_TO_TAGS = TAGS_TO_RULE_IDS.entrySet().stream()
       .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
@@ -285,6 +338,9 @@ public class TestDataUtils {
         .linkingRule(InstanceAuthorityLinkingRule.builder()
           .id(TAGS_TO_RULE_IDS.get(tag))
           .bibField(tag)
+          .authoritySubfields(new char[]{'a'})
+          .authorityField(TAGS_TO_AUTHORITY_TAGS.get(tag))
+          .subfieldsExistenceValidations(SUBFIELD_VALIDATIONS_BY_TAG.get(tag))
           .build())
         .status(status)
         .errorCause(errorCause)

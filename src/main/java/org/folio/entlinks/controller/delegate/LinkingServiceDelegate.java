@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +24,7 @@ import org.folio.entlinks.domain.dto.LinksCountDtoCollection;
 import org.folio.entlinks.domain.dto.UuidCollection;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.internal.InstanceStorageService;
+import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.tenant.domain.dto.Parameter;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +39,7 @@ public class LinkingServiceDelegate {
   private final InstanceStorageService instanceService;
   private final InstanceAuthorityLinkMapper mapper;
   private final DataStatsMapper statsMapper;
+  private final AuthorityDataService authorityDataService;
 
   public InstanceLinkDtoCollection getLinks(UUID instanceId) {
     var links = linkingService.getLinksByInstanceId(instanceId);
@@ -74,7 +77,7 @@ public class LinkingServiceDelegate {
     var ids = new HashSet<>(authorityIdCollection.getIds());
     var linkCountMap = fillInMissingIdsWithZeros(linkingService.countLinksByAuthorityIds(ids), ids);
 
-    return new LinksCountDtoCollection().links(mapper.convert(linkCountMap));
+    return new LinksCountDtoCollection(mapper.convert(linkCountMap));
   }
 
   private Map<UUID, Integer> fillInMissingIdsWithZeros(Map<UUID, Integer> linksCountMap, HashSet<UUID> ids) {
@@ -87,6 +90,7 @@ public class LinkingServiceDelegate {
 
   private void validateLinks(UUID instanceId, List<InstanceLinkDto> links) {
     validateInstanceId(instanceId, links);
+    validateAuthoritiesNotDeleted(links);
   }
 
   private void validateInstanceId(UUID instanceId, List<InstanceLinkDto> links) {
@@ -97,6 +101,20 @@ public class LinkingServiceDelegate {
       .toList();
     if (!invalidParams.isEmpty()) {
       throw new RequestBodyValidationException("Link should have instanceId = " + instanceId, invalidParams);
+    }
+  }
+
+  private void validateAuthoritiesNotDeleted(List<InstanceLinkDto> links) {
+    var authorityIds = links.stream()
+      .map(InstanceLinkDto::getAuthorityId)
+      .distinct()
+      .filter(Objects::nonNull)
+      .toList();
+    var invalidParams = authorityDataService.getByIdAndDeleted(authorityIds, true).stream()
+      .map(authorityData -> new Parameter().key("authorityId").value(authorityData.getId().toString()))
+      .toList();
+    if (!invalidParams.isEmpty()) {
+      throw new RequestBodyValidationException("Cannot save links to deleted authorities.", invalidParams);
     }
   }
 

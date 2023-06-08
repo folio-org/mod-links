@@ -77,6 +77,8 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
+    // clear LinksChangeEvent queue filled by link renovation
+    clearMessages(3);
 
     var event = TestDataUtils.authorityEvent(DELETE_TYPE, null,
       new AuthorityInventoryRecord().id(link1.authorityId()).naturalId("oldNaturalId"));
@@ -124,20 +126,17 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(authorityData.isDeleted()).as("State").isTrue();
   }
 
+  //todo: same as for other. mention in learning section
   @SneakyThrows
   @Test
   void shouldHandleUpdateEvent_positive_whenAuthorityLinkExistAndFieldChangedFromOneToAnother() {
     // prepare links
     var authorityId = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
-    var instanceId1 = UUID.randomUUID();
-    var instanceId2 = UUID.randomUUID();
-    var instanceId3 = UUID.randomUUID();
-    var link1 = new TestDataUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
-    var link2 = new TestDataUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
-    var link3 = new TestDataUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
+    var instanceId = UUID.randomUUID();
+    var link = new TestDataUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
+    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId, link)), instanceId);
+    // clear LinksChangeEvent queue filled by link renovation
+    clearMessages(1);
 
     // prepare and send inventory update authority event
     var event = TestDataUtils.authorityEvent(UPDATE_TYPE,
@@ -160,11 +159,10 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     var value = received.value();
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
-    assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
+    assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link.authorityId());
     assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
-        updateTarget(link1.tag(), instanceId1, instanceId3),
-        updateTarget(link2.tag(), instanceId2)
+        updateTarget(link.tag(), instanceId)
       ));
     assertions.then(value.getSubfieldsChanges()).as("Subfield changes").isEmpty();
     assertions.then(value.getJobId()).as("Job ID").isNotNull();
@@ -173,11 +171,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.assertAll();
 
     // check that links were deleted
-    doGet(linksInstanceEndpoint(), instanceId1)
-      .andExpect(jsonPath("$.links", hasSize(0)));
-    doGet(linksInstanceEndpoint(), instanceId2)
-      .andExpect(jsonPath("$.links", hasSize(0)));
-    doGet(linksInstanceEndpoint(), instanceId3)
+    doGet(linksInstanceEndpoint(), instanceId)
       .andExpect(jsonPath("$.links", hasSize(0)));
   }
 
@@ -193,6 +187,8 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
+    // clear LinksChangeEvent queue filled by link renovation
+    clearMessages(3);
 
     var event = TestDataUtils.authorityEvent(UPDATE_TYPE,
       new AuthorityInventoryRecord().id(link1.authorityId()).naturalId("newNaturalId")
@@ -240,20 +236,18 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
       .andExpect(jsonPath("$.links[0].authorityNaturalId", equalTo("newNaturalId")));
   }
 
+  //todo: note in Learning section why links removed (because 100 bib field could only be linked when
+  // $t absent and 240 otherwise)
   @SneakyThrows
   @Test
   void shouldHandleUpdateEvent_positive_whenAuthorityLinkExistAndHeadingChanged() {
     // prepare links
     var authorityId = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
-    var instanceId1 = UUID.randomUUID();
-    var instanceId2 = UUID.randomUUID();
-    var instanceId3 = UUID.randomUUID();
-    var link1 = new TestDataUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
-    var link2 = new TestDataUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
-    var link3 = new TestDataUtils.Link(authorityId, "100", "naturalId", new char[] {'a', 'b', 'c'});
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId1, link1)), instanceId1);
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId2, link2)), instanceId2);
-    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
+    var instanceId = UUID.randomUUID();
+    var link = new TestDataUtils.Link(authorityId, "240", "naturalId", new char[] {'a', 'b', 'c'});
+    doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId, link)), instanceId);
+    // clear LinksChangeEvent queue filled by link renovation
+    clearMessages(1);
 
     // prepare and send inventory update authority event
     var event = TestDataUtils.authorityEvent(UPDATE_TYPE,
@@ -277,11 +271,10 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     var value = received.value();
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
-    assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
+    assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link.authorityId());
     assertions.then(getChangeTargets(value)).as("Update targets")
       .isEqualTo(List.of(
-        updateTarget(link1.tag(), instanceId1, instanceId3),
-        updateTarget(link2.tag(), instanceId2)
+        updateTarget(link.tag(), instanceId)
       ));
     assertions.then(value.getSubfieldsChanges()).as("Subfield changes").containsExactlyInAnyOrder(
       new FieldChange().field("100").subfields(List.of(
@@ -395,6 +388,12 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
   @SneakyThrows
   private ConsumerRecord<String, LinksChangeEvent> getReceivedEvent() {
     return consumerRecords.poll(10, TimeUnit.SECONDS);
+  }
+
+  private void clearMessages(int count) {
+    for (int i = 0; i < count; i++) {
+      getReceivedEvent();
+    }
   }
 
   private ChangeTarget updateTarget(String tag, UUID... instanceIds) {

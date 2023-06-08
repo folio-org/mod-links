@@ -142,7 +142,7 @@ public class LinksSuggestionService {
     return true;
   }
 
-  private String getSubfield0Value(String naturalId) {
+  private String getSubfield0Value(String naturalId) { //todo: maybe use new from InstanceAuthorityLinkingService
     var subfield0Value = "";
     if (nonNull(naturalId)) {
       var files = sourceFilesService.fetchAuthoritySources();
