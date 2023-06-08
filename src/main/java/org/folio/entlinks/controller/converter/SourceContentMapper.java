@@ -40,7 +40,6 @@ public interface SourceContentMapper {
 
   default SourceParsedContent convertToParsedContent(ParsedRecordContent content) {
     var fields = convertFieldsToOneMap(content.getFields());
-
     return new SourceParsedContent(UUID.randomUUID(), content.getLeader(), fields);
   }
 
@@ -62,26 +61,26 @@ public interface SourceContentMapper {
   }
 
   private List<Map<String, FieldContent>> convertFieldsToListOfMaps(Map<String, FieldParsedContent> fields) {
-    return fields.entrySet().stream()
+    return fields.entrySet().parallelStream()
       .map(this::convertFieldParsedContent)
       .toList();
   }
 
   private Map<String, FieldParsedContent> convertFieldsToOneMap(List<Map<String, FieldContent>> fields) {
-    return fields.stream()
+    return fields.parallelStream()
       .flatMap(m -> m.entrySet().stream())
       .map(this::convertFieldContent)
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private List<Map<String, String>> convertSubfieldsToListOfMaps(Map<String, String> subfields) {
-    return subfields.entrySet().stream()
+    return subfields.entrySet().parallelStream()
       .map(m -> Map.of(m.getKey(), m.getValue()))
       .toList();
   }
 
   private Map<String, String> convertSubfieldsToOneMap(List<Map<String, String>> subfields) {
-    return subfields.stream()
+    return subfields.parallelStream()
       .flatMap(m -> m.entrySet().stream())
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
