@@ -111,7 +111,7 @@ public class LinksSuggestionsServiceDelegate {
       }
       return value0;
     } else if (nonNull(fieldContent.getLinkDetails())) {
-      return fieldContent.getLinkDetails().getNaturalId();
+      return fieldContent.getLinkDetails().getAuthorityNaturalId();
     }
     return null;
   }

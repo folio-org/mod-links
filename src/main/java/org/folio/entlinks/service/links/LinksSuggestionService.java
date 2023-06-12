@@ -81,19 +81,19 @@ public class LinksSuggestionService {
     var linkDetails = bibField.getLinkDetails();
 
     if (nonNull(linkDetails)) {
-      linkDetails.setLinksStatus(ACTUAL);
+      linkDetails.setStatus(ACTUAL);
     } else {
       linkDetails = new LinkDetails();
-      linkDetails.setLinksStatus(NEW);
+      linkDetails.setStatus(NEW);
     }
-    linkDetails.setRuleId(rule.getId());
+    linkDetails.setLinkingRuleId(rule.getId());
     linkDetails.setAuthorityId(authority.getId());
-    linkDetails.setNaturalId(authority.getNaturalId());
+    linkDetails.setAuthorityNaturalId(authority.getNaturalId());
     return linkDetails;
   }
 
   private LinkDetails getErrorDetails(String errorCode) {
-    return new LinkDetails().linksStatus(ERROR).errorStatusCode(errorCode);
+    return new LinkDetails().status(ERROR).errorCause(errorCode);
   }
 
   private void actualizeBibSubfields(FieldParsedContent bibField,
