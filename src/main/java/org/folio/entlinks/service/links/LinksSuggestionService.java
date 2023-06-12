@@ -114,7 +114,7 @@ public class LinksSuggestionService {
     bibSubfields.put("9", List.of(authority.getId().toString()));
 
     var modifications = rule.getSubfieldModifications();
-    if (nonNull(modifications)) {
+    if (isNotEmpty(modifications)) {
       modifications.forEach(modification -> {
         var modifiedSubfield = bibSubfields.remove(modification.getSource());
         bibSubfields.put(modification.getTarget(), modifiedSubfield);
