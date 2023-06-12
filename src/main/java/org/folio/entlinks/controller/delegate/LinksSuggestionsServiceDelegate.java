@@ -9,11 +9,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.client.SearchClient;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.controller.converter.DataMapper;
@@ -96,24 +96,38 @@ public class LinksSuggestionsServiceDelegate {
                                                         Map<String, List<InstanceAuthorityLinkingRule>> rules) {
     return contentCollection.stream()
       .flatMap(bibRecord -> bibRecord.getFields().entrySet().stream())
-      .filter(field -> isAutoLinkingEnabled(rules.get(field.getKey())))
-      .map(field -> extractNaturalIdFrom0Subfield(field.getValue()))
-      .filter(Objects::nonNull)
+      .filter(fields -> isAutoLinkingEnabled(rules.get(fields.getKey())))
+      .map(fields -> extractNaturalIds(fields.getValue()))
+      .filter(CollectionUtils::isNotEmpty)
+      .flatMap(Set::stream)
       .collect(Collectors.toSet());
   }
 
-  private String extractNaturalIdFrom0Subfield(FieldParsedContent fieldContent) {
-    var value0 = fieldContent.getSubfields().get("0");
-    if (nonNull(value0)) {
-      var slashIndex = value0.lastIndexOf('/');
-      if (slashIndex != -1) {
-        return value0.substring(slashIndex + 1);
-      }
-      return value0;
-    } else if (nonNull(fieldContent.getLinkDetails())) {
-      return fieldContent.getLinkDetails().getAuthorityNaturalId();
+  private Set<String> extractNaturalIds(List<FieldParsedContent> fields) {
+    return fields.stream()
+      .map(field -> {
+        var naturalIds = new HashSet<String>();
+        var zeroValues = field.getSubfields().get("0");
+        if (isNotEmpty(zeroValues)) {
+          naturalIds.addAll(zeroValues.stream()
+            .map(this::trimZeroValue)
+            .collect(Collectors.toSet()));
+        }
+        if (nonNull(field.getLinkDetails())) {
+          naturalIds.add(field.getLinkDetails().getAuthorityNaturalId());
+        }
+        return naturalIds;
+      })
+      .flatMap(Set::stream)
+      .collect(Collectors.toSet());
+  }
+
+  private String trimZeroValue(String zeroValue) {
+    var slashIndex = zeroValue.lastIndexOf('/');
+    if (slashIndex != -1) {
+      return zeroValue.substring(slashIndex + 1);
     }
-    return null;
+    return zeroValue;
   }
 
   private boolean isAutoLinkingEnabled(List<InstanceAuthorityLinkingRule> rules) {

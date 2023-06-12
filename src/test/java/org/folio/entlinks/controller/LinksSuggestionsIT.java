@@ -70,7 +70,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenSubfields = Map.of("0", "oneAuthority");
     var givenRecord = getRecord("110", null, givenSubfields);
 
-    var expectedLinkDetails = new LinkDetails().linksStatus(ERROR).errorStatusCode(NO_SUGGESTIONS_ERROR_CODE);
+    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(NO_SUGGESTIONS_ERROR_CODE);
     var expectedSubfields = Map.of("0", "oneAuthority");
     var expectedRecord = getRecord("110", expectedLinkDetails, expectedSubfields);
 
@@ -87,7 +87,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenSubfields = Map.of("0", "twoAuthority");
     var givenRecord = getRecord("100", null, givenSubfields);
 
-    var expectedLinkDetails = new LinkDetails().linksStatus(ERROR).errorStatusCode(MORE_THEN_ONE_SUGGESTION_ERROR_CODE);
+    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(MORE_THEN_ONE_SUGGESTION_ERROR_CODE);
     var expectedSubfields = Map.of("0", "twoAuthority");
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
@@ -109,9 +109,9 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   }
 
   private LinkDetails getLinkDetails(LinkStatus linkStatus, String naturalId) {
-    return new LinkDetails().ruleId(1)
+    return new LinkDetails().linkingRuleId(1)
       .authorityId(UUID.fromString(LINKABLE_AUTHORITY_ID))
-      .naturalId(naturalId)
-      .linksStatus(linkStatus);
+      .authorityNaturalId(naturalId)
+      .status(linkStatus);
   }
 }

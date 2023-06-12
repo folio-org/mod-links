@@ -42,14 +42,14 @@ public class LinksSuggestionService {
     if (isNotEmpty(marcAuthoritiesContent)) {
       marcBibsContent.stream()
         .flatMap(bibContent -> bibContent.getFields().entrySet().stream())
-        .forEach(bibField -> suggestAuthorityForBibField(
-          bibField.getValue(),
+        .forEach(bibFields -> suggestAuthorityForBibField(
+          bibFields.getValue(),
           marcAuthoritiesContent,
-          rules.get(bibField.getKey())));
+          rules.get(bibFields.getKey())));
     }
   }
 
-  private void suggestAuthorityForBibField(FieldParsedContent bibField,
+  private void suggestAuthorityForBibField(List<FieldParsedContent> bibFields,
                                            List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
@@ -58,19 +58,20 @@ public class LinksSuggestionService {
           .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
           .toList();
 
-        if (suitableAuthorities.isEmpty()) {
-          var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
-          bibField.setLinkDetails(errorDetails);
-        } else if (suitableAuthorities.size() > 1) {
-          var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
-          bibField.setLinkDetails(errorDetails);
-        } else {
-          var authority = suitableAuthorities.get(0);
-          var linkDetails = getLinkDetails(bibField, authority, rule);
-          actualizeBibSubfields(bibField, authority, rule);
-          bibField.setLinkDetails(linkDetails);
-          break;
-        }
+        bibFields.forEach(bibField -> {
+          if (suitableAuthorities.isEmpty()) {
+            var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
+            bibField.setLinkDetails(errorDetails);
+          } else if (suitableAuthorities.size() > 1) {
+            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+            bibField.setLinkDetails(errorDetails);
+          } else {
+            var authority = suitableAuthorities.get(0);
+            var linkDetails = getLinkDetails(bibField, authority, rule);
+            actualizeBibSubfields(bibField, authority, rule);
+            bibField.setLinkDetails(linkDetails);
+          }
+        });
       }
     }
   }
@@ -101,12 +102,12 @@ public class LinksSuggestionService {
                                      InstanceAuthorityLinkingRule rule) {
     var bibSubfields = bibField.getSubfields();
     var authoritySubfields = authority.getFields()
-      .get(rule.getAuthorityField())
+      .get(rule.getAuthorityField()).get(0)
       .getSubfields();
 
     bibSubfields.putAll(authoritySubfields);
-    bibSubfields.put("0", getSubfield0Value(authority.getNaturalId()));
-    bibSubfields.put("9", authority.getId().toString());
+    bibSubfields.put("0", List.of(getSubfield0Value(authority.getNaturalId())));
+    bibSubfields.put("9", List.of(authority.getId().toString()));
 
     var modifications = rule.getSubfieldModifications();
     if (nonNull(modifications)) {
@@ -118,9 +119,10 @@ public class LinksSuggestionService {
   }
 
   private boolean validateAuthorityFields(AuthorityParsedContent authorityContent, InstanceAuthorityLinkingRule rule) {
-    var authorityField = authorityContent.getFields().get(rule.getAuthorityField());
+    var authorityFields = authorityContent.getFields().get(rule.getAuthorityField());
 
-    if (nonNull(authorityField)) {
+    if (nonNull(authorityFields) && authorityFields.size() == 1) {
+      var authorityField = authorityFields.get(0);
       return validateAuthoritySubfields(authorityField, rule);
     }
     return false;
