@@ -2,7 +2,7 @@ package org.folio.entlinks.service.links;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class LinksSuggestionService {
   private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
   private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
+  private static final String DISABLED_AUTO_LINKING_ERROR_CODE = "103";
   private final AuthoritySourceFilesService sourceFilesService;
 
   /**
@@ -53,25 +54,28 @@ public class LinksSuggestionService {
                                            List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
-      if (isTrue(rule.getAutoLinkingEnabled())) {
+      if (isFalse(rule.getAutoLinkingEnabled())) {
+        var errorDetails = getErrorDetails(DISABLED_AUTO_LINKING_ERROR_CODE);
+        bibFields.forEach(bibField -> bibField.setLinkDetails(errorDetails));
+      } else {
         var suitableAuthorities = marcAuthoritiesContent.stream()
           .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
           .toList();
 
-        bibFields.forEach(bibField -> {
-          if (suitableAuthorities.isEmpty()) {
-            var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
-            bibField.setLinkDetails(errorDetails);
-          } else if (suitableAuthorities.size() > 1) {
-            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
-            bibField.setLinkDetails(errorDetails);
-          } else {
-            var authority = suitableAuthorities.get(0);
+        if (suitableAuthorities.isEmpty()) {
+          var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
+          bibFields.forEach(bibField -> bibField.setLinkDetails(errorDetails));
+        } else if (suitableAuthorities.size() > 1) {
+          var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+          bibFields.forEach(bibField -> bibField.setLinkDetails(errorDetails));
+        } else {
+          var authority = suitableAuthorities.get(0);
+          bibFields.forEach(bibField -> {
             var linkDetails = getLinkDetails(bibField, authority, rule);
             actualizeBibSubfields(bibField, authority, rule);
             bibField.setLinkDetails(linkDetails);
-          }
-        });
+          });
+        }
       }
     }
   }
