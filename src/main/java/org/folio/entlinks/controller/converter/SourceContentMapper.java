@@ -64,21 +64,21 @@ public interface SourceContentMapper {
   }
 
   private List<Map<String, FieldContent>> convertFieldsToListOfMaps(Map<String, List<FieldParsedContent>> fields) {
-    return fields.entrySet().parallelStream()
+    return fields.entrySet().stream()
       .map(this::convertParsedContent)
       .flatMap(List::stream)
       .toList();
   }
 
   private Map<String, List<FieldParsedContent>> convertFieldsToOneMap(List<Map<String, FieldContent>> fields) {
-    return fields.parallelStream()
+    return fields.stream()
       .flatMap(map -> map.entrySet().stream())
       .map(this::convertFieldContent)
       .collect(groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, Collectors.toList())));
   }
 
   private List<Map<String, String>> convertSubfieldsToListOfMaps(Map<String, List<String>> subfields) {
-    return subfields.entrySet().parallelStream()
+    return subfields.entrySet().stream()
       .map(subfieldsByTag -> subfieldsByTag.getValue().stream()
         .map(subfieldValue -> Map.of(subfieldsByTag.getKey(), subfieldValue))
         .toList())
@@ -87,7 +87,7 @@ public interface SourceContentMapper {
   }
 
   private Map<String, List<String>> convertSubfieldsToOneMap(List<Map<String, String>> subfields) {
-    return subfields.parallelStream()
+    return subfields.stream()
       .flatMap(map -> map.entrySet().stream())
       .collect(groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, Collectors.toList())));
   }
