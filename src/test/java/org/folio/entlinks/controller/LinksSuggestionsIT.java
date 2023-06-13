@@ -3,6 +3,8 @@ package org.folio.entlinks.controller;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.MORE_THEN_ONE_SUGGESTIONS;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.NO_SUGGESTIONS;
 import static org.folio.support.JsonTestUtils.asJson;
 import static org.folio.support.base.TestConstants.linksSuggestionsEndpoint;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -26,8 +28,6 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   private static final String BASE_URL = "id.loc.gov/authorities/names/";
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
-  private static final String MORE_THEN_ONE_SUGGESTION_ERROR_CODE = "102";
-  private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
 
   @Test
   @SneakyThrows
@@ -70,7 +70,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenSubfields = Map.of("0", "oneAuthority");
     var givenRecord = getRecord("110", null, givenSubfields);
 
-    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(NO_SUGGESTIONS_ERROR_CODE);
+    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(NO_SUGGESTIONS.getErrorCode());
     var expectedSubfields = Map.of("0", "oneAuthority");
     var expectedRecord = getRecord("110", expectedLinkDetails, expectedSubfields);
 
@@ -87,7 +87,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenSubfields = Map.of("0", "twoAuthority");
     var givenRecord = getRecord("100", null, givenSubfields);
 
-    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(MORE_THEN_ONE_SUGGESTION_ERROR_CODE);
+    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(MORE_THEN_ONE_SUGGESTIONS.getErrorCode());
     var expectedSubfields = Map.of("0", "twoAuthority");
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 

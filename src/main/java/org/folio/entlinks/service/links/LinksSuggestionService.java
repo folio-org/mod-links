@@ -1,11 +1,13 @@
 package org.folio.entlinks.service.links;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.MORE_THEN_ONE_SUGGESTIONS;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.NO_SUGGESTIONS;
 import static org.folio.entlinks.utils.FieldUtils.getSubfield0Value;
 
 import java.util.List;
@@ -18,14 +20,15 @@ import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
+import org.folio.entlinks.service.links.model.LinksSuggestionErrorCode;
+import org.folio.entlinks.utils.FieldUtils;
 import org.springframework.stereotype.Service;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class LinksSuggestionService {
-  private static final String NO_SUGGESTIONS_ERROR_CODE = "101";
-  private static final String MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE = "102";
+
   private final AuthoritySourceFilesService sourceFilesService;
 
   /**
@@ -55,17 +58,14 @@ public class LinksSuggestionService {
     for (var rule : rules) {
       if (isTrue(rule.getAutoLinkingEnabled())) {
         for (var bibField : bibFields) {
-          var suitableAuthorities = marcAuthoritiesContent.stream()
-            .filter(authorityContent -> validateZeroSubfields(authorityContent.getNaturalId(), bibField))
-            .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
-            .toList();
+          var suitableAuthorities = filterSuitableAuthorities(bibField, marcAuthoritiesContent, rule);
 
           if (suitableAuthorities.isEmpty()) {
-            var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
+            var errorDetails = getErrorDetails(NO_SUGGESTIONS);
             bibField.setLinkDetails(errorDetails);
             log.info("Field {}: No authorities to suggest", rule.getBibField());
           } else if (suitableAuthorities.size() > 1) {
-            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS);
             bibField.setLinkDetails(errorDetails);
             log.info("Field {}: More then one authority to suggest", rule.getBibField());
           } else {
@@ -81,14 +81,21 @@ public class LinksSuggestionService {
     }
   }
 
+  private List<AuthorityParsedContent> filterSuitableAuthorities(FieldParsedContent bibField,
+                                                                 List<AuthorityParsedContent> marcAuthoritiesContent,
+                                                                 InstanceAuthorityLinkingRule rule) {
+    return marcAuthoritiesContent.stream()
+      .filter(authorityContent -> validateZeroSubfields(authorityContent.getNaturalId(), bibField))
+      .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
+      .toList();
+  }
+
+
   private LinkDetails getLinkDetails(FieldParsedContent bibField,
                                      AuthorityParsedContent authority,
                                      InstanceAuthorityLinkingRule rule) {
     var linkDetails = bibField.getLinkDetails();
-
-    if (nonNull(linkDetails) && linkDetails.getStatus() == ACTUAL) {
-      linkDetails.setStatus(ACTUAL);
-    } else {
+    if (isNull(linkDetails)) {
       linkDetails = new LinkDetails();
       linkDetails.setStatus(NEW);
     }
@@ -98,8 +105,8 @@ public class LinksSuggestionService {
     return linkDetails;
   }
 
-  private LinkDetails getErrorDetails(String errorCode) {
-    return new LinkDetails().status(ERROR).errorCause(errorCode);
+  private LinkDetails getErrorDetails(LinksSuggestionErrorCode errorCode) {
+    return new LinkDetails().status(ERROR).errorCause(errorCode.getErrorCode());
   }
 
   private void actualizeBibSubfields(FieldParsedContent bibField,
@@ -129,7 +136,9 @@ public class LinksSuggestionService {
   }
 
   private boolean validateZeroSubfields(String naturalId, FieldParsedContent bibField) {
-    return bibField.getSubfields().get("0").contains(naturalId);
+    return bibField.getSubfields().get("0").stream()
+      .map(FieldUtils::trimZeroValue)
+      .anyMatch(zeroValue -> zeroValue.equals(naturalId));
   }
 
   private boolean validateAuthorityFields(AuthorityParsedContent authorityContent, InstanceAuthorityLinkingRule rule) {
