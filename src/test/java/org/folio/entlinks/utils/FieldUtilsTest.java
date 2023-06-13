@@ -49,10 +49,10 @@ public class FieldUtilsTest {
   @Test
   void shouldFindSourceFileByNaturalIdAndReturnSubfield0() {
     var sourceFileN = getSourceFile("n");
-    var sourceFileNE = getSourceFile("ne");
+    var sourceFileE = getSourceFile("e");
     var sourceFiles = Map.of(
       sourceFileN.id(), sourceFileN,
-      sourceFileNE.id(), sourceFileNE
+      sourceFileE.id(), sourceFileE
     );
 
     var actual = getSubfield0Value(sourceFiles, NATURAL_ID);
