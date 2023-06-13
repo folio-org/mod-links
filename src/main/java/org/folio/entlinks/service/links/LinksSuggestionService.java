@@ -6,12 +6,12 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
+import static org.folio.entlinks.utils.FieldUtils.getSubfield0Value;
 
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
@@ -54,24 +54,28 @@ public class LinksSuggestionService {
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
       if (isTrue(rule.getAutoLinkingEnabled())) {
-        var suitableAuthorities = marcAuthoritiesContent.stream()
-          .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
-          .toList();
+        for (var bibField : bibFields) {
+          var suitableAuthorities = marcAuthoritiesContent.stream()
+            .filter(authorityContent -> validateZeroSubfields(authorityContent.getNaturalId(), bibField))
+            .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
+            .toList();
 
-        if (suitableAuthorities.isEmpty()) {
-          var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
-          bibFields.forEach(bibField -> bibField.setLinkDetails(errorDetails));
-        } else if (suitableAuthorities.size() > 1) {
-          var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
-          bibFields.forEach(bibField -> bibField.setLinkDetails(errorDetails));
-        } else {
-          var authority = suitableAuthorities.get(0);
-          bibFields.forEach(bibField -> {
+          if (suitableAuthorities.isEmpty()) {
+            var errorDetails = getErrorDetails(NO_SUGGESTIONS_ERROR_CODE);
+            bibField.setLinkDetails(errorDetails);
+            log.info("Field {}: No authorities to suggest", rule.getBibField());
+          } else if (suitableAuthorities.size() > 1) {
+            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS_ERROR_CODE);
+            bibField.setLinkDetails(errorDetails);
+            log.info("Field {}: More then one authority to suggest", rule.getBibField());
+          } else {
+            var authority = suitableAuthorities.get(0);
             var linkDetails = getLinkDetails(bibField, authority, rule);
             actualizeBibSubfields(bibField, authority, rule);
             bibField.setLinkDetails(linkDetails);
-          });
-          break;
+            log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
+            break;
+          }
         }
       }
     }
@@ -106,10 +110,15 @@ public class LinksSuggestionService {
       .get(rule.getAuthorityField()).get(0)
       .getSubfields();
 
+    var zeroValue = getSubfield0Value(sourceFilesService.fetchAuthoritySources(), authority.getNaturalId());
     bibSubfields.putAll(authoritySubfields);
-    bibSubfields.put("0", List.of(getSubfield0Value(authority.getNaturalId())));
+    bibSubfields.put("0", List.of(zeroValue));
     bibSubfields.put("9", List.of(authority.getId().toString()));
 
+    modifySubfields(bibSubfields, rule);
+  }
+
+  private void modifySubfields(Map<String, List<String>> bibSubfields, InstanceAuthorityLinkingRule rule) {
     var modifications = rule.getSubfieldModifications();
     if (isNotEmpty(modifications)) {
       modifications.forEach(modification -> {
@@ -117,6 +126,10 @@ public class LinksSuggestionService {
         bibSubfields.put(modification.getTarget(), modifiedSubfield);
       });
     }
+  }
+
+  private boolean validateZeroSubfields(String naturalId, FieldParsedContent bibField) {
+    return bibField.getSubfields().get("0").contains(naturalId);
   }
 
   private boolean validateAuthorityFields(AuthorityParsedContent authorityContent, InstanceAuthorityLinkingRule rule) {
@@ -143,17 +156,5 @@ public class LinksSuggestionService {
       }
     }
     return true;
-  }
-
-  private String getSubfield0Value(String naturalId) {
-    var subfield0Value = "";
-    if (nonNull(naturalId)) {
-      var files = sourceFilesService.fetchAuthoritySources();
-      var sourceFile = sourceFilesService.findAuthoritySourceFileByNaturalId(files, naturalId);
-      if (sourceFile != null) {
-        subfield0Value = StringUtils.appendIfMissing(sourceFile.baseUrl(), "/");
-      }
-    }
-    return subfield0Value + naturalId;
   }
 }

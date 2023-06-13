@@ -27,6 +27,7 @@ import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.LinksSuggestionService;
+import org.folio.entlinks.utils.FieldUtils;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -43,13 +44,16 @@ public class LinksSuggestionsServiceDelegate {
   private final DataMapper dataMapper;
 
   public ParsedRecordContentCollection suggestLinksForMarcRecords(ParsedRecordContentCollection contentCollection) {
+    log.info("Links suggestion started for {} bibs", contentCollection.getRecords().size());
     var rules = rulesToBibFieldMap(linkingRulesService.getLinkingRules());
     var marcBibsContent = contentMapper.convertToParsedContent(contentCollection);
     var naturalIds = extractNaturalIdsOfLinkableFields(marcBibsContent, rules);
+    log.info("{} natural ids was extracted", naturalIds.size());
 
     var authorities = findAuthoritiesByNaturalIds(naturalIds);
     var marcAuthorities = fetchAuthorityParsedRecords(authorities);
     var marcAuthoritiesContent = contentMapper.convertToAuthorityParsedContent(marcAuthorities, authorities);
+    log.info("{} marc authorities to suggest found", marcAuthorities.getTotalRecords());
 
     suggestionService.fillLinkDetailsWithSuggestedAuthorities(marcBibsContent, marcAuthoritiesContent, rules);
 
@@ -58,13 +62,17 @@ public class LinksSuggestionsServiceDelegate {
 
   private List<AuthorityData> findAuthoritiesByNaturalIds(Set<String> naturalIds) {
     var authorityData = dataRepository.findByNaturalIds(naturalIds);
+    log.info("{} authority data found by natural ids", authorityData.size());
     if (authorityData.size() != naturalIds.size()) {
       var existNaturalIds = authorityData.stream()
         .map(AuthorityData::getNaturalId)
         .collect(Collectors.toSet());
 
       var naturalIdsToSearch = new HashSet<>(removeAll(naturalIds, existNaturalIds));
-      authorityData.addAll(searchAndSaveAuthorities(naturalIdsToSearch));
+      var authoritiesFromSearch = searchAndSaveAuthorities(naturalIdsToSearch);
+      log.info("{} authority data was saved", authoritiesFromSearch.size());
+
+      authorityData.addAll(authoritiesFromSearch);
     }
     return authorityData;
   }
@@ -110,7 +118,7 @@ public class LinksSuggestionsServiceDelegate {
         var zeroValues = field.getSubfields().get("0");
         if (isNotEmpty(zeroValues)) {
           naturalIds.addAll(zeroValues.stream()
-            .map(this::trimZeroValue)
+            .map(FieldUtils::trimZeroValue)
             .collect(Collectors.toSet()));
         }
         if (nonNull(field.getLinkDetails())) {
@@ -120,14 +128,6 @@ public class LinksSuggestionsServiceDelegate {
       })
       .flatMap(Set::stream)
       .collect(Collectors.toSet());
-  }
-
-  private String trimZeroValue(String zeroValue) {
-    var slashIndex = zeroValue.lastIndexOf('/');
-    if (slashIndex != -1) {
-      return zeroValue.substring(slashIndex + 1);
-    }
-    return zeroValue;
   }
 
   private boolean isAutoLinkingEnabled(List<InstanceAuthorityLinkingRule> rules) {
