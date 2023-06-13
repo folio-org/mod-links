@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.links;
 
 import static java.util.Collections.emptyMap;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.DISABLED_AUTO_LINKING;
 import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.MORE_THEN_ONE_SUGGESTIONS;
 import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.NO_SUGGESTIONS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -142,6 +143,22 @@ class LinksSuggestionsServiceTest {
     assertEquals(NO_SUGGESTIONS.getErrorCode(), linkDetails.getErrorCause());
   }
 
+  @Test
+  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withErrorDisabledAutoLinkingFeature() {
+    var rules = getMapRule("600", "100");
+    disableAutoLinkingFeature(rules.get("600"));
+
+    var bib = getBibParsedRecordContent("600", null);
+    var authority = getAuthorityParsedRecordContent("110");
+
+    linksSuggestionService
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules);
+
+    var linkDetails = bib.getFields().get("600").get(0).getLinkDetails();
+    assertEquals(LinkStatus.ERROR, linkDetails.getStatus());
+    assertEquals(DISABLED_AUTO_LINKING.getErrorCode(), linkDetails.getErrorCause());
+  }
+
   private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField) {
     return getAuthorityParsedRecordContent(authorityField, Map.of("a", List.of("test")));
   }
@@ -182,6 +199,10 @@ class LinksSuggestionsServiceTest {
     rule.setSubfieldsExistenceValidations(existence);
 
     return Map.of(bibField, List.of(rule));
+  }
+
+  private void disableAutoLinkingFeature(List<InstanceAuthorityLinkingRule> rules) {
+    rules.forEach(rule -> rule.setAutoLinkingEnabled(false));
   }
 
   private List<String> codes(String... codes) {

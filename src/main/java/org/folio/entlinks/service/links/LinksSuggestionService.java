@@ -3,9 +3,11 @@ package org.folio.entlinks.service.links;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.collections4.MapUtils.isNotEmpty;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
+import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.DISABLED_AUTO_LINKING;
 import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.MORE_THEN_ONE_SUGGESTIONS;
 import static org.folio.entlinks.service.links.model.LinksSuggestionErrorCode.NO_SUGGESTIONS;
 import static org.folio.entlinks.utils.FieldUtils.getSubfield0Value;
@@ -56,26 +58,30 @@ public class LinksSuggestionService {
                                            List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     for (var rule : rules) {
-      if (isTrue(rule.getAutoLinkingEnabled())) {
-        for (var bibField : bibFields) {
-          var suitableAuthorities = filterSuitableAuthorities(bibField, marcAuthoritiesContent, rule);
+      for (var bibField : bibFields) {
+        if (isFalse(rule.getAutoLinkingEnabled())) {
+          var errorDetails = getErrorDetails(DISABLED_AUTO_LINKING);
+          bibField.setLinkDetails(errorDetails);
+          log.info("Field {}: auto linking feature is disabled", rule.getBibField());
+          break;
+        }
 
-          if (suitableAuthorities.isEmpty()) {
-            var errorDetails = getErrorDetails(NO_SUGGESTIONS);
-            bibField.setLinkDetails(errorDetails);
-            log.info("Field {}: No authorities to suggest", rule.getBibField());
-          } else if (suitableAuthorities.size() > 1) {
-            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS);
-            bibField.setLinkDetails(errorDetails);
-            log.info("Field {}: More then one authority to suggest", rule.getBibField());
-          } else {
-            var authority = suitableAuthorities.get(0);
-            var linkDetails = getLinkDetails(bibField, authority, rule);
-            actualizeBibSubfields(bibField, authority, rule);
-            bibField.setLinkDetails(linkDetails);
-            log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
-            break;
-          }
+        var suitableAuthorities = filterSuitableAuthorities(bibField, marcAuthoritiesContent, rule);
+        if (suitableAuthorities.isEmpty()) {
+          var errorDetails = getErrorDetails(NO_SUGGESTIONS);
+          bibField.setLinkDetails(errorDetails);
+          log.info("Field {}: No authorities to suggest", rule.getBibField());
+        } else if (suitableAuthorities.size() > 1) {
+          var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS);
+          bibField.setLinkDetails(errorDetails);
+          log.info("Field {}: More then one authority to suggest", rule.getBibField());
+        } else {
+          var authority = suitableAuthorities.get(0);
+          var linkDetails = getLinkDetails(bibField, authority, rule);
+          actualizeBibSubfields(bibField, authority, rule);
+          bibField.setLinkDetails(linkDetails);
+          log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
+          break;
         }
       }
     }
@@ -137,7 +143,7 @@ public class LinksSuggestionService {
 
   private boolean validateZeroSubfields(String naturalId, FieldParsedContent bibField) {
     return bibField.getSubfields().get("0").stream()
-      .map(FieldUtils::trimZeroValue)
+      .map(FieldUtils::trimSubfield0Value)
       .anyMatch(zeroValue -> zeroValue.equals(naturalId));
   }
 
@@ -154,7 +160,7 @@ public class LinksSuggestionService {
   private boolean validateAuthoritySubfields(FieldParsedContent authorityField,
                                              InstanceAuthorityLinkingRule rule) {
     var existValidation = rule.getSubfieldsExistenceValidations();
-    if (!existValidation.isEmpty()) {
+    if (isNotEmpty(existValidation)) {
       var authoritySubfields = authorityField.getSubfields();
 
       for (var subfieldExistence : existValidation.entrySet()) {

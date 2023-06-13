@@ -118,7 +118,7 @@ public class LinksSuggestionsServiceDelegate {
         var zeroValues = field.getSubfields().get("0");
         if (isNotEmpty(zeroValues)) {
           naturalIds.addAll(zeroValues.stream()
-            .map(FieldUtils::trimZeroValue)
+            .map(FieldUtils::trimSubfield0Value)
             .collect(Collectors.toSet()));
         }
         if (nonNull(field.getLinkDetails())) {
