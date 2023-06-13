@@ -148,7 +148,8 @@ class LinksSuggestionsServiceTest {
     return getAuthorityParsedRecordContent(authorityField, Map.of("a", List.of("test")));
   }
 
-  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField, Map<String, List<String>> subfields) {
+  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField,
+                                                                 Map<String, List<String>> subfields) {
     var field = new FieldParsedContent("//", "//", subfields, null);
     var fields = Map.of(authorityField, List.of(field));
     return new AuthorityParsedContent(AUTHORITY_ID, NATURAL_ID, "", fields);

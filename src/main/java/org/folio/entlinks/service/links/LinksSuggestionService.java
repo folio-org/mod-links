@@ -75,6 +75,7 @@ public class LinksSuggestionService {
             actualizeBibSubfields(bibField, authority, rule);
             bibField.setLinkDetails(linkDetails);
           });
+          break;
         }
       }
     }
@@ -85,7 +86,7 @@ public class LinksSuggestionService {
                                      InstanceAuthorityLinkingRule rule) {
     var linkDetails = bibField.getLinkDetails();
 
-    if (nonNull(linkDetails)) {
+    if (nonNull(linkDetails) && linkDetails.getStatus() == ACTUAL) {
       linkDetails.setStatus(ACTUAL);
     } else {
       linkDetails = new LinkDetails();
