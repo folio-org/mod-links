@@ -49,7 +49,7 @@ public interface SourceContentMapper {
   default List<AuthorityParsedContent> convertToAuthorityParsedContent(StrippedParsedRecordCollection recordCollection,
                                                                        List<AuthorityData> authorityData) {
     return recordCollection.getRecords().stream()
-      .map(r -> convertToAuthorityParsedContent(r, authorityData))
+      .map(parsedRecord -> convertToAuthorityParsedContent(parsedRecord, authorityData))
       .toList();
   }
 
