@@ -12,7 +12,7 @@ import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 
 @UnitTest
-public class FieldUtilsTest {
+class FieldUtilsTest {
 
   private static final String BASE_URL = "id.loc.gov/authorities/names/";
   private static final String NATURAL_ID = "n12345";

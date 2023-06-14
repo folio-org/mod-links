@@ -58,35 +58,44 @@ public class LinksSuggestionService {
                                            List<AuthorityParsedContent> marcAuthoritiesContent,
                                            List<InstanceAuthorityLinkingRule> rules) {
     if (isNotEmpty(rules) && isNotEmpty(bibFields)) {
-      for (var rule : rules) {
-        for (var bibField : bibFields) {
-          if (isFalse(rule.getAutoLinkingEnabled())) {
-            var errorDetails = getErrorDetails(DISABLED_AUTO_LINKING);
-            bibField.setLinkDetails(errorDetails);
-            log.info("Field {}: auto linking feature is disabled", rule.getBibField());
-            break;
-          }
-
-          var suitableAuthorities = filterSuitableAuthorities(bibField, marcAuthoritiesContent, rule);
-          if (suitableAuthorities.isEmpty()) {
-            var errorDetails = getErrorDetails(NO_SUGGESTIONS);
-            bibField.setLinkDetails(errorDetails);
-            log.info("Field {}: No authorities to suggest", rule.getBibField());
-          } else if (suitableAuthorities.size() > 1) {
-            var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS);
-            bibField.setLinkDetails(errorDetails);
-            log.info("Field {}: More then one authority to suggest", rule.getBibField());
-          } else {
-            var authority = suitableAuthorities.get(0);
-            var linkDetails = getLinkDetails(bibField, authority, rule);
-            actualizeBibSubfields(bibField, authority, rule);
-            bibField.setLinkDetails(linkDetails);
-            log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
-            break;
-          }
+      for (InstanceAuthorityLinkingRule rule : rules) {
+        if (suggestAuthorityForBibField(bibFields, marcAuthoritiesContent, rule)) {
+          break;
         }
       }
     }
+  }
+
+  private boolean suggestAuthorityForBibField(List<FieldParsedContent> bibFields,
+                                              List<AuthorityParsedContent> marcAuthoritiesContent,
+                                              InstanceAuthorityLinkingRule rule) {
+    for (FieldParsedContent bibField : bibFields) {
+      if (isFalse(rule.getAutoLinkingEnabled())) {
+        var errorDetails = getErrorDetails(DISABLED_AUTO_LINKING);
+        bibField.setLinkDetails(errorDetails);
+        log.info("Field {}: auto linking feature is disabled", rule.getBibField());
+        return true;
+      }
+
+      var suitableAuthorities = filterSuitableAuthorities(bibField, marcAuthoritiesContent, rule);
+      if (suitableAuthorities.isEmpty()) {
+        var errorDetails = getErrorDetails(NO_SUGGESTIONS);
+        bibField.setLinkDetails(errorDetails);
+        log.info("Field {}: No authorities to suggest", rule.getBibField());
+      } else if (suitableAuthorities.size() > 1) {
+        var errorDetails = getErrorDetails(MORE_THEN_ONE_SUGGESTIONS);
+        bibField.setLinkDetails(errorDetails);
+        log.info("Field {}: More then one authority to suggest", rule.getBibField());
+      } else {
+        var authority = suitableAuthorities.get(0);
+        var linkDetails = getLinkDetails(bibField, authority, rule);
+        actualizeBibSubfields(bibField, authority, rule);
+        bibField.setLinkDetails(linkDetails);
+        log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<AuthorityParsedContent> filterSuitableAuthorities(FieldParsedContent bibField,
