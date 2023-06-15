@@ -113,21 +113,24 @@ public class LinksSuggestionsServiceDelegate {
 
   private Set<String> extractNaturalIds(List<FieldParsedContent> fields) {
     return fields.stream()
-      .map(field -> {
-        var naturalIds = new HashSet<String>();
-        var zeroValues = field.getSubfields().get("0");
-        if (isNotEmpty(zeroValues)) {
-          naturalIds.addAll(zeroValues.stream()
-            .map(FieldUtils::trimSubfield0Value)
-            .collect(Collectors.toSet()));
-        }
-        if (nonNull(field.getLinkDetails())) {
-          naturalIds.add(field.getLinkDetails().getAuthorityNaturalId());
-        }
-        return naturalIds;
-      })
+      .map(this::extractNaturalIds)
+      .distinct()
       .flatMap(Set::stream)
       .collect(Collectors.toSet());
+  }
+
+  private Set<String> extractNaturalIds(FieldParsedContent field) {
+    var naturalIds = new HashSet<String>();
+    var zeroValues = field.getSubfields().get("0");
+    if (isNotEmpty(zeroValues)) {
+      naturalIds.addAll(zeroValues.stream()
+        .map(FieldUtils::trimSubfield0Value)
+        .collect(Collectors.toSet()));
+    }
+    if (nonNull(field.getLinkDetails())) {
+      naturalIds.add(field.getLinkDetails().getAuthorityNaturalId());
+    }
+    return naturalIds;
   }
 
   private boolean isAutoLinkingEnabled(List<InstanceAuthorityLinkingRule> rules) {
