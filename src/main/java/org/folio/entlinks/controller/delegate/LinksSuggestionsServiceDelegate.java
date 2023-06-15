@@ -63,7 +63,7 @@ public class LinksSuggestionsServiceDelegate {
   private List<AuthorityData> findAuthoritiesByNaturalIds(Set<String> naturalIds) {
     var authorityData = dataRepository.findByNaturalIds(naturalIds);
     log.info("{} authority data found by natural ids", authorityData.size());
-    if (authorityData.size() != naturalIds.size()) {
+    if (authorityData.size() < naturalIds.size()) {
       var existNaturalIds = authorityData.stream()
         .map(AuthorityData::getNaturalId)
         .collect(Collectors.toSet());
