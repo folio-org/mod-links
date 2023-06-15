@@ -114,7 +114,6 @@ public class LinksSuggestionsServiceDelegate {
   private Set<String> extractNaturalIds(List<FieldParsedContent> fields) {
     return fields.stream()
       .map(this::extractNaturalIds)
-      .distinct()
       .flatMap(Set::stream)
       .collect(Collectors.toSet());
   }
