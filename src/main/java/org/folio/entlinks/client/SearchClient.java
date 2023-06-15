@@ -21,6 +21,7 @@ public interface SearchClient {
 
   default String buildNaturalIdsQuery(Set<String> naturalIds) {
     return AUTHORIZED_REF_TYPE + AND + naturalIds.stream()
+      .map(id -> String.format("\"%s\"", id))
       .map(id -> String.format(NATURAL_ID, id))
       .collect(Collectors.joining(OR, "(", ")"));
   }
