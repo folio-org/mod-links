@@ -59,13 +59,19 @@ public class LinksSuggestionService {
     if (isNotEmpty(rules) && isNotEmpty(bibFields)) {
       for (InstanceAuthorityLinkingRule rule : rules) {
         for (FieldParsedContent bibField : bibFields) {
-          var linkDetails = bibField.getLinkDetails();
-          if (isNull(linkDetails) || linkDetails.getStatus() != NEW) {
+          if (isBibFieldLinkable(bibField)) {
             suggestAuthorityForBibField(bibField, marcAuthoritiesContent, rule);
           }
         }
       }
     }
+  }
+
+  private boolean isBibFieldLinkable(FieldParsedContent bibField) {
+    var linkDetails = bibField.getLinkDetails();
+    var zeroValues = bibField.getSubfields().get("0");
+
+    return isNotEmpty(zeroValues) && (isNull(linkDetails) || linkDetails.getStatus() != NEW);
   }
 
   private void suggestAuthorityForBibField(FieldParsedContent bibField,
@@ -95,16 +101,6 @@ public class LinksSuggestionService {
       log.info("Field {}: Authority {} was suggested", rule.getBibField(), authority.getId());
     }
   }
-
-  private List<AuthorityParsedContent> filterSuitableAuthorities(FieldParsedContent bibField,
-                                                                 List<AuthorityParsedContent> marcAuthoritiesContent,
-                                                                 InstanceAuthorityLinkingRule rule) {
-    return marcAuthoritiesContent.stream()
-      .filter(authorityContent -> validateZeroSubfields(authorityContent.getNaturalId(), bibField))
-      .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
-      .toList();
-  }
-
 
   private LinkDetails getLinkDetails(FieldParsedContent bibField,
                                      AuthorityParsedContent authority,
@@ -150,12 +146,17 @@ public class LinksSuggestionService {
     }
   }
 
+  private List<AuthorityParsedContent> filterSuitableAuthorities(FieldParsedContent bibField,
+                                                                 List<AuthorityParsedContent> marcAuthoritiesContent,
+                                                                 InstanceAuthorityLinkingRule rule) {
+    return marcAuthoritiesContent.stream()
+      .filter(authorityContent -> validateZeroSubfields(authorityContent.getNaturalId(), bibField))
+      .filter(authorityContent -> validateAuthorityFields(authorityContent, rule))
+      .toList();
+  }
+
   private boolean validateZeroSubfields(String naturalId, FieldParsedContent bibField) {
-    var zeroValues = bibField.getSubfields().get("0");
-    if (isNull(zeroValues)) {
-      return false;
-    }
-    return zeroValues.stream()
+    return bibField.getSubfields().get("0").stream()
       .map(FieldUtils::trimSubfield0Value)
       .anyMatch(zeroValue -> zeroValue.equals(naturalId));
   }

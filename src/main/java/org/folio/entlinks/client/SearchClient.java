@@ -12,7 +12,7 @@ public interface SearchClient {
 
   String OR = " or ";
   String AND = " and ";
-  String NATURAL_ID = "naturalId=%s";
+  String NATURAL_ID = "naturalId=\"%s\"";
   String AUTHORIZED_REF_TYPE = "authRefType=Authorized";
 
   @GetMapping("/authorities")
@@ -21,7 +21,6 @@ public interface SearchClient {
 
   default String buildNaturalIdsQuery(Set<String> naturalIds) {
     return AUTHORIZED_REF_TYPE + AND + naturalIds.stream()
-      .map(id -> String.format("\"%s\"", id))
       .map(id -> String.format(NATURAL_ID, id))
       .collect(Collectors.joining(OR, "(", ")"));
   }
