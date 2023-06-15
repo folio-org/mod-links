@@ -151,7 +151,11 @@ public class LinksSuggestionService {
   }
 
   private boolean validateZeroSubfields(String naturalId, FieldParsedContent bibField) {
-    return bibField.getSubfields().get("0").stream()
+    var zeroValues = bibField.getSubfields().get("0");
+    if (isNull(zeroValues)) {
+      return false;
+    }
+    return zeroValues.stream()
       .map(FieldUtils::trimSubfield0Value)
       .anyMatch(zeroValue -> zeroValue.equals(naturalId));
   }
