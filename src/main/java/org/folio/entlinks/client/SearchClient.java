@@ -14,7 +14,7 @@ public interface SearchClient {
   String OR = " or ";
   String AND = " and ";
   String ID = "id=%s";
-  String NATURAL_ID = "naturalId=%s";
+  String NATURAL_ID = "naturalId=\"%s\"";
   String AUTHORIZED_REF_TYPE = "authRefType=Authorized";
 
   @GetMapping("/authorities")
