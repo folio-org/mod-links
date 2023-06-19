@@ -3,10 +3,10 @@ package org.folio.entlinks.service.links;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.apache.commons.collections4.MapUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.folio.entlinks.utils.DateUtils.toTimestamp;
+import static org.folio.entlinks.utils.FieldUtils.getSubfield0Value;
 import static org.folio.entlinks.utils.LinkEventsUtils.constructEvent;
 
 import jakarta.persistence.criteria.Predicate;
@@ -24,7 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.client.SearchClient;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.domain.dto.Authority;
@@ -106,40 +105,38 @@ public class InstanceAuthorityLinkingService {
       .collect(Collectors.toMap(AuthorityData::getId, Function.identity(), (a1, a2) -> a1));
     var linksByAuthorityId = incomingLinks.stream()
       .collect(Collectors.groupingBy(link -> link.getAuthorityData().getId()));
-    var authorityNaturalIdsByIds = fetchAuthorityNaturalIds(authorityDataById.keySet());
 
+    var authorityNaturalIdsByIds = fetchAuthorityNaturalIds(authorityDataById.keySet());
     var authoritySources = fetchAuthoritySources(linksByAuthorityId.keySet());
 
     var authorityDataSet = authorityDataById.values().stream()
       .map(authorityData -> {
-        var naturalId = authorityNaturalIdsByIds.get(authorityData.getId());
-        if (isNull(naturalId)) { // todo: highlighted note: authority deleted case
-          invalidLinks.addAll(linksByAuthorityId.remove(authorityData.getId()));
-          return null;
-        }
+        var authorityId = authorityData.getId();
+        var naturalId = authorityNaturalIdsByIds.get(authorityId);
         var authority = authoritySources.stream()
-            .filter(authorityRecord -> authorityData.getId().equals(
-              authorityRecord.getExternalIdsHolder().getAuthorityId()))
-              .findFirst();
-        if (authority.isEmpty()) {
-          invalidLinks.addAll(linksByAuthorityId.remove(authorityData.getId()));
+          .filter(authorityRecord -> authorityRecord.getExternalIdsHolder().getAuthorityId().equals(authorityId))
+          .findFirst();
+
+        if (isNull(naturalId) || authority.isEmpty()) {
+          invalidLinks.addAll(linksByAuthorityId.remove(authorityId));
           return null;
         }
 
         // todo: highlighted note: authority changed to invalid (heading change/subfield $t presence change) case
-        var invalidLinksForAuthority = linksByAuthorityId.get(authorityData.getId()).stream()
-          .filter(link -> !linkValid(authority.get().getParsedRecord().getContent().getFields(), link))
+        var invalidLinksForAuthority = linksByAuthorityId.get(authorityId).stream()
+          .filter(link -> !isLinkValid(authority.get().getParsedRecord().getContent().getFields(), link))
           .toList();
         if (!invalidLinksForAuthority.isEmpty()) {
           invalidLinks.addAll(invalidLinksForAuthority);
-          linksByAuthorityId.get(authorityData.getId()).removeAll(invalidLinksForAuthority);
+          linksByAuthorityId.get(authorityId).removeAll(invalidLinksForAuthority);
         }
         if (invalidLinksForAuthority.size() == linksByAuthorityId.get(authorityData.getId()).size()) {
           return null;
         }
 
         authorityData.setNaturalId(naturalId);
-        return authorityData; })
+        return authorityData;
+      })
       .filter(Objects::nonNull)
       .collect(Collectors.toSet());
 
@@ -173,18 +170,21 @@ public class InstanceAuthorityLinkingService {
       .toList();
   } //todo: move to privates section
 
-  private boolean linkValid(List<Map<String, FieldContent>> authorityFields, InstanceAuthorityLink link) {
+  private boolean isLinkValid(List<Map<String, FieldContent>> authorityFields, InstanceAuthorityLink link) {
     var authorityField = authorityFields.stream()
       .flatMap(fields -> fields.entrySet().stream())
       .filter(fieldContentEntry -> link.getLinkingRule().getAuthorityField().equals(fieldContentEntry.getKey()))
       .findFirst();
-    if (authorityField.isEmpty()) {
-      return false;
-    }
 
-    var existValidation = link.getLinkingRule().getSubfieldsExistenceValidations();
+    return authorityField
+      .filter(stringFieldContentEntry -> isSubfieldExist(stringFieldContentEntry.getValue(), link.getLinkingRule()))
+      .isPresent();
+  }
+
+  private boolean isSubfieldExist(FieldContent authorityField, InstanceAuthorityLinkingRule linkingRule) {
+    var existValidation = linkingRule.getSubfieldsExistenceValidations();
     if (isNotEmpty(existValidation)) {
-      var authoritySubfields = authorityField.get().getValue().getSubfields();
+      var authoritySubfields = authorityField.getSubfields();
 
       for (var subfieldExistence : existValidation.entrySet()) {
         var contains = authoritySubfields.stream()
@@ -341,19 +341,9 @@ public class InstanceAuthorityLinkingService {
   }
 
   private SubfieldChange getSubfield0Change(String naturalId) {
-    return new SubfieldChange().code("0").value(getSubfield0Value(naturalId));
-  }
-
-  private String getSubfield0Value(String naturalId) { //todo: public?
-    var subfield0Value = "";
-    if (nonNull(naturalId)) {
-      var files = sourceFilesService.fetchAuthoritySources();
-      var sourceFile = sourceFilesService.findAuthoritySourceFileByNaturalId(files, naturalId);
-      if (sourceFile != null) {
-        subfield0Value = StringUtils.appendIfMissing(sourceFile.baseUrl(), "/");
-      }
-    }
-    return subfield0Value + naturalId;
+    var sourceFiles = sourceFilesService.fetchAuthoritySources();
+    var subfield0Value = getSubfield0Value(sourceFiles, naturalId);
+    return new SubfieldChange().code("0").value(subfield0Value);
   }
 
   private void sendEvents(UUID instanceId, List<LinksChangeEvent> events) {
