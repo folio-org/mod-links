@@ -126,7 +126,6 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
     assertions.then(authorityData.isDeleted()).as("State").isTrue();
   }
 
-  //todo: same as for other. mention in learning section
   @SneakyThrows
   @Test
   void shouldHandleUpdateEvent_positive_whenAuthorityLinkExistAndFieldChangedFromOneToAnother() {
@@ -236,8 +235,6 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
       .andExpect(jsonPath("$.links[0].authorityNaturalId", equalTo("newNaturalId")));
   }
 
-  //todo: note in Learning section why links removed (because 100 bib field could only be linked when
-  // $t absent and 240 otherwise)
   @SneakyThrows
   @Test
   void shouldHandleUpdateEvent_positive_whenAuthorityLinkExistAndHeadingChanged() {
@@ -397,7 +394,7 @@ class AuthorityInventoryEventListenerIT extends IntegrationTestBase {
   }
 
   private ChangeTarget updateTarget(String tag, UUID... instanceIds) {
-    return new ChangeTarget().field(tag).links(Arrays.asList(instanceIds).stream()
+    return new ChangeTarget().field(tag).links(Arrays.stream(instanceIds)
       .map(uuid -> new ChangeTargetLink().instanceId(uuid))
       .toList());
   }

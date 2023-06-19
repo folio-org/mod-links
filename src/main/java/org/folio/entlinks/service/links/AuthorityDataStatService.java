@@ -66,12 +66,11 @@ public class AuthorityDataStatService {
     log.debug("Updating links,stats for reports: [reports: {}]", reports);
 
     var dataStat = statRepository.findById(jobId);
+    updateLinks(jobId, dataStat, reports);
 
     if (dataStat.isPresent()) {
-      updateLinks(jobId, dataStat, reports);
       updateStatsData(dataStat.get(), reports);
     } else {
-      updateLinks(jobId, Optional.empty(), reports);
       log.warn("No data statistics found for jobId {}", jobId);
     }
   }

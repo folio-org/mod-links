@@ -36,6 +36,7 @@ import org.folio.entlinks.domain.dto.InventoryEvent;
 import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
+import org.folio.entlinks.domain.dto.RecordType;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
@@ -66,7 +67,7 @@ public class TestDataUtils {
   }
 
   public static InstanceLinkDtoCollection linksDtoCollection(List<InstanceLinkDto> links) {
-    return new InstanceLinkDtoCollection().links(links).totalRecords(links.size());
+    return new InstanceLinkDtoCollection(links);
   }
 
   public static List<InstanceAuthorityLink> links(UUID instanceId, Link... links) {
@@ -106,7 +107,7 @@ public class TestDataUtils {
     return links(count, EMPTY);
   }
 
-  public static List<LinkUpdateReport> reports(UUID jobId) {
+  public static List<LinkUpdateReport> eports(UUID jobId) {
     return reports(jobId, LinkUpdateReport.StatusEnum.SUCCESS, EMPTY);
   }
 
@@ -231,32 +232,37 @@ public class TestDataUtils {
     return dto;
   }
 
-  //todo: now provides separate authority for each link. maybe should provide for each authorityId
-  // (then add field for each link with same authority)
-  public static StrippedParsedRecordCollection getAuthorityRecords(List<InstanceAuthorityLink> links) {
-    return getAuthorityRecords(links, true);
+  public static StrippedParsedRecordCollection getAuthorityRecordsCollection(List<InstanceAuthorityLink> validLinks,
+                                                                             List<InstanceAuthorityLink> invalidLinks) {
+    var authorityRecords = new LinkedList<>(getAuthorityRecords(validLinks, true));
+    authorityRecords.addAll(getAuthorityRecords(invalidLinks, false));
+
+    return new StrippedParsedRecordCollection(authorityRecords, authorityRecords.size());
   }
 
-  public static StrippedParsedRecordCollection getAuthorityRecords(List<InstanceAuthorityLink> links, Boolean valid) {
-    return new StrippedParsedRecordCollection()
-      .records(links.stream()
-        .map(link -> {
-          var subfields = new LinkedList<Map<String, String>>();
-          subfields.add(Map.of("a", "test"));
-          var validation = link.getLinkingRule().getSubfieldsExistenceValidations();
-          if (validation != null && valid.equals(validation.get("t"))) {
-            subfields.add(Map.of("t", "test"));
-          }
+  public static StrippedParsedRecordCollection getAuthorityRecordsCollection(List<InstanceAuthorityLink> links) {
+    var authorityRecords = getAuthorityRecords(links, true);
+    return new StrippedParsedRecordCollection(authorityRecords, authorityRecords.size());
+  }
 
-          return new StrippedParsedRecord()
-            .externalIdsHolder(new ExternalIdsHolder()
-              .authorityId(link.getAuthorityData().getId()))
-            .parsedRecord(new StrippedParsedRecordParsedRecord()
-              .content(new ParsedRecordContent() //todo: subfields to field content?
-                .fields(singletonList(Map.of(link.getLinkingRule().getAuthorityField(),
-                  new FieldContent().subfields(subfields))))));
-        })
-        .toList());
+  public static List<StrippedParsedRecord> getAuthorityRecords(List<InstanceAuthorityLink> links, Boolean valid) {
+    return links.stream()
+      .map(link -> {
+        var existenceValidations = link.getLinkingRule().getSubfieldsExistenceValidations();
+        var subfields = new LinkedList<Map<String, String>>();
+        subfields.add(Map.of("a", "test"));
+        if (existenceValidations != null && valid.equals(existenceValidations.get("t"))) {
+          subfields.add(Map.of("t", "test"));
+        }
+
+        var field = Map.of(link.getLinkingRule().getAuthorityField(), new FieldContent().subfields(subfields));
+        var recordContent = new ParsedRecordContent(singletonList(field), "leader");
+        var parsedRecord = new StrippedParsedRecordParsedRecord(recordContent);
+
+        return new StrippedParsedRecord(UUID.randomUUID(), RecordType.MARC_AUTHORITY, parsedRecord)
+          .externalIdsHolder(new ExternalIdsHolder().authorityId(link.getAuthorityData().getId()));
+      })
+      .toList();
   }
 
   public record Link(UUID authorityId, String tag, String naturalId,
@@ -338,7 +344,7 @@ public class TestDataUtils {
         .linkingRule(InstanceAuthorityLinkingRule.builder()
           .id(TAGS_TO_RULE_IDS.get(tag))
           .bibField(tag)
-          .authoritySubfields(new char[]{'a'})
+          .authoritySubfields(new char[] {'a'})
           .authorityField(TAGS_TO_AUTHORITY_TAGS.get(tag))
           .subfieldsExistenceValidations(SUBFIELD_VALIDATIONS_BY_TAG.get(tag))
           .build())

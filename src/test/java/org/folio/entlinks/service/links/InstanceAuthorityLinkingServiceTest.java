@@ -5,7 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.folio.support.TestDataUtils.getAuthorityRecords;
+import static org.folio.support.TestDataUtils.getAuthorityRecordsCollection;
 import static org.folio.support.TestDataUtils.links;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -420,9 +419,7 @@ class InstanceAuthorityLinkingServiceTest {
     );
     var linksForValidAuthorities = incomingLinks.subList(1, incomingLinks.size());
     var linksForInvalidAuthorities = incomingLinks.subList(0, 1);
-    var authorityRecords = new LinkedList<>(getAuthorityRecords(linksForValidAuthorities).getRecords());
-    authorityRecords.addAll(getAuthorityRecords(linksForInvalidAuthorities, false).getRecords());
-    var authorityRecordsMock = new StrippedParsedRecordCollection().records(authorityRecords);
+    var authorityRecordsMock = getAuthorityRecordsCollection(linksForValidAuthorities, linksForInvalidAuthorities);
 
     when(linkingRulesService.getLinkingRules()).thenReturn(incomingLinks.stream()
       .map(InstanceAuthorityLink::getLinkingRule)
@@ -521,7 +518,7 @@ class InstanceAuthorityLinkingServiceTest {
   }
 
   private void mockAuthorities(List<InstanceAuthorityLink> links) {
-    mockAuthorities(links, getAuthorityRecords(links));
+    mockAuthorities(links, getAuthorityRecordsCollection(links));
   }
 
   @SuppressWarnings("unchecked")

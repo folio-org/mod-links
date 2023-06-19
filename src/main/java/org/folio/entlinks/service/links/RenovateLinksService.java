@@ -64,7 +64,7 @@ public class RenovateLinksService {
   private StrippedParsedRecord findAuthorityById(UUID authorityId, UUID instanceId,
                                                  List<StrippedParsedRecord> authoritySources) {
     return authoritySources.stream()
-      .filter(record -> authorityId.equals(record.getExternalIdsHolder().getAuthorityId()))
+      .filter(parsedRecord -> authorityId.equals(parsedRecord.getExternalIdsHolder().getAuthorityId()))
       .findFirst()
       .orElseThrow(() -> new IllegalStateException(String.format(UNABLE_TO_RENOVATE, authorityId, instanceId)));
   }
