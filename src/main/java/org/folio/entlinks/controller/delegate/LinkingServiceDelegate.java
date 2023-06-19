@@ -1,6 +1,7 @@
 package org.folio.entlinks.controller.delegate;
 
 import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
 
@@ -111,9 +112,10 @@ public class LinkingServiceDelegate {
       .filter(Objects::nonNull)
       .toList();
     var invalidParams = authorityDataService.getByIdAndDeleted(authorityIds, true).stream()
-      .map(authorityData -> new Parameter().key("authorityId").value(authorityData.getId().toString()))
+      .map(authorityData -> authorityData.getId().toString())
+      .map(authorityId -> new Parameter().key("authorityId").value(authorityId))
       .toList();
-    if (!invalidParams.isEmpty()) {
+    if (isNotEmpty(invalidParams)) {
       throw new RequestBodyValidationException("Cannot save links to deleted authorities.", invalidParams);
     }
   }
@@ -140,7 +142,6 @@ public class LinkingServiceDelegate {
       .toList();
 
     var instanceTitles = instanceService.getInstanceTitles(instanceIds);
-
 
     bibStatsList.forEach(bibStatsDto -> {
       var instanceId = bibStatsDto.getInstanceId().toString();

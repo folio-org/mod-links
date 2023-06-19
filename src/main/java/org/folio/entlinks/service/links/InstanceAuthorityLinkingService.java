@@ -2,7 +2,7 @@ package org.folio.entlinks.service.links;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.folio.entlinks.utils.DateUtils.toTimestamp;
 import static org.folio.entlinks.utils.LinkEventsUtils.groupLinksByAuthorityId;
@@ -51,7 +51,7 @@ public class InstanceAuthorityLinkingService {
 
   private final InstanceLinkRepository instanceLinkRepository;
   private final InstanceAuthorityLinkingRulesService linkingRulesService;
-  private final AuthorityDataValidationService authorityDataValidationService;
+  private final AuthorityRuleValidationService authorityRuleValidationService;
   private final AuthorityDataService authorityDataService;
   private final RenovateLinksService renovateService;
   private final SearchClient searchClient;
@@ -94,7 +94,7 @@ public class InstanceAuthorityLinkingService {
     var invalidLinks = new LinkedList<InstanceAuthorityLink>();
     var existedLinks = instanceLinkRepository.findByInstanceId(instanceId);
 
-    var validatedAuthorityData = authorityDataValidationService
+    var validatedAuthorityData = authorityRuleValidationService
       .validateAuthorityData(authorityData, authorityNaturalIds, authoritySources, invalidLinks, linksByAuthorityId);
 
     var savedAuthorityData = authorityDataService.saveAll(validatedAuthorityData);

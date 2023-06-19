@@ -72,7 +72,7 @@ class InstanceAuthorityLinkingServiceTest {
   @Mock
   private InstanceAuthorityLinkingRulesService linkingRulesService;
   @Spy
-  private AuthorityDataValidationService authorityDataValidationService;
+  private AuthorityRuleValidationService authorityRuleValidationService;
   @Mock
   private EventProducer<LinksChangeEvent> eventProducer;
 
