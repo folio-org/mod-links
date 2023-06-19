@@ -107,7 +107,7 @@ public class TestDataUtils {
     return links(count, EMPTY);
   }
 
-  public static List<LinkUpdateReport> eports(UUID jobId) {
+  public static List<LinkUpdateReport> reports(UUID jobId) {
     return reports(jobId, LinkUpdateReport.StatusEnum.SUCCESS, EMPTY);
   }
 
