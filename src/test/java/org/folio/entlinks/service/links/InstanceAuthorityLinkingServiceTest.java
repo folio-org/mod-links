@@ -11,6 +11,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -45,6 +47,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -56,6 +59,9 @@ import org.springframework.data.jpa.domain.Specification;
 @ExtendWith(MockitoExtension.class)
 class InstanceAuthorityLinkingServiceTest {
 
+  private final AuthoritySourceFilesService sourceFilesService = mock(AuthoritySourceFilesService.class);
+  private final RenovateLinksService renovateLinksService = spy(new RenovateLinksService(sourceFilesService));
+
   @Mock
   private InstanceLinkRepository instanceLinkRepository;
   @Mock
@@ -66,8 +72,8 @@ class InstanceAuthorityLinkingServiceTest {
   private SourceStorageClient sourceStorageClient;
   @Mock
   private InstanceAuthorityLinkingRulesService linkingRulesService;
-  @Mock
-  private AuthoritySourceFilesService sourceFilesService;
+  @Spy
+  private AuthorityDataValidationService authorityDataValidationService;
   @Mock
   private EventProducer<LinksChangeEvent> eventProducer;
 

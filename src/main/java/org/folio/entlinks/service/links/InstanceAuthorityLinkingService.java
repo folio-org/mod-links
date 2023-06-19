@@ -2,6 +2,7 @@ package org.folio.entlinks.service.links;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.folio.entlinks.utils.DateUtils.toTimestamp;
 import static org.folio.entlinks.utils.LinkEventsUtils.groupLinksByAuthorityId;
@@ -232,7 +233,7 @@ public class InstanceAuthorityLinkingService {
   }
 
   private void sendEvents(UUID instanceId, List<LinksChangeEvent> events) {
-    if (!events.isEmpty()) {
+    if (isNotEmpty(events)) {
       log.info("Sending {} events for instanceId {} to Kafka for links renovation process.", instanceId, events.size());
       eventProducer.sendMessages(events);
     }
