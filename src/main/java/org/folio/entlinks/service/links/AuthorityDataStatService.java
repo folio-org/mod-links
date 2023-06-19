@@ -66,16 +66,14 @@ public class AuthorityDataStatService {
     log.debug("Updating links,stats for reports: [reports: {}]", reports);
 
     var dataStat = statRepository.findById(jobId);
-    updateLinks(jobId, dataStat, reports);
 
-    //todo: mention in learning section that this changes (and related here)
-    // done for renovation case (without actual stats)
-    if (dataStat.isEmpty()) {
+    if (dataStat.isPresent()) {
+      updateLinks(jobId, dataStat, reports);
+      updateStatsData(dataStat.get(), reports);
+    } else {
+      updateLinks(jobId, Optional.empty(), reports);
       log.warn("No data statistics found for jobId {}", jobId);
-      return;
     }
-
-    updateStatsData(dataStat.get(), reports);
   }
 
   private void checkIfAllFailed(List<LinkUpdateReport> reports, AuthorityDataStat dataStat) {
@@ -111,7 +109,7 @@ public class AuthorityDataStatService {
    * Updates authority statistics data.
    *
    * @param dataStat Authority data statistics related to current job.
-   *              AuthorityDataStat id and jobId are interchangeable (jobId is used as id to create stat record)
+   *                 AuthorityDataStat id and jobId are interchangeable (jobId is used as id to create stat record)
    */
   private void updateStatsData(AuthorityDataStat dataStat, List<LinkUpdateReport> reports) {
     var failedCount = getReportCountForStatus(reports, FAIL);
