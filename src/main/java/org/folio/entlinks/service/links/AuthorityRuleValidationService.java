@@ -2,6 +2,7 @@ package org.folio.entlinks.service.links;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.MapUtils.isNotEmpty;
 
 import java.util.List;
@@ -72,7 +73,7 @@ public class AuthorityRuleValidationService {
   public boolean validateAuthorityFields(StrippedParsedRecord authority, InstanceAuthorityLinkingRule rule) {
     var authorityFields = authority.getParsedRecord().getContent().getFields();
 
-    if (nonNull(authorityFields) && authorityFields.size() == 1) {
+    if (isNotEmpty(authorityFields)) {
       var authorityField = authorityFields.stream()
         .flatMap(fields -> fields.entrySet().stream())
         .filter(field -> rule.getAuthorityField().equals(field.getKey()))

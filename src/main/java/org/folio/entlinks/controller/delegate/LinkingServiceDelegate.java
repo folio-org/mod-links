@@ -108,8 +108,8 @@ public class LinkingServiceDelegate {
   private void validateAuthoritiesNotDeleted(List<InstanceLinkDto> links) {
     var authorityIds = links.stream()
       .map(InstanceLinkDto::getAuthorityId)
-      .distinct()
       .filter(Objects::nonNull)
+      .distinct()
       .toList();
     var invalidParams = authorityDataService.getByIdAndDeleted(authorityIds, true).stream()
       .map(authorityData -> authorityData.getId().toString())
