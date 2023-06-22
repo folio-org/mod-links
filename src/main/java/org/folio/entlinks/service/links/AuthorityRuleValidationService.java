@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContent;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
@@ -25,10 +26,10 @@ import org.springframework.stereotype.Service;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class AuthorityRuleValidationService {
 
-  public AuthorityRuleValidationResult validateAuthorityData(Map<Integer, InstanceAuthorityLinkingRule> linkingRules,
-                                                             Map<UUID, List<InstanceAuthorityLink>> linksByAuthorityId,
+  public AuthorityRuleValidationResult validateAuthorityData(Map<UUID, List<InstanceAuthorityLink>> linksByAuthorityId,
                                                              Map<UUID, AuthorityData> mapOfAuthorityData,
                                                              Map<UUID, String> authorityNaturalIds,
                                                              List<StrippedParsedRecord> authoritySources) {
@@ -44,7 +45,7 @@ public class AuthorityRuleValidationService {
         invalidLinks.addAll(linksByAuthorityId.remove(authorityId));
       } else {
         var authorityLinks = linksByAuthorityId.get(authorityId);
-        var invalidLinksForAuthority = removeValidAuthorityLinks(authority.get(), authorityLinks, linkingRules);
+        var invalidLinksForAuthority = removeValidAuthorityLinks(authority.get(), authorityLinks);
 
         if (!invalidLinksForAuthority.isEmpty()) {
           invalidLinks.addAll(invalidLinksForAuthority);
@@ -100,10 +101,9 @@ public class AuthorityRuleValidationService {
   }
 
   private List<InstanceAuthorityLink> removeValidAuthorityLinks(StrippedParsedRecord authority,
-                                                                List<InstanceAuthorityLink> authorityLinks,
-                                                                Map<Integer, InstanceAuthorityLinkingRule> rules) {
+                                                                List<InstanceAuthorityLink> authorityLinks) {
     return authorityLinks.stream()
-      .filter(link -> !validateAuthorityFields(authority, rules.get(link.getLinkingRule().getId())))
+      .filter(link -> !validateAuthorityFields(authority, link.getLinkingRule()))
       .toList();
   }
 

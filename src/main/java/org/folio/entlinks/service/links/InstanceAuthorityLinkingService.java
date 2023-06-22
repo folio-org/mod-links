@@ -33,6 +33,7 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
 import org.folio.entlinks.domain.repository.InstanceLinkRepository;
+import org.folio.entlinks.exception.DeletedLinkingAuthorityException;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -85,14 +86,16 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Update/renovate links for [instanceId: {}, links amount: {}]", instanceId, incomingLinks.size());
     }
-    var linkingRules = rulesToIdMap(linkingRulesService.getLinkingRules());
     var authorityData = collectAuthorityDataById(incomingLinks);
+    checkForDeletedAuthorities(authorityData.keySet());
+    fillLinksWithLinkingRules(incomingLinks);
     var linksByAuthorityId = groupLinksByAuthorityId(incomingLinks);
+
     var authorityNaturalIds = fetchAuthorityNaturalIds(authorityData.keySet());
     var authoritySources = fetchAuthoritySources(linksByAuthorityId.keySet());
 
     var validationResult = authorityRuleValidationService
-      .validateAuthorityData(linkingRules, linksByAuthorityId, authorityData, authorityNaturalIds, authoritySources);
+      .validateAuthorityData(linksByAuthorityId, authorityData, authorityNaturalIds, authoritySources);
 
     var savedAuthorityData = authorityDataService.saveAll(validationResult.validAuthorities());
     var incomingValidLinks = validationResult.validLinks();
@@ -231,5 +234,22 @@ public class InstanceAuthorityLinkingService {
 
   private Map<Integer, InstanceAuthorityLinkingRule> rulesToIdMap(List<InstanceAuthorityLinkingRule> rules) {
     return rules.stream().collect(Collectors.toMap(InstanceAuthorityLinkingRule::getId, Function.identity()));
+  }
+
+  private void fillLinksWithLinkingRules(List<InstanceAuthorityLink> incomingLinks) {
+    var linkingRules = rulesToIdMap(linkingRulesService.getLinkingRules());
+
+    incomingLinks.forEach(link -> link.setLinkingRule(linkingRules.get(link.getLinkingRule().getId())));
+  }
+
+  private void checkForDeletedAuthorities(Set<UUID> authorityIds) {
+    var deletedAuthorityIds = authorityDataService
+      .getByIdAndDeleted(authorityIds, true).stream()
+      .map(authorityData -> authorityData.getId().toString())
+      .collect(Collectors.toSet());
+
+    if (isNotEmpty(deletedAuthorityIds)) {
+      throw new DeletedLinkingAuthorityException(deletedAuthorityIds);
+    }
   }
 }

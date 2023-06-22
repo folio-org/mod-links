@@ -5,6 +5,8 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum.DELETE;
+import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum.UPDATE;
 import static org.folio.support.TestDataUtils.getAuthorityRecordsCollection;
 import static org.folio.support.TestDataUtils.links;
 import static org.mockito.ArgumentMatchers.any;
@@ -181,7 +183,7 @@ class InstanceAuthorityLinkingServiceTest {
     var events = eventsCaptor.getValue();
     assertThat(events).hasSize(2)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .allMatch(UPDATE::equals);
 
     events.forEach(event -> assertThat(event.getSubfieldsChanges().get(0).getSubfields())
       .anyMatch(subfieldChange -> subfieldChange.getCode().equals("0")
@@ -260,7 +262,7 @@ class InstanceAuthorityLinkingServiceTest {
 
     assertThat(eventsCaptor.getValue()).hasSize(4)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .allMatch(UPDATE::equals);
   }
 
   @Test
@@ -302,7 +304,7 @@ class InstanceAuthorityLinkingServiceTest {
 
     assertThat(eventsCaptor.getValue()).hasSize(4)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .allMatch(UPDATE::equals);
   }
 
   @Test
@@ -348,7 +350,7 @@ class InstanceAuthorityLinkingServiceTest {
 
     assertThat(eventsCaptor.getValue()).hasSize(4)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .allMatch(UPDATE::equals);
   }
 
   @Test
@@ -382,7 +384,7 @@ class InstanceAuthorityLinkingServiceTest {
     var eventsCaptor = linksEventCaptor();
     verify(instanceLinkRepository).saveAll(saveCaptor.capture());
     verify(instanceLinkRepository).deleteAllInBatch(deleteCaptor.capture());
-    verify(eventProducer, times(2)).sendMessages(eventsCaptor.capture());
+    verify(eventProducer, times(1)).sendMessages(eventsCaptor.capture());
 
     assertThat(saveCaptor.getValue()).hasSize(3)
       .extracting(link -> link.getLinkingRule().getBibField())
@@ -393,13 +395,9 @@ class InstanceAuthorityLinkingServiceTest {
       .containsOnly(Link.TAGS[2], Link.TAGS[3]);
 
     var events = eventsCaptor.getAllValues();
-    assertThat(events.get(0)).hasSize(1)
+    assertThat(events.get(0)).hasSize(4)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.DELETE::equals);
-
-    assertThat(events.get(1)).hasSize(3)
-      .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .containsExactlyInAnyOrder(UPDATE, UPDATE, UPDATE, DELETE);
   }
 
   @Test
@@ -436,7 +434,7 @@ class InstanceAuthorityLinkingServiceTest {
     var eventsCaptor = linksEventCaptor();
     verify(instanceLinkRepository).saveAll(saveCaptor.capture());
     verify(instanceLinkRepository).deleteAllInBatch(deleteCaptor.capture());
-    verify(eventProducer, times(2)).sendMessages(eventsCaptor.capture());
+    verify(eventProducer, times(1)).sendMessages(eventsCaptor.capture());
 
     assertThat(saveCaptor.getValue()).hasSize(3)
       .extracting(link -> link.getLinkingRule().getBibField())
@@ -447,13 +445,9 @@ class InstanceAuthorityLinkingServiceTest {
       .containsOnly(Link.TAGS[0], Link.TAGS[2], Link.TAGS[3]);
 
     var events = eventsCaptor.getAllValues();
-    assertThat(events.get(0)).hasSize(1)
+    assertThat(events.get(0)).hasSize(4)
       .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.DELETE::equals);
-
-    assertThat(events.get(1)).hasSize(3)
-      .extracting(LinksChangeEvent::getType)
-      .allMatch(LinksChangeEvent.TypeEnum.UPDATE::equals);
+      .containsExactlyInAnyOrder(UPDATE, UPDATE, UPDATE, DELETE);
   }
 
   @Test

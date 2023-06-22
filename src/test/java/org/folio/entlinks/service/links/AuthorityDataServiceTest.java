@@ -3,6 +3,7 @@ package org.folio.entlinks.service.links;
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.repository.AuthorityDataRepository;
@@ -25,7 +26,7 @@ class AuthorityDataServiceTest {
 
   @Test
   void shouldReturnAuthorityDataByIdsAndDeleted() {
-    var expectedIds = singletonList(UUID.randomUUID());
+    var expectedIds = Set.of(UUID.randomUUID());
     var expectedDeleted = true;
     var expected = singletonList(new AuthorityData());
     when(repository.findByIdInAndDeleted(expectedIds, expectedDeleted))

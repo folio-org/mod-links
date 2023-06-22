@@ -26,16 +26,13 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.entlinks.controller.converter.DataStatsMapper;
 import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
-import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.dto.UuidCollection;
-import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.internal.InstanceStorageService;
-import org.folio.entlinks.service.links.AuthorityDataService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.support.TestDataUtils;
@@ -56,7 +53,6 @@ class LinkingServiceDelegateTest {
   private @Mock InstanceAuthorityLinkMapper mapper;
   private @Mock InstanceStorageService instanceService;
   private @Mock DataStatsMapper statsMapper;
-  private @Mock AuthorityDataService authorityDataService;
 
   private @InjectMocks LinkingServiceDelegate delegate;
 
@@ -189,34 +185,6 @@ class LinkingServiceDelegateTest {
       .hasMessage("Link should have instanceId = " + INSTANCE_ID)
       .extracting(RequestBodyValidationException::getInvalidParameters)
       .returns(4, from(List::size));
-  }
-
-  @Test
-  void updateLinks_negative_whenAuthoritiesAreDeletedForIncomingLinks() {
-    var incomingLinks = linksDtoCollection(linksDto(INSTANCE_ID,
-      TestDataUtils.Link.of(0, 0),
-      TestDataUtils.Link.of(1, 1),
-      TestDataUtils.Link.of(2, 3),
-      TestDataUtils.Link.of(3, 2)
-    ));
-    var authorityIds = incomingLinks.getLinks().stream()
-      .map(InstanceLinkDto::getAuthorityId)
-      .toList();
-    var deletedAuthorityIdsMock = authorityIds.subList(0, 2);
-    var authorityDataMock = deletedAuthorityIdsMock.stream()
-      .map(authorityId -> new AuthorityData(authorityId, null, true))
-      .toList();
-
-    when(authorityDataService.getByIdAndDeleted(authorityIds, true))
-      .thenReturn(authorityDataMock);
-
-    var exception = Assertions.assertThrows(RequestBodyValidationException.class,
-      () -> delegate.updateLinks(INSTANCE_ID, incomingLinks));
-
-    assertThat(exception)
-      .hasMessage("Cannot save links to deleted authorities.")
-      .extracting(RequestBodyValidationException::getInvalidParameters)
-      .returns(2, from(List::size));
   }
 
   @Test

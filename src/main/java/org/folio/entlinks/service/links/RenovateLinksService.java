@@ -12,40 +12,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.ListUtils;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
+import org.folio.entlinks.exception.type.MarcAuthorityNotFoundException;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.model.AuthorityRuleValidationResult;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RenovateLinksService {
-
-  private static final String UNABLE_TO_RENOVATE =
-    "Authority with id '%s' not found. Unable to renovate links for instanceId '%s'";
 
   private final AuthoritySourceFilesService sourceFilesService;
 
   public List<LinksChangeEvent> renovateBibs(UUID instanceId,
                                              List<StrippedParsedRecord> authoritySources,
                                              AuthorityRuleValidationResult validationResult) {
-    var eventsForValidLinks = renovateBibsForValidLinks(instanceId, validationResult.validLinks(), authoritySources);
-    var eventsForInvalidLinks = renovateBibsForInvalidLinks(validationResult.invalidLinks());
-
-    return ListUtils.union(eventsForValidLinks, eventsForInvalidLinks);
+    return ListUtils.union(
+      renovateBibsForValidLinks(instanceId, validationResult.validLinks(), authoritySources),
+      renovateBibsForInvalidLinks(validationResult.invalidLinks())
+    );
   }
 
   public List<LinksChangeEvent> renovateBibsForInvalidLinks(List<InstanceAuthorityLink> links) {
     var eventId = UUID.randomUUID();
     var linksByAuthorityId = groupLinksByAuthorityId(links);
 
-    return linksByAuthorityId.entrySet().stream()
-      .map(linksById -> constructEvent(eventId, linksById.getKey(), DELETE, linksById.getValue(), emptyList()))
+    return linksByAuthorityId.entrySet().stream().map(linksById ->
+        constructEvent(eventId, linksById.getKey(), DELETE, linksById.getValue(), emptyList()))
       .toList();
   }
 
@@ -60,7 +60,7 @@ public class RenovateLinksService {
       var authorityId = entry.getKey();
       var authorityLinks = entry.getValue();
       var authority = findAuthorityById(authorityId, instanceId, authoritySources);
-      var fieldChangeHolders = findFieldChangeHolders(authorityLinks, authority);
+      var fieldChangeHolders = findFieldChangeHolders(authority, authorityLinks);
 
       var fieldChanges = fieldChangeHolders.stream()
         .map(FieldChangeHolder::toFieldChange)
@@ -77,23 +77,29 @@ public class RenovateLinksService {
     return authoritySources.stream()
       .filter(parsedRecord -> authorityId.equals(parsedRecord.getExternalIdsHolder().getAuthorityId()))
       .findFirst()
-      .orElseThrow(() -> new IllegalStateException(String.format(UNABLE_TO_RENOVATE, authorityId, instanceId)));
+      .orElseThrow(() -> {
+        log.warn("Unable to renovate links for instanceId {}", instanceId);
+        return new MarcAuthorityNotFoundException(authorityId);
+      });
   }
 
-  private List<FieldChangeHolder> findFieldChangeHolders(List<InstanceAuthorityLink> links,
-                                                         StrippedParsedRecord authority) {
+  private List<FieldChangeHolder> findFieldChangeHolders(StrippedParsedRecord authority,
+                                                         List<InstanceAuthorityLink> links) {
     var fieldChangeHolders = new LinkedList<FieldChangeHolder>();
 
     for (var link : links) {
-      var changedTag = link.getLinkingRule().getAuthorityField();
+      var linkingRule = link.getLinkingRule();
+      var naturalId = link.getAuthorityData().getNaturalId();
+      var changedTag = linkingRule.getAuthorityField();
+
       authority.getParsedRecord().getContent().getFields().stream()
         .flatMap(fields -> fields.entrySet().stream())
         .filter(fieldEntry -> changedTag.equals(fieldEntry.getKey()))
         .findFirst()
         .map(Map.Entry::getValue)
         .ifPresent(authorityField -> {
-          var fieldChangeHolder = new FieldChangeHolder(authorityField, link.getLinkingRule());
-          fieldChangeHolder.addExtraSubfieldChange(getSubfield0Change(link.getAuthorityData().getNaturalId()));
+          var fieldChangeHolder = new FieldChangeHolder(authorityField, linkingRule);
+          fieldChangeHolder.addExtraSubfieldChange(getSubfield0Change(naturalId));
           fieldChangeHolders.add(fieldChangeHolder);
         });
     }
