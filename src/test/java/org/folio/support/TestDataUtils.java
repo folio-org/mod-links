@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
@@ -234,8 +235,10 @@ public class TestDataUtils {
 
   public static StrippedParsedRecordCollection getAuthorityRecordsCollection(List<InstanceAuthorityLink> validLinks,
                                                                              List<InstanceAuthorityLink> invalidLinks) {
-    var authorityRecords = new LinkedList<>(getAuthorityRecords(validLinks, true));
-    authorityRecords.addAll(getAuthorityRecords(invalidLinks, false));
+    var authorityRecords = ListUtils.union(
+      getAuthorityRecords(validLinks, true),
+      getAuthorityRecords(invalidLinks, false)
+    );
 
     return new StrippedParsedRecordCollection(authorityRecords, authorityRecords.size());
   }

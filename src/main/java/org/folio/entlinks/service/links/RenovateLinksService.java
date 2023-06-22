@@ -12,11 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
+import org.folio.entlinks.service.links.model.AuthorityRuleValidationResult;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,15 @@ public class RenovateLinksService {
     "Authority with id '%s' not found. Unable to renovate links for instanceId '%s'";
 
   private final AuthoritySourceFilesService sourceFilesService;
+
+  public List<LinksChangeEvent> renovateBibs(UUID instanceId,
+                                             List<StrippedParsedRecord> authoritySources,
+                                             AuthorityRuleValidationResult validationResult) {
+    var eventsForValidLinks = renovateBibsForValidLinks(instanceId, validationResult.validLinks(), authoritySources);
+    var eventsForInvalidLinks = renovateBibsForInvalidLinks(validationResult.invalidLinks());
+
+    return ListUtils.union(eventsForValidLinks, eventsForInvalidLinks);
+  }
 
   public List<LinksChangeEvent> renovateBibsForInvalidLinks(List<InstanceAuthorityLink> links) {
     var eventId = UUID.randomUUID();

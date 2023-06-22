@@ -85,28 +85,25 @@ public class InstanceAuthorityLinkingService {
     } else {
       log.info("Update/renovate links for [instanceId: {}, links amount: {}]", instanceId, incomingLinks.size());
     }
-    updateLinkingRules(incomingLinks);
+    var linkingRules = rulesToIdMap(linkingRulesService.getLinkingRules());
     var authorityData = collectAuthorityDataById(incomingLinks);
     var linksByAuthorityId = groupLinksByAuthorityId(incomingLinks);
     var authorityNaturalIds = fetchAuthorityNaturalIds(authorityData.keySet());
     var authoritySources = fetchAuthoritySources(linksByAuthorityId.keySet());
 
-    var invalidLinks = new LinkedList<InstanceAuthorityLink>();
+    var validationResult = authorityRuleValidationService
+      .validateAuthorityData(linkingRules, linksByAuthorityId, authorityData, authorityNaturalIds, authoritySources);
+
+    var savedAuthorityData = authorityDataService.saveAll(validationResult.validAuthorities());
+    var incomingValidLinks = validationResult.validLinks();
     var existedLinks = instanceLinkRepository.findByInstanceId(instanceId);
-
-    var validatedAuthorityData = authorityRuleValidationService
-      .validateAuthorityData(authorityData, authorityNaturalIds, authoritySources, invalidLinks, linksByAuthorityId);
-
-    var savedAuthorityData = authorityDataService.saveAll(validatedAuthorityData);
-    var incomingValidLinks = linksByAuthorityId.values().stream().flatMap(Collection::stream).toList();
     var linksToDelete = subtract(existedLinks, incomingValidLinks);
 
     updateExistingLinks(incomingValidLinks, existedLinks, savedAuthorityData);
     instanceLinkRepository.saveAll(incomingValidLinks);
     instanceLinkRepository.deleteAllInBatch(linksToDelete);
 
-    sendEvents(instanceId, renovateService.renovateBibsForInvalidLinks(invalidLinks));
-    sendEvents(instanceId, renovateService.renovateBibsForValidLinks(instanceId, incomingValidLinks, authoritySources));
+    sendEvents(instanceId, renovateService.renovateBibs(instanceId, authoritySources, validationResult));
   }
 
   public Map<UUID, Integer> countLinksByAuthorityIds(Set<UUID> authorityIds) {
@@ -199,13 +196,6 @@ public class InstanceAuthorityLinkingService {
     }
   }
 
-  private void updateLinkingRules(List<InstanceAuthorityLink> incomingLinks) {
-    var linkingRules = linkingRulesService.getLinkingRules().stream()
-      .collect(Collectors.toMap(InstanceAuthorityLinkingRule::getId, Function.identity()));
-
-    incomingLinks.forEach(link -> link.setLinkingRule(linkingRules.get(link.getLinkingRule().getId())));
-  }
-
   private Map<UUID, AuthorityData> collectAuthorityDataById(List<InstanceAuthorityLink> incomingLinks) {
     return incomingLinks.stream()
       .map(InstanceAuthorityLink::getAuthorityData)
@@ -237,5 +227,9 @@ public class InstanceAuthorityLinkingService {
       log.info("Sending {} events for instanceId {} to Kafka for links renovation process.", instanceId, events.size());
       eventProducer.sendMessages(events);
     }
+  }
+
+  private Map<Integer, InstanceAuthorityLinkingRule> rulesToIdMap(List<InstanceAuthorityLinkingRule> rules) {
+    return rules.stream().collect(Collectors.toMap(InstanceAuthorityLinkingRule::getId, Function.identity()));
   }
 }
