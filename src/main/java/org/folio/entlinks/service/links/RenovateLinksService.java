@@ -18,7 +18,7 @@ import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
-import org.folio.entlinks.exception.type.MarcAuthorityNotFoundException;
+import org.folio.entlinks.exception.MarcAuthorityNotFoundException;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.service.links.model.AuthorityRuleValidationResult;
 import org.folio.entlinks.service.messaging.authority.model.FieldChangeHolder;

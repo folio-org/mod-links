@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.from;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum.DELETE;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum.UPDATE;
 import static org.folio.support.TestDataUtils.getAuthorityRecordsCollection;
@@ -39,10 +40,13 @@ import org.folio.entlinks.domain.entity.AuthorityData;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.projection.LinkCountView;
 import org.folio.entlinks.domain.repository.InstanceLinkRepository;
+import org.folio.entlinks.exception.DeletedLinkingAuthorityException;
+import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.internal.AuthoritySourceFilesService;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.support.TestDataUtils.Link;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -398,6 +402,37 @@ class InstanceAuthorityLinkingServiceTest {
     assertThat(events.get(0)).hasSize(4)
       .extracting(LinksChangeEvent::getType)
       .containsExactlyInAnyOrder(UPDATE, UPDATE, UPDATE, DELETE);
+  }
+
+  @Test
+  void updateLinks_negative_whenAuthoritiesAreDeletedForIncomingLinks() {
+    final var instanceId = randomUUID();
+    var incomingLinks = links(instanceId,
+      Link.of(0, 0),
+      Link.of(1, 1),
+      Link.of(2, 3),
+      Link.of(3, 2)
+    );
+    var authorityIds = incomingLinks.stream()
+      .map(link -> link.getAuthorityData().getId())
+      .collect(Collectors.toSet());
+    var deletedAuthorityIds = incomingLinks.stream()
+      .map(link -> link.getAuthorityData().getId())
+      .limit(2)
+      .collect(Collectors.toSet());
+    var authorityDataMock = deletedAuthorityIds.stream()
+      .map(authorityId -> new AuthorityData(authorityId, "deleted", true))
+      .toList();
+
+    when(authorityDataService.getByIdAndDeleted(authorityIds, true)).thenReturn(authorityDataMock);
+
+    var exception = Assertions.assertThrows(DeletedLinkingAuthorityException.class,
+      () -> service.updateLinks(instanceId, incomingLinks));
+
+    assertThat(exception)
+      .hasMessage("Cannot save links to deleted authorities.")
+      .extracting(RequestBodyValidationException::getInvalidParameters)
+      .returns(2, from(List::size));
   }
 
   @Test

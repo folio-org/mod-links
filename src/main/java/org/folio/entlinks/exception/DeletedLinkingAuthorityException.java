@@ -1,19 +1,20 @@
 package org.folio.entlinks.exception;
 
-import static java.lang.String.format;
-
+import java.util.List;
 import java.util.Set;
-import org.folio.entlinks.exception.type.ErrorCode;
+import org.folio.tenant.domain.dto.Parameter;
 
-public class DeletedLinkingAuthorityException extends BaseException {
+public class DeletedLinkingAuthorityException extends RequestBodyValidationException {
 
-  private static final String ERROR_MESSAGE = "Cannot save links to deleted authorities: [%s]";
+  private static final String ERROR_MESSAGE = "Cannot save links to deleted authorities.";
 
   public DeletedLinkingAuthorityException(Set<String> deletedAuthorityIds) {
-    super(formatErrorMessage(deletedAuthorityIds), ErrorCode.VALIDATION_ERROR);
+    super(ERROR_MESSAGE, mapToParameters(deletedAuthorityIds));
   }
 
-  private static String formatErrorMessage(Set<String> deletedAuthorityIds) {
-    return format(ERROR_MESSAGE, String.join(",\n", deletedAuthorityIds));
+  private static List<Parameter> mapToParameters(Set<String> deletedAuthorityIds) {
+    return deletedAuthorityIds.stream()
+      .map(authorityId -> new Parameter().key("authorityId").value(authorityId))
+      .toList();
   }
 }

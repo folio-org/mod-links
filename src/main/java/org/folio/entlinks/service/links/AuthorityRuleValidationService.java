@@ -131,7 +131,7 @@ public class AuthorityRuleValidationService {
         var doesItContains = contains.test(subfield);
         var shouldItContains = subfieldExistence.getValue();
 
-        if (doesItContains != shouldItContains) {
+        if (!shouldItContains.equals(doesItContains)) {
           logSubfieldExistenceValidationFailure(rule.getAuthorityField(), subfield, shouldItContains, doesItContains);
           return false;
         }
