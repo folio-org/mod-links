@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -72,6 +73,7 @@ public class InstanceAuthorityLinkingService {
   public List<InstanceAuthorityLink> getLinksByIds(List<Integer> ids) {
     log.info("Retrieving links by ids [{}]", ids);
     var longIds = ids.stream()
+      .filter(Objects::nonNull)
       .mapToLong(Integer::longValue)
       .boxed()
       .toList();
