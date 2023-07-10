@@ -2,6 +2,7 @@ package org.folio.entlinks.controller.delegate.suggestion;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.folio.entlinks.domain.dto.AuthoritySearchParameter;
 import org.folio.spring.test.type.UnitTest;
@@ -33,5 +34,12 @@ class LinksSuggestionServiceDelegateHelperTest {
   void getDelegate_positive_naturalId() {
     var actual = delegateHelper.getDelegate(AuthoritySearchParameter.NATURAL_ID);
     assertThat(actual).isInstanceOf(LinksSuggestionsByAuthorityNaturalId.class);
+  }
+
+  @Test
+  void getDelegate_negative_null() {
+    assertThatThrownBy(() -> delegateHelper.getDelegate(null))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("AuthoritySearchParameter must not be null.");
   }
 }
