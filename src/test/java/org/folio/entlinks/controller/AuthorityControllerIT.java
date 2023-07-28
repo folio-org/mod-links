@@ -483,5 +483,4 @@ class AuthorityControllerIT extends IntegrationTestBase {
   private ConsumerRecord<String, DomainEvent> getReceivedEvent() {
     return consumerRecords.poll(10, TimeUnit.SECONDS);
   }
-
 }
