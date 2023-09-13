@@ -9,10 +9,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.domain.dto.AuthorityEvent;
-import org.folio.entlinks.domain.dto.AuthorityRecord;
+import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
+import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.links.AuthorityDataStatService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -46,9 +46,9 @@ public class InstanceAuthorityLinkUpdateService {
       .collect(Collectors.toMap(AuthorityChangeHandler::supportedAuthorityChangeType, handler -> handler));
   }
 
-  public void handleAuthoritiesChanges(List<AuthorityEvent> events) {
+  public void handleAuthoritiesChanges(List<AuthorityDomainEvent> events) {
     var incomingAuthorityIds = events.stream()
-        .map(AuthorityEvent::getId)
+        .map(AuthorityDomainEvent::getId)
         .collect(Collectors.toSet());
     var linksNumberByAuthorityId = linkingService.countLinksByAuthorityIds(incomingAuthorityIds);
 
@@ -104,16 +104,16 @@ public class InstanceAuthorityLinkUpdateService {
     }
   }
 
-  private AuthorityChangeHolder toAuthorityChangeHolder(AuthorityEvent event,
+  private AuthorityChangeHolder toAuthorityChangeHolder(AuthorityDomainEvent event,
                                                         Map<AuthorityChangeField, String> fieldTagRelation,
                                                         Map<UUID, Integer> linksNumberByAuthorityId) {
-    var difference = getAuthorityChanges(event.getNew(), event.getOld());
+    var difference = getAuthorityChanges(event.getNewEntity(), event.getOldEntity());
     return new AuthorityChangeHolder(event, difference, fieldTagRelation,
       linksNumberByAuthorityId.getOrDefault(event.getId(), 0));
   }
 
   @SneakyThrows
-  private Map<AuthorityChangeField, AuthorityChange> getAuthorityChanges(AuthorityRecord s1, AuthorityRecord s2) {
+  private Map<AuthorityChangeField, AuthorityChange> getAuthorityChanges(AuthorityDto s1, AuthorityDto s2) {
     return getDifference(s1, s2).stream()
       .map(difference -> {
         try {
