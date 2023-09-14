@@ -17,6 +17,7 @@ public class UserTenantsService {
     if (userTenantsResponse != null) {
       return userTenantsResponse.userTenants().stream()
         .filter(userTenant -> StringUtils.isNotBlank(userTenant.centralTenantId()))
+        .filter(userTenant -> userTenant.centralTenantId().equals(tenantId))
         .findFirst()
         .map(UserTenantsClient.UserTenant::consortiumId);
     }

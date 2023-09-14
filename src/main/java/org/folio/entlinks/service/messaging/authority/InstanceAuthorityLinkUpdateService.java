@@ -1,6 +1,9 @@
 package org.folio.entlinks.service.messaging.authority;
 
+import static org.folio.entlinks.service.reindex.event.DomainEventType.DELETE;
+import static org.folio.entlinks.service.reindex.event.DomainEventType.UPDATE;
 import static org.folio.entlinks.utils.ObjectUtils.getDifference;
+import static org.folio.entlinks.utils.ObjectUtils.isOneOfEquals;
 
 import java.util.List;
 import java.util.Map;
@@ -48,15 +51,16 @@ public class InstanceAuthorityLinkUpdateService {
 
   public void handleAuthoritiesChanges(List<AuthorityDomainEvent> events) {
     var incomingAuthorityIds = events.stream()
-        .map(AuthorityDomainEvent::getId)
-        .collect(Collectors.toSet());
+      .map(AuthorityDomainEvent::getId)
+      .collect(Collectors.toSet());
     var linksNumberByAuthorityId = linkingService.countLinksByAuthorityIds(incomingAuthorityIds);
 
     var fieldTagRelation = mappingRulesProcessingService.getFieldTagRelations();
     var changeHolders = events.stream()
-        .map(event -> toAuthorityChangeHolder(event, fieldTagRelation, linksNumberByAuthorityId))
-        .filter(AuthorityChangeHolder::changesExist)
-        .toList();
+      .filter(authorityDomainEvent -> isOneOfEquals(authorityDomainEvent.getType(), UPDATE, DELETE))
+      .map(event -> toAuthorityChangeHolder(event, fieldTagRelation, linksNumberByAuthorityId))
+      .filter(AuthorityChangeHolder::changesExist)
+      .toList();
 
     prepareAndSaveAuthorityDataStats(changeHolders);
 
@@ -90,8 +94,8 @@ public class InstanceAuthorityLinkUpdateService {
 
   private void prepareAndSaveAuthorityDataStats(List<AuthorityChangeHolder> changeHolders) {
     var authorityDataStats = changeHolders.stream()
-        .map(AuthorityChangeHolder::toAuthorityDataStat)
-        .toList();
+      .map(AuthorityChangeHolder::toAuthorityDataStat)
+      .toList();
 
     var dataStats = authorityDataStatService.createInBatch(authorityDataStats);
     for (AuthorityChangeHolder changeHolder : changeHolders) {
