@@ -8,7 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface AuthoritySourceFileCodeRepository extends JpaRepository<AuthoritySourceFileCode, Integer> {
 
-  @Query(value = "SELECT * FROM authority_source_file_code sfc where :pattern like (sfc.code || '%') LIMIT 1",
+  @Query(value = """
+      SELECT * FROM authority_source_file_code sfc
+      where :pattern like (sfc.code || '%')
+      ORDER BY LENGTH(sfc.code) desc
+      LIMIT 1
+      """,
       nativeQuery = true)
   Optional<AuthoritySourceFileCode> findByCodeAsPrefixFor(@Param("pattern") String pattern);
 }
