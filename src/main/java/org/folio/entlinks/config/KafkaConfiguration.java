@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.folio.entlinks.domain.dto.AuthorityEvent;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
+import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.reindex.event.DomainEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +46,15 @@ public class KafkaConfiguration {
   @Bean
   public ConcurrentKafkaListenerContainerFactory<String, AuthorityDomainEvent> authorityListenerFactory(
     ConsumerFactory<String, AuthorityDomainEvent> consumerFactory) {
-    return listenerFactory(consumerFactory);
+    var factory = listenerFactory(consumerFactory);
+    factory.setRecordFilterStrategy(new AuthorityChangeFilterStrategy());
+    return factory;
   }
 
   /**
    * Creates and configures {@link org.springframework.kafka.core.ConsumerFactory} as Spring bean.
    *
-   * <p>Key type - {@link String}, value - {@link AuthorityEvent}.</p>
+   * <p>Key type - {@link String}, value - {@link AuthorityDomainEvent}.</p>
    *
    * @return typed {@link org.springframework.kafka.core.ConsumerFactory} object as Spring bean.
    */

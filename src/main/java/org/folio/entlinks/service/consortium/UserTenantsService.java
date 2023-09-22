@@ -13,10 +13,13 @@ public class UserTenantsService {
   private final UserTenantsClient userTenantsClient;
 
   public Optional<String> getConsortiumId(String tenantId) {
+    if (StringUtils.isBlank(tenantId)) {
+      return Optional.empty();
+    }
+
     var userTenantsResponse = userTenantsClient.getUserTenants(tenantId);
     if (userTenantsResponse != null) {
       return userTenantsResponse.userTenants().stream()
-        .filter(userTenant -> StringUtils.isNotBlank(userTenant.centralTenantId()))
         .filter(userTenant -> userTenant.centralTenantId().equals(tenantId))
         .findFirst()
         .map(UserTenantsClient.UserTenant::consortiumId);

@@ -20,7 +20,7 @@ public class ConsortiumTenantsService {
   private final UserTenantsService userTenantsService;
   private final ConsortiumTenantsClient consortiumTenantsClient;
 
-  @Cacheable(cacheNames = CONSORTIUM_TENANTS_CACHE)
+  @Cacheable(cacheNames = CONSORTIUM_TENANTS_CACHE, key = "@folioExecutionContext.tenantId + ':' + #tenantId")
   public List<String> getConsortiumTenants(String tenantId) {
     try {
       return userTenantsService.getConsortiumId(tenantId)

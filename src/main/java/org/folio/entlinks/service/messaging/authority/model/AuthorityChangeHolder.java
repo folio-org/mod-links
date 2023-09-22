@@ -60,7 +60,7 @@ public class AuthorityChangeHolder {
   }
 
   public AuthorityChangeType getChangeType() {
-    return switch (getInventoryEventType()) {
+    return switch (event.getType()) {
       case UPDATE -> isHeadingTypeChanged() ? AuthorityChangeType.DELETE : AuthorityChangeType.UPDATE;
       case DELETE -> AuthorityChangeType.DELETE;
       case CREATE, REINDEX -> null;
@@ -113,7 +113,7 @@ public class AuthorityChangeHolder {
     var authority = new Authority();
     authority.setId(getAuthorityId());
     authority.setNaturalId(getNewNaturalId() == null ? getOldNaturalId() : getNewNaturalId());
-    authority.setDeleted(this.getInventoryEventType().equals(DomainEventType.DELETE));
+    authority.setDeleted(event.getType().equals(DomainEventType.DELETE));
     AuthorityDataStat authorityDataStat = AuthorityDataStat.builder()
         .authority(authority)
         .authorityNaturalIdOld(getOldNaturalId())
@@ -134,12 +134,8 @@ public class AuthorityChangeHolder {
     return authorityDataStat;
   }
 
-  private DomainEventType getInventoryEventType() {
-    return event.getType();
-  }
-
   private AuthorityDataStatAction getAuthorityDataStatAction() {
-    return switch (getInventoryEventType()) {
+    return switch (event.getType()) {
       case UPDATE -> isOnlyNaturalIdChanged()
                      ? AuthorityDataStatAction.UPDATE_NATURAL_ID
                      : AuthorityDataStatAction.UPDATE_HEADING;
