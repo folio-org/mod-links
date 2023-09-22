@@ -18,12 +18,14 @@ import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityProp
 import org.folio.entlinks.service.consortium.propagation.ConsortiumLinksPropagationService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
+import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith(MockitoExtension.class)
 class ConsortiumLinksPropagationServiceTest {
 
