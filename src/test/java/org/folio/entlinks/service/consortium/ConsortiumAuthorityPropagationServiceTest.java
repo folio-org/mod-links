@@ -13,7 +13,6 @@ import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.service.authority.AuthorityService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
-import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ConsortiumAuthorityPropagationServiceTest {
 
-  private @Mock FolioExecutionContext context;
   private @Mock AuthorityService authorityService;
   private @Mock ConsortiumTenantsService tenantsService;
   private @Mock SystemUserScopedExecutionService executionService;
@@ -79,7 +77,6 @@ class ConsortiumAuthorityPropagationServiceTest {
   }
 
   private void doMocks() {
-    when(context.getTenantId()).thenReturn(TENANT_ID);
     when(tenantsService.getConsortiumTenants(TENANT_ID)).thenReturn(List.of("t1", "t2", "t3"));
     doAnswer(invocation -> {
       ((Runnable) invocation.getArgument(1)).run();
