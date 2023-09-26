@@ -20,6 +20,9 @@ public class TestConstants {
   public static final String AUTHORITY_TOPIC = "authorities.authority";
   public static final String DELETE_TYPE = "DELETE";
   public static final String UPDATE_TYPE = "UPDATE";
+  public static final String TEST_STRING = "test, ";
+  public static final String INVALID_HEADING_TYPE = "Invalid heading type";
+  public static final String UNEXPECTED_PROPAGATION_TYPE = "Unexpected propagation type";
 
   private static final String INSTANCE_LINKS_ENDPOINT_PATH = "/links/instances/{id}";
   private static final String AUTHORITY_LINKS_COUNT_ENDPOINT_PATH = "/links/authorities/bulk/count";
