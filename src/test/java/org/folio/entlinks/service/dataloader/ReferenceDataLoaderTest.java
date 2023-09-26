@@ -1,16 +1,6 @@
 package org.folio.entlinks.service.dataloader;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
-import java.util.UUID;
 import org.folio.entlinks.domain.entity.AuthorityNoteType;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.repository.AuthorityNoteTypeRepository;
@@ -22,6 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 
 @UnitTest
@@ -73,6 +71,13 @@ class ReferenceDataLoaderTest {
     assertEquals("Subjects", loadedSourceFile.getType());
     assertEquals("vocab.getty.edu/aat/", loadedSourceFile.getBaseUrl());
     assertEquals("folio", loadedSourceFile.getSource());
+  }
+
+  @Test
+  void shouldHandleExceptionInLoadRefData() {
+    when(noteTypeRepository.findById(any(UUID.class))).thenThrow(new RuntimeException("Unable to load reference data"));
+
+    assertThrows(IllegalStateException.class, referenceDataLoader::loadRefData);
   }
 
 }
