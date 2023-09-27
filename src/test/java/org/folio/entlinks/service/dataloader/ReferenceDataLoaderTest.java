@@ -8,6 +8,7 @@ import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.service.authority.AuthorityNoteTypeService;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.spring.test.type.UnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -77,7 +78,8 @@ class ReferenceDataLoaderTest {
   void shouldHandleExceptionInLoadRefData() {
     when(noteTypeRepository.findById(any(UUID.class))).thenThrow(new RuntimeException("Unable to load reference data"));
 
-    assertThrows(IllegalStateException.class, referenceDataLoader::loadRefData);
-  }
+    var exception = Assertions.assertThrows(IllegalStateException.class, referenceDataLoader::loadRefData);
 
+    assertEquals("Unable to load reference data", exception.getMessage());
+  }
 }

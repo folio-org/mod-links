@@ -143,13 +143,4 @@ public class AuthorityUtilityMapperTest {
 
     assertThat(target.getPersonalName()).isNull();
   }
-
 }
-
-
-
-
-
-
-
-
