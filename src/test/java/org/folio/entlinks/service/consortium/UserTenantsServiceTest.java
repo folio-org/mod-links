@@ -51,7 +51,7 @@ class UserTenantsServiceTest {
   }
 
   @Test
-  void testGetConsortiumIdWithNoMatchingUserTenants() {
+  void testGetConsortiumIdWithNoUserTenants() {
     String tenantId = "tenant1";
 
     when(userTenantsClient.getUserTenants(tenantId)).thenReturn(new UserTenantsClient.UserTenants(emptyList()));
