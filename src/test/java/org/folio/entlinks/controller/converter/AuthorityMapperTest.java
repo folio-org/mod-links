@@ -1,43 +1,50 @@
 package org.folio.entlinks.controller.converter;
 
 import org.folio.entlinks.domain.dto.AuthorityDto;
+import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.dto.AuthorityDtoIdentifier;
 import org.folio.entlinks.domain.dto.AuthorityDtoNote;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityIdentifier;
 import org.folio.entlinks.domain.entity.AuthorityNote;
+import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.spring.test.type.UnitTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
+import static org.folio.support.base.TestConstants.*;
 
+@UnitTest
 public class AuthorityMapperTest {
-
-  private static final String TEST_PROPERTY_VALUE = "test";
-  private static final UUID TEST_UUID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-  public static final int TEST_VERSION = 2;
 
   private final AuthorityMapper authorityMapper = new AuthorityMapperImpl();
 
   @Test
   void testToEntityWithValidDto() {
-    var dto = new AuthorityDto();
-    dto.setId(TEST_UUID);
-    dto.setNaturalId(TEST_PROPERTY_VALUE);
-    dto.setSource(TEST_PROPERTY_VALUE);
-    dto.setVersion(TEST_VERSION);
+    AuthorityDto dto = createAuthorityDto();
 
     Authority authority = authorityMapper.toEntity(dto);
+    var mappedSubjectHeadingCode = dto.getSubjectHeadings().charAt(0);
 
     assertThat(authority).isNotNull();
     assertThat(dto.getId()).isEqualTo(authority.getId());
     assertThat(dto.getNaturalId()).isEqualTo(authority.getNaturalId());
     assertThat(dto.getSource()).isEqualTo(authority.getSource());
     assertThat(dto.getVersion()).isEqualTo(authority.getVersion());
+    assertThat(mappedSubjectHeadingCode).isEqualTo(authority.getSubjectHeadingCode());
+    assertThat(dto.getIdentifiers().get(0).getValue()).isEqualTo(authority.getIdentifiers().get(0).getValue());
+    assertThat(dto.getNotes().get(0).getNote()).isEqualTo(authority.getNotes().get(0).getNote());
+    assertThat(dto.getSourceFileId()).isEqualTo(authority.getAuthoritySourceFile().getId());
+    assertThat(dto.getIdentifiers().get(0).getIdentifierTypeId())
+        .isEqualTo(authority.getIdentifiers().get(0).getIdentifierTypeId());
+
   }
 
   @Test
@@ -49,20 +56,25 @@ public class AuthorityMapperTest {
 
   @Test
   void testToDtoWithValidData() {
-    var authority = new Authority();
-    authority.setId(TEST_UUID);
-    authority.setVersion(TEST_VERSION);
-    authority.setSource(TEST_PROPERTY_VALUE);
-    authority.setNaturalId(TEST_PROPERTY_VALUE);
+    Authority authority = createAuthority();
 
     AuthorityDto authorityDto = authorityMapper.toDto(authority);
 
     assertThat(authorityDto).isNotNull();
-    assertThat(TEST_UUID).isEqualTo(authorityDto.getId());
-    assertThat(TEST_VERSION).isEqualTo(authorityDto.getVersion());
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(authorityDto.getSource());
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(authorityDto.getNaturalId());
+    assertThat(authority.getId()).isEqualTo(authorityDto.getId());
+    assertThat(authority.getVersion()).isEqualTo(authorityDto.getVersion());
+    assertThat(authority.getSource()).isEqualTo(authorityDto.getSource());
+    assertThat(authority.getNaturalId()).isEqualTo(authorityDto.getNaturalId());
+    assertThat(authority.getAuthoritySourceFile().getId()).isEqualTo(authorityDto.getSourceFileId());
+    AuthorityIdentifier identifier = authority.getIdentifiers().get(0);
+    assertThat(identifier.getIdentifierTypeId()).isEqualTo(authorityDto.getIdentifiers().get(0).getIdentifierTypeId());
+    assertThat(identifier.getValue()).isEqualTo(authorityDto.getIdentifiers().get(0).getValue());
+    assertThat(authority.getNotes().get(0).getNote()).isEqualTo(authorityDto.getNotes().get(0).getNote());
+    assertThat(authority.getNotes().get(0).getStaffOnly()).isEqualTo(authorityDto.getNotes().get(0).getStaffOnly());
+    assertThat(String.valueOf(authority.getSubjectHeadingCode())).isEqualTo(authorityDto.getSubjectHeadings());
+    assertThat(fromTimestamp(authority.getUpdatedDate())).isEqualTo(authorityDto.getMetadata().getUpdatedDate());
   }
+
 
   @Test
   void testToAuthorityWithNullInput() {
@@ -75,13 +87,13 @@ public class AuthorityMapperTest {
   void testToAuthorityIdentifierWithValidData() {
     var dtoIdentifier = new AuthorityDtoIdentifier();
     dtoIdentifier.setValue(TEST_PROPERTY_VALUE);
-    dtoIdentifier.setIdentifierTypeId(TEST_UUID);
+    dtoIdentifier.setIdentifierTypeId(TEST_ID);
 
     AuthorityIdentifier authorityIdentifier = authorityMapper.toAuthorityIdentifier(dtoIdentifier);
 
     assertThat(authorityIdentifier).isNotNull();
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(authorityIdentifier.getValue());
-    assertThat(TEST_UUID).isEqualTo(authorityIdentifier.getIdentifierTypeId());
+    assertThat(dtoIdentifier.getValue()).isEqualTo(authorityIdentifier.getValue());
+    assertThat(dtoIdentifier.getIdentifierTypeId()).isEqualTo(authorityIdentifier.getIdentifierTypeId());
 
   }
 
@@ -96,15 +108,15 @@ public class AuthorityMapperTest {
   @Test
   void testToAuthorityNoteWithValidData() {
     var dtoNote = new AuthorityDtoNote();
-    dtoNote.setNoteTypeId(TEST_UUID);
+    dtoNote.setNoteTypeId(TEST_ID);
     dtoNote.setNote(TEST_PROPERTY_VALUE);
     dtoNote.setStaffOnly(true);
 
     AuthorityNote authorityNote = authorityMapper.toAuthorityNote(dtoNote);
 
     assertThat(authorityNote).isNotNull();
-    assertThat(TEST_UUID).isEqualTo(authorityNote.getNoteTypeId());
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(authorityNote.getNote());
+    assertThat(dtoNote.getNoteTypeId()).isEqualTo(authorityNote.getNoteTypeId());
+    assertThat(dtoNote.getNote()).isEqualTo(authorityNote.getNote());
     assertThat(authorityNote.getStaffOnly()).isTrue();
   }
 
@@ -118,14 +130,14 @@ public class AuthorityMapperTest {
   @Test
   void testToAuthorityDtoNoteWithValidData() {
     var authorityNote = new AuthorityNote();
-    authorityNote.setNoteTypeId(TEST_UUID);
+    authorityNote.setNoteTypeId(TEST_ID);
     authorityNote.setNote(TEST_PROPERTY_VALUE);
     authorityNote.setStaffOnly(true);
 
     AuthorityDtoNote dtoNote = authorityMapper.toAuthorityDtoNote(authorityNote);
 
-    assertThat(TEST_UUID).isEqualTo(dtoNote.getNoteTypeId());
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(dtoNote.getNote());
+    assertThat(authorityNote.getNoteTypeId()).isEqualTo(dtoNote.getNoteTypeId());
+    assertThat(authorityNote.getNote()).isEqualTo(dtoNote.getNote());
     assertThat(dtoNote.getStaffOnly()).isTrue();
   }
 
@@ -138,24 +150,23 @@ public class AuthorityMapperTest {
 
   @Test
   void testToDtoListWithValidData() {
-    var authority1 = new Authority()
-        .withId(TEST_UUID)
-        .withVersion(TEST_VERSION)
-        .withSource(TEST_PROPERTY_VALUE);
-    var authority2 = new Authority()
-        .withId(TEST_UUID)
-        .withVersion(TEST_VERSION)
-        .withSource(TEST_PROPERTY_VALUE);
-
-    var authorityList = new ArrayList<>(Arrays.asList(authority1, authority2));
+    var authority = createAuthority();
+    var authorityList = new ArrayList<>(List.of(authority));
 
     List<AuthorityDto> dtoList = authorityMapper.toDtoList(authorityList);
 
-    assertThat(2).isEqualTo(dtoList.size());
+    assertThat(1).isEqualTo(dtoList.size());
     AuthorityDto dto1 = dtoList.get(0);
-    assertThat(TEST_UUID).isEqualTo(dto1.getId());
-    assertThat(TEST_VERSION).isEqualTo(dto1.getVersion());
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(dto1.getSource());
+    assertThat(authority.getId()).isEqualTo(dto1.getId());
+    assertThat(authority.getVersion()).isEqualTo(dto1.getVersion());
+    assertThat(authority.getSource()).isEqualTo(dto1.getSource());
+    assertThat(authority.getNaturalId()).isEqualTo(dto1.getNaturalId());
+    assertThat(authority.getAuthoritySourceFile().getId()).isEqualTo(dto1.getSourceFileId());
+    AuthorityIdentifier identifier = authority.getIdentifiers().get(0);
+    assertThat(identifier.getIdentifierTypeId()).isEqualTo(dto1.getIdentifiers().get(0).getIdentifierTypeId());
+    assertThat(identifier.getValue()).isEqualTo(dto1.getIdentifiers().get(0).getValue());
+    assertThat(authority.getNotes().get(0).getNote()).isEqualTo(dto1.getNotes().get(0).getNote());
+    assertThat(authority.getNotes().get(0).getStaffOnly()).isEqualTo(dto1.getNotes().get(0).getStaffOnly());
 
   }
 
@@ -170,13 +181,13 @@ public class AuthorityMapperTest {
   void testToAuthorityDtoIdentifierWithValidData() {
     var authorityIdentifier = new AuthorityIdentifier();
     authorityIdentifier.setValue(TEST_PROPERTY_VALUE);
-    authorityIdentifier.setIdentifierTypeId(TEST_UUID);
+    authorityIdentifier.setIdentifierTypeId(TEST_ID);
 
     AuthorityDtoIdentifier dtoIdentifier = authorityMapper.toAuthorityDtoIdentifier(authorityIdentifier);
 
     assertThat(dtoIdentifier).isNotNull();
-    assertThat(TEST_PROPERTY_VALUE).isEqualTo(dtoIdentifier.getValue());
-    assertThat(TEST_UUID).isEqualTo(dtoIdentifier.getIdentifierTypeId());
+    assertThat(authorityIdentifier.getValue()).isEqualTo(dtoIdentifier.getValue());
+    assertThat(authorityIdentifier.getIdentifierTypeId()).isEqualTo(dtoIdentifier.getIdentifierTypeId());
   }
 
   @Test
@@ -184,5 +195,54 @@ public class AuthorityMapperTest {
     AuthorityDtoIdentifier dtoIdentifier = authorityMapper.toAuthorityDtoIdentifier(null);
 
     assertThat(dtoIdentifier).isNull();
+  }
+
+  @Test
+  public void testToAuthorityCollectionWithValidPage() {
+    Authority authority = createAuthority();
+
+    var authorityList = List.of(authority);
+    Page<Authority> authorityPage = new PageImpl<>(authorityList);
+
+    AuthorityDtoCollection dtoCollection = authorityMapper.toAuthorityCollection(authorityPage);
+
+    assertThat(dtoCollection).isNotNull();
+    assertThat(1).isEqualTo(dtoCollection.getAuthorities().size());
+    AuthorityDto dto = dtoCollection.getAuthorities().get(0);
+    assertThat(authority.getId()).isEqualTo(dto.getId());
+  }
+
+  @NotNull
+  private static Authority createAuthority() {
+    var file = new AuthoritySourceFile();
+    file.setId(TEST_ID);
+    var authority = new Authority()
+        .withId(TEST_ID)
+        .withVersion(TEST_VERSION)
+        .withSource(TEST_PROPERTY_VALUE)
+        .withNaturalId(TEST_PROPERTY_VALUE)
+        .withAuthoritySourceFile(file)
+        .withIdentifiers(List.of(new AuthorityIdentifier(TEST_PROPERTY_VALUE, TEST_ID)))
+        .withNotes(List.of(new AuthorityNote(TEST_ID, TEST_PROPERTY_VALUE, true)))
+        .withSubjectHeadingCode(TEST_PROPERTY_VALUE.charAt(0));
+    authority.setUpdatedDate(TEST_DATE);
+    authority.setUpdatedByUserId(TEST_ID);
+    authority.setCreatedDate(TEST_DATE);
+    authority.setCreatedByUserId(TEST_ID);
+    return authority;
+  }
+
+  @NotNull
+  private static AuthorityDto createAuthorityDto() {
+    var dto = new AuthorityDto();
+    dto.setId(TEST_ID);
+    dto.setNaturalId(SOURCE_FILE_NATURAL_ID);
+    dto.setSource(SOURCE_FILE_SOURCE);
+    dto.setVersion(TEST_VERSION);
+    dto.setIdentifiers(List.of(new AuthorityDtoIdentifier(TEST_PROPERTY_VALUE, TEST_ID)));
+    dto.setNotes(List.of(new AuthorityDtoNote(TEST_ID, TEST_PROPERTY_VALUE)));
+    dto.setSubjectHeadings(TEST_PROPERTY_VALUE);
+    dto.setSourceFileId(TEST_ID);
+    return dto;
   }
 }
