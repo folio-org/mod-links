@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
   DatabaseHelper.AUTHORITY_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE
-})
+}, tenants = {TENANT_ID})
 class LinksSuggestionsIT extends IntegrationTestBase {
 
   private static final String BASE_URL = "id.loc.gov/authorities/names/";
@@ -46,7 +46,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @BeforeAll
   static void prepare() {
-    setUpTenant();
+    setUpConsortium(TENANT_ID, List.of(), false);
   }
 
   @BeforeEach
