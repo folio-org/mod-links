@@ -81,8 +81,8 @@ public abstract class LinksSuggestionsServiceDelegateBase<T> implements LinksSug
 
     var shadowCopyAuthorities = authoritiesBySource.get(Boolean.TRUE);
     var localCopyAuthorities = authoritiesBySource.get(Boolean.FALSE);
-    var marcRecordsForShadowCopyAuthorities = executor.executeAsCentralTenant(() ->
-        fetchAuthorityParsedRecords(shadowCopyAuthorities));
+    var marcRecordsForShadowCopyAuthorities = isEmpty(shadowCopyAuthorities) ? new StrippedParsedRecordCollection() :
+        executor.executeAsCentralTenant(() -> fetchAuthorityParsedRecords(shadowCopyAuthorities));
     var marcRecordsForLocalCopyAuthorities = fetchAuthorityParsedRecords(localCopyAuthorities);
 
     return Stream.of(
