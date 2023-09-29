@@ -1,11 +1,8 @@
 package org.folio.entlinks.service.consortium;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.client.UserTenantsClient;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Component;
@@ -15,18 +12,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsortiumTenantExecutor {
 
-  private final UserTenantsClient userTenantsClient;
+  private final UserTenantsService userTenantsService;
   private final FolioExecutionContext folioExecutionContext;
   private final SystemUserScopedExecutionService scopedExecutionService;
 
   public <T> T executeAsCentralTenant(Supplier<T> operation) {
     var tenantId = folioExecutionContext.getTenantId();
-    var centralTenantId = Optional.ofNullable(userTenantsClient.getUserTenants(tenantId))
-        .map(UserTenantsClient.UserTenants::userTenants)
-        .orElse(List.of())
-        .stream()
-        .findFirst()
-        .map(UserTenantsClient.UserTenant::centralTenantId);
+    var centralTenantId = userTenantsService.getCentralTenant(tenantId);
 
     if (centralTenantId.isEmpty()) {
       log.warn("Tenant: {} is not in consortia", tenantId);

@@ -1,18 +1,15 @@
 package org.folio.entlinks.service.consortium;
 
-import static org.folio.entlinks.client.UserTenantsClient.UserTenant;
-import static org.folio.entlinks.client.UserTenantsClient.UserTenants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import org.folio.entlinks.client.UserTenantsClient;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.spring.test.type.UnitTest;
@@ -28,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ConsortiumTenantExecutorTest {
 
   @Mock
-  private UserTenantsClient userTenantsClient;
+  private UserTenantsService userTenantsService;
 
   @Mock
   private FolioExecutionContext folioExecutionContext;
@@ -46,7 +43,7 @@ class ConsortiumTenantExecutorTest {
     var memberTenant = "memberId";
 
     when(folioExecutionContext.getTenantId()).thenReturn(memberTenant);
-    when(userTenantsClient.getUserTenants(memberTenant)).thenReturn(new UserTenants(List.of()));
+    when(userTenantsService.getCentralTenant(memberTenant)).thenReturn(Optional.empty());
 
     var result = consortiumTenantExecutor.executeAsCentralTenant(operation);
 
@@ -62,8 +59,7 @@ class ConsortiumTenantExecutorTest {
     var centralTenant = "centralId";
 
     when(folioExecutionContext.getTenantId()).thenReturn(memberTenant);
-    when(userTenantsClient.getUserTenants(memberTenant))
-        .thenReturn(new UserTenants(List.of(new UserTenant(centralTenant, "consortiaId"))));
+    when(userTenantsService.getCentralTenant(memberTenant)).thenReturn(Optional.of(centralTenant));
 
     var captor = ArgumentCaptor.forClass(String.class);
     when(scopedExecutionService.executeSystemUserScoped(captor.capture(), any(Callable.class)))

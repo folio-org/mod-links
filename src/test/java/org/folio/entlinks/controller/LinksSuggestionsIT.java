@@ -33,9 +33,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @IntegrationTest
-@DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_TABLE, DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
-                           DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE},
-                    tenants = {TENANT_ID})
+@DatabaseCleanup(tables = {
+  DatabaseHelper.AUTHORITY_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
 class LinksSuggestionsIT extends IntegrationTestBase {
 
   private static final String BASE_URL = "id.loc.gov/authorities/names/";
@@ -44,7 +45,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @BeforeAll
   static void prepare() {
-    setUpConsortium(TENANT_ID, List.of(), false);
+    setUpTenant();
   }
 
   @BeforeEach
