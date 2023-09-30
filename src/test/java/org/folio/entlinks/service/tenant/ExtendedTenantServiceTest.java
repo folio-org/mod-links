@@ -2,12 +2,11 @@ package org.folio.entlinks.service.tenant;
 
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.PrepareSystemUserService;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.spring.tools.kafka.KafkaAdminService;
 import org.folio.tenant.domain.dto.TenantAttributes;
@@ -29,6 +28,9 @@ class ExtendedTenantServiceTest {
   private KafkaAdminService kafkaAdminService;
   @Mock
   private PrepareSystemUserService prepareSystemUserService;
+  @Mock
+  private SystemUserScopedExecutionService systemUserScopedExecutionService;
+
 
   @Test
   void initializeTenant_positive() {
@@ -49,6 +51,16 @@ class ExtendedTenantServiceTest {
     when(context.getTenantId()).thenReturn(TENANT_ID);
     tenantService.afterTenantDeletion(tenantAttributes());
     verify(kafkaAdminService).deleteTopics(anyString());
+  }
+
+  @Test
+  void testLoadReferenceData() {
+    String tenantId = "your_tenant_id";
+    when(context.getTenantId()).thenReturn(tenantId);
+
+    tenantService.loadReferenceData();
+
+    verify(systemUserScopedExecutionService, times(1)).executeSystemUserScoped(eq(tenantId), any());
   }
 
   private TenantAttributes tenantAttributes() {
