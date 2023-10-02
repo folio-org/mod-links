@@ -1,5 +1,15 @@
 package org.folio.entlinks.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus.ACTUAL;
+import static org.folio.support.base.TestConstants.TEST_ID;
+import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.LinksCountDto;
 import org.folio.entlinks.domain.entity.Authority;
@@ -8,17 +18,6 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.spring.test.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus.ACTUAL;
-import static org.folio.support.base.TestConstants.TEST_ID;
-import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 
 @UnitTest
 public class InstanceAuthorityLinkMapperTest {

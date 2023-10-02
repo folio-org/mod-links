@@ -1,5 +1,15 @@
 package org.folio.entlinks.controller.delegate;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
 import org.folio.entlinks.controller.converter.LinkingRulesMapper;
 import org.folio.entlinks.domain.dto.LinkingRuleDto;
 import org.folio.entlinks.domain.dto.LinkingRulePatchRequest;
@@ -15,13 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -97,7 +100,7 @@ class LinkingRulesServiceDelegateTest {
       delegate.patchLinkingRuleById(ruleId, patchRequest);
     });
 
-    assertThat("Request should have id = " + ruleId).isEqualTo( exception.getMessage());
+    assertThat("Request should have id = " + ruleId).isEqualTo(exception.getMessage());
 
     verify(linkingRulesService, never()).patchLinkingRule(any(), any());
   }

@@ -1,6 +1,19 @@
 package org.folio.entlinks.controller.converter;
 
-import org.folio.entlinks.domain.dto.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.base.TestConstants.TEST_ID;
+import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
+
+import java.util.List;
+import java.util.Map;
+import org.folio.entlinks.domain.dto.ExternalIdsHolder;
+import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.LinkDetails;
+import org.folio.entlinks.domain.dto.ParsedRecordContent;
+import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
+import org.folio.entlinks.domain.dto.StrippedParsedRecord;
+import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
+import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
@@ -8,13 +21,6 @@ import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.spring.test.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.support.base.TestConstants.TEST_ID;
-import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 
 @UnitTest
 public class SourceContentMapperTest {

@@ -1,7 +1,9 @@
 package org.folio.entlinks.controller.delegate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.support.base.TestConstants.*;
+import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
+import static org.folio.support.base.TestConstants.SOURCE_FILE_NAME;
+import static org.folio.support.base.TestConstants.TEST_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

@@ -1,5 +1,14 @@
 package org.folio.entlinks.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.domain.entity.AuthorityDataStatAction.DELETE;
+import static org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus.ACTUAL;
+import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
+import static org.folio.support.base.TestConstants.TEST_DATE;
+import static org.folio.support.base.TestConstants.TEST_ID;
+
+import java.util.List;
+import java.util.UUID;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.entity.Authority;
@@ -9,16 +18,6 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.spring.test.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.entity.AuthorityDataStatAction.DELETE;
-import static org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus.ACTUAL;
-import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
-import static org.folio.support.base.TestConstants.TEST_DATE;
-import static org.folio.support.base.TestConstants.TEST_ID;
 
 @UnitTest
 public class DataStatsMapperTest {

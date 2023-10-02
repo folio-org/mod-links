@@ -1,5 +1,25 @@
 package org.folio.entlinks.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
+import static org.folio.support.base.TestConstants.TEST_STRING;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.HeadingRef;
@@ -7,18 +27,6 @@ import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
-import static org.folio.entlinks.domain.entity.AuthorityConstants.*;
-import static org.folio.support.base.TestConstants.TEST_STRING;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @UnitTest
 public class AuthorityUtilityMapperTest {
@@ -40,6 +48,7 @@ public class AuthorityUtilityMapperTest {
       case TOPICAL_TERM_HEADING -> source.setTopicalTerm(propertyValue);
       case GEOGRAPHIC_NAME_HEADING -> source.setGeographicName(propertyValue);
       case GENRE_TERM_HEADING -> source.setGenreTerm(propertyValue);
+      default -> fail("Invalid heading type - {} cannot be mapped", propertyType);
     }
 
     AuthorityUtilityMapper.extractAuthorityHeading(source, target);
@@ -62,6 +71,7 @@ public class AuthorityUtilityMapperTest {
       case TOPICAL_TERM_HEADING -> source.setSftTopicalTerm(Collections.singletonList(propertyValue));
       case GEOGRAPHIC_NAME_HEADING -> source.setSftGeographicName(Collections.singletonList(propertyValue));
       case GENRE_TERM_HEADING -> source.setSftGenreTerm(Collections.singletonList(propertyValue));
+      default -> fail("Invalid sft heading type - {} cannot be mapped", propertyType);
     }
 
     AuthorityUtilityMapper.extractAuthoritySftHeadings(source, target);
@@ -86,6 +96,7 @@ public class AuthorityUtilityMapperTest {
       case TOPICAL_TERM_HEADING -> source.setSaftTopicalTerm(Collections.singletonList(propertyValue));
       case GEOGRAPHIC_NAME_HEADING -> source.setSaftGeographicName(Collections.singletonList(propertyValue));
       case GENRE_TERM_HEADING -> source.setSaftGenreTerm(Collections.singletonList(propertyValue));
+      default -> fail("Invalid saft heading type - {} cannot be mapped", propertyType);
     }
 
     AuthorityUtilityMapper.extractAuthoritySaftHeadings(source, target);
@@ -149,7 +160,7 @@ public class AuthorityUtilityMapperTest {
 
   @ParameterizedTest
   @MethodSource("headingTypeAndValueProvider")
-  void testExtractAuthorityDtoHeadingValue(String headingType, String headingValue  ) {
+  void testExtractAuthorityDtoHeadingValue(String headingType, String headingValue) {
     target.setHeading(headingValue);
     target.setHeadingType(headingType);
 

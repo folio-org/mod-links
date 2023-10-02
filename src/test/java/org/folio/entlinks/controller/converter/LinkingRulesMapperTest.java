@@ -1,5 +1,11 @@
 package org.folio.entlinks.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.folio.entlinks.domain.dto.LinkingRuleDto;
 import org.folio.entlinks.domain.dto.LinkingRulePatchRequest;
 import org.folio.entlinks.domain.dto.SubfieldModification;
@@ -7,13 +13,6 @@ import org.folio.entlinks.domain.dto.SubfieldValidation;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 
 @UnitTest
 public class LinkingRulesMapperTest {

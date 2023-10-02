@@ -5,7 +5,6 @@ import static org.folio.support.KafkaTestUtils.fullTopicName;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import lombok.experimental.UtilityClass;
 import org.folio.entlinks.domain.dto.AuthoritySearchParameter;
 import org.folio.entlinks.domain.dto.LinkAction;

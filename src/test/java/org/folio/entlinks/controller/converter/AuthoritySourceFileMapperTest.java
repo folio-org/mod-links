@@ -1,5 +1,16 @@
 package org.folio.entlinks.controller.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum.FOLIO;
+import static org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto.SourceEnum.LOCAL;
+import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
+import static org.folio.support.base.TestConstants.SOURCE_FILE_CODE;
+import static org.folio.support.base.TestConstants.SOURCE_FILE_NAME;
+import static org.folio.support.base.TestConstants.SOURCE_FILE_TYPE;
+import static org.folio.support.base.TestConstants.TEST_ID;
+
+import java.util.List;
+import java.util.Set;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
@@ -9,14 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum.FOLIO;
-import static org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto.SourceEnum.LOCAL;
-import static org.folio.support.base.TestConstants.*;
 
 @UnitTest
 public class AuthoritySourceFileMapperTest {
@@ -105,7 +108,7 @@ public class AuthoritySourceFileMapperTest {
     List<AuthoritySourceFileDto> dtos = dtoCollection.getAuthoritySourceFiles();
     AuthoritySourceFile sourceFile = sourceFilesList.get(0);
     assertThat(dtoCollection).isNotNull();
-    assertThat(sourceFilesList.size()).isEqualTo( dtoCollection.getTotalRecords());
+    assertThat(sourceFilesList.size()).isEqualTo(dtoCollection.getTotalRecords());
     assertThat(sourceFile.getId()).isEqualTo(dtos.get(0).getId());
     assertThat(sourceFile.getName()).isEqualTo(dtos.get(0).getName());
     assertThat(sourceFile.getType()).isEqualTo(dtos.get(0).getType());

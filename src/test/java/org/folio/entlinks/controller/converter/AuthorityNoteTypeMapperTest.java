@@ -1,5 +1,13 @@
 package org.folio.entlinks.controller.converter;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
+import static org.folio.support.base.TestConstants.TEST_DATE;
+import static org.folio.support.base.TestConstants.TEST_ID;
+import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
+
+import java.util.List;
 import org.folio.entlinks.domain.dto.AuthorityNoteTypeDto;
 import org.folio.entlinks.domain.dto.AuthorityNoteTypeDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityNoteType;
@@ -8,12 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
-import static org.folio.support.base.TestConstants.*;
 
 @UnitTest
 public class AuthorityNoteTypeMapperTest {
