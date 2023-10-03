@@ -18,7 +18,6 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.spring.test.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import static org.hamcrest.Matchers.is;
 
 
 @UnitTest

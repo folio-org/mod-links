@@ -6,7 +6,6 @@ import static org.folio.entlinks.domain.entity.ReindexJobStatus.IN_PROGRESS;
 import static org.folio.entlinks.utils.DateUtils.fromTimestamp;
 import static org.folio.support.base.TestConstants.TEST_DATE;
 import static org.folio.support.base.TestConstants.TEST_ID;
-import static org.hamcrest.Matchers.hasSize;
 
 import java.util.List;
 import org.folio.entlinks.domain.dto.ReindexJobDto;
