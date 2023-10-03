@@ -77,7 +77,7 @@ class AuthorityUtilityMapperTest {
     AuthorityUtilityMapper.extractAuthoritySftHeadings(source, target);
 
     List<HeadingRef> sftHeadings = target.getSftHeadings();
-    assertThat(sftHeadings.size()).isEqualTo(1);
+    assertThat(sftHeadings).hasSize(1);
     assertThat(propertyValue).isEqualTo(sftHeadings.get(0).getHeading());
     assertThat(propertyType).isEqualTo(sftHeadings.get(0).getHeadingType());
   }

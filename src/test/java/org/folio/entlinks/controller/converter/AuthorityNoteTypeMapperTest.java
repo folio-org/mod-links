@@ -103,8 +103,9 @@ class AuthorityNoteTypeMapperTest {
     var entityList = List.of(entity);
     List<AuthorityNoteTypeDto> dtoList = mapper.toDtoList(entityList);
 
-    assertThat(dtoList).isNotNull();
-    assertThat(dtoList).hasSize(1);
+    assertThat(dtoList)
+        .isNotNull()
+        .hasSize(1);
 
     AuthorityNoteTypeDto dto = dtoList.get(0);
     assertThat(dto.getId()).isEqualTo(entity.getId());
