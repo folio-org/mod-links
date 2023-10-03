@@ -56,10 +56,10 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     sourceFile.setBaseUrl(BASE_URL);
     var sourceFileCode1 = sourceFile.getAuthoritySourceFileCodes().iterator().next();
     var sourceFileCode2 = new AuthoritySourceFileCode();
-    var sourceFileCode3 = new AuthoritySourceFileCode();
     sourceFileCode1.setCode(NATURAL_ID.substring(0, 3));
     sourceFileCode2.setAuthoritySourceFile(sourceFile);
     sourceFileCode2.setCode(NATURAL_ID.substring(0, 2));
+    var sourceFileCode3 = new AuthoritySourceFileCode();
     sourceFileCode3.setAuthoritySourceFile(sourceFile);
     sourceFileCode3.setCode(NATURAL_ID_FOR_T_SUBFIELD.substring(0, 2));
     sourceFile.addCode(sourceFileCode2);
@@ -119,7 +119,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenSubfields = Map.of("0", NATURAL_ID_FOR_T_SUBFIELD);
     var givenRecord = getRecord("240", null, givenSubfields);
 
-    var expectedLinkDetails = getLinkDetails(LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID,   NEW, NATURAL_ID_FOR_T_SUBFIELD, 6);
+    var expectedLinkDetails = getLinkDetails(LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID, NEW, NATURAL_ID_FOR_T_SUBFIELD, 6);
     var expectedSubfields = Map.of("a", "new $a value from $t", "0", BASE_URL + NATURAL_ID_FOR_T_SUBFIELD,
         "9", LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID);
     var expectedRecord = getRecord("240", expectedLinkDetails, expectedSubfields);
@@ -280,7 +280,8 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     return getLinkDetails(LINKABLE_AUTHORITY_ID, linkStatus, naturalId, linkingRuleId);
   }
 
-  private LinkDetails getLinkDetails(String authorityId, LinkStatus linkStatus, String naturalId, Integer linkingRuleId) {
+  private LinkDetails getLinkDetails(String authorityId, LinkStatus linkStatus, String naturalId,
+                                     Integer linkingRuleId) {
     return new LinkDetails().linkingRuleId(linkingRuleId)
         .authorityId(UUID.fromString(authorityId))
         .authorityNaturalId(naturalId)
