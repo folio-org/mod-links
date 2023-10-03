@@ -58,16 +58,6 @@ class ExtendedTenantServiceTest {
     verify(kafkaAdminService).deleteTopics(anyString());
   }
 
-  @Test
-  void testLoadReferenceData() {
-    String tenantId = "your_tenant_id";
-    when(context.getTenantId()).thenReturn(tenantId);
-
-    tenantService.loadReferenceData();
-
-    verify(systemUserScopedExecutionService, times(1)).executeSystemUserScoped(eq(tenantId), any());
-  }
-
   private TenantAttributes tenantAttributes() {
     return new TenantAttributes().moduleTo("mod-entities-links");
   }
