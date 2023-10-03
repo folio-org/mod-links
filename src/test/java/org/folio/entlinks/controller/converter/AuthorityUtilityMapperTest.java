@@ -102,7 +102,7 @@ class AuthorityUtilityMapperTest {
     AuthorityUtilityMapper.extractAuthoritySaftHeadings(source, target);
 
     List<HeadingRef> saftHeadings = target.getSaftHeadings();
-    assertThat(saftHeadings.size()).isEqualTo(1);
+    assertThat(saftHeadings).hasSize(1);
     assertThat(propertyValue).isEqualTo(saftHeadings.get(0).getHeading());
     assertThat(propertyType).isEqualTo(saftHeadings.get(0).getHeadingType());
   }

@@ -81,7 +81,7 @@ class InstanceAuthorityLinkMapperTest {
     sourceMap.put(uuidKey, value);
 
     List<LinksCountDto> dtoList = mapper.convert(sourceMap);
-    assertThat(dtoList.size()).isEqualTo(1);
+    assertThat(dtoList).hasSize(1);
     assertThat(uuidKey).isEqualTo(dtoList.get(0).getId());
     assertThat(value).isEqualTo(dtoList.get(0).getTotalLinks());
   }

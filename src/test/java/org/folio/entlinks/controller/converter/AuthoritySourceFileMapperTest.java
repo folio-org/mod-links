@@ -31,7 +31,7 @@ class AuthoritySourceFileMapperTest {
   private final AuthoritySourceFileMapper mapper = new AuthoritySourceFileMapperImpl();
 
   @Test
-  public void testToEntity() {
+  void testToEntity() {
     AuthoritySourceFileDto dto = createAuthoritySourceFileDto();
 
     AuthoritySourceFile entity = mapper.toEntity(dto);

@@ -159,7 +159,7 @@ class AuthorityMapperTest {
 
     List<AuthorityDto> dtoList = authorityMapper.toDtoList(authorityList);
 
-    assertThat(dtoList.size()).isEqualTo(1);
+    assertThat(dtoList).hasSize(1);
     AuthorityDto dto1 = dtoList.get(0);
     assertThat(authority.getId()).isEqualTo(dto1.getId());
     assertThat(authority.getVersion()).isEqualTo(dto1.getVersion());
@@ -211,7 +211,7 @@ class AuthorityMapperTest {
     AuthorityDtoCollection dtoCollection = authorityMapper.toAuthorityCollection(authorityPage);
 
     assertThat(dtoCollection).isNotNull();
-    assertThat(dtoCollection.getAuthorities().size()).isEqualTo(1);
+    assertThat(dtoCollection.getAuthorities()).hasSize(1);
     AuthorityDto dto = dtoCollection.getAuthorities().get(0);
     assertThat(authority.getId()).isEqualTo(dto.getId());
   }
