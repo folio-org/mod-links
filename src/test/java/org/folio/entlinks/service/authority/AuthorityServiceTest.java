@@ -27,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
@@ -157,6 +158,24 @@ class AuthorityServiceTest {
     verify(repository).save(expected);
     verifyNoMoreInteractions(repository);
     verifyNoMoreInteractions(sourceFileRepository);
+  }
+
+  @Test
+  void shouldThrowOptimisticLockingFailureExceptionWhenProvidedOldAuthorityVersion() {
+    var id = UUID.randomUUID();
+    var existing = new Authority();
+    existing.setVersion(1);
+    existing.setId(id);
+    var modified = new Authority();
+    modified.setId(id);
+
+    when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existing));
+
+    var thrown = assertThrows(OptimisticLockingFailureException.class, () -> service.update(id, modified));
+
+    assertThat(thrown.getMessage())
+        .isEqualTo("Authority was already modified. Existing version: 1, Version with changes: 0");
+    verifyNoMoreInteractions(repository);
   }
 
   @Test

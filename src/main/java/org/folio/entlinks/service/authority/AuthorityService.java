@@ -22,6 +22,7 @@ import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.data.OffsetRequest;
 import org.folio.tenant.domain.dto.Parameter;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
@@ -80,10 +81,15 @@ public class AuthorityService {
       throw new RequestBodyValidationException("Request should have id = " + id,
         List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
     }
-    validateSourceFile(modified);
 
     var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
+    if (modified.getVersion() < existing.getVersion()) {
+      throw new OptimisticLockingFailureException(
+          String.format("Authority was already modified. Existing version: %s, Version with changes: %s",
+              existing.getVersion(), modified.getVersion()));
+    }
 
+    validateSourceFile(modified);
     copyModifiableFields(existing, modified);
 
     return repository.save(existing);
@@ -110,6 +116,7 @@ public class AuthorityService {
     existing.setSaftHeadings(modified.getSaftHeadings());
     existing.setIdentifiers(modified.getIdentifiers());
     existing.setNotes(modified.getNotes());
+    existing.setVersion(existing.getVersion() + 1);
 
     Optional.ofNullable(modified.getAuthoritySourceFile())
       .map(AuthoritySourceFile::getId)

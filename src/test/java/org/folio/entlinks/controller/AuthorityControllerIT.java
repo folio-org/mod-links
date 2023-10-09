@@ -341,6 +341,33 @@ class AuthorityControllerIT extends IntegrationTestBase {
   }
 
   @Test
+  @DisplayName("PUT: update Authority without any changes")
+  void updateAuthorityWithoutModification_positive_entityUpdatedAndVersionIncreased() throws Exception {
+    getReceivedEvent();
+    var dto = authorityDto(0, 0);
+    createSourceFile(0);
+
+    doPost(authorityEndpoint(), dto);
+    getReceivedEvent();
+    var existingAsString = doGet(authorityEndpoint())
+        .andExpect(jsonPath("authorities[0]._version", is(0)))
+        .andReturn().getResponse().getContentAsString();
+    var collection = objectMapper.readValue(existingAsString, AuthorityDtoCollection.class);
+    var putDto = collection.getAuthorities().get(0);
+
+    tryPut(authorityEndpoint(putDto.getId()), putDto).andExpect(status().isNoContent());
+
+    var content = doGet(authorityEndpoint(putDto.getId()))
+        .andExpect(jsonPath("_version", is(1)))
+        .andExpect(jsonPath("metadata.createdDate", notNullValue()))
+        .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
+        .andReturn().getResponse().getContentAsString();
+    var resultDto = objectMapper.readValue(content, AuthorityDto.class);
+
+    assertTrue(resultDto.getMetadata().getUpdatedDate().isAfter(putDto.getMetadata().getUpdatedDate()));
+  }
+
+  @Test
   @Disabled("behaves un-deterministically and thus disable for now")
   @DisplayName("PUT: repeated update of Authority without modification")
   void updateConcurrently_positive_notAllShouldSucceedAndAtLeastOneShouldFail() throws Exception {
