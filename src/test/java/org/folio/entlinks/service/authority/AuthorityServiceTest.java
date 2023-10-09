@@ -19,6 +19,7 @@ import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
+import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
@@ -171,10 +171,11 @@ class AuthorityServiceTest {
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existing));
 
-    var thrown = assertThrows(OptimisticLockingFailureException.class, () -> service.update(id, modified));
+    var thrown = assertThrows(OptimisticLockingException.class, () -> service.update(id, modified));
 
     assertThat(thrown.getMessage())
-        .isEqualTo("Authority was already modified. Existing version: 1, Version with changes: 0");
+        .isEqualTo("Cannot update record " + id + " because it has been changed (optimistic locking): "
+            + "Stored _version is 1, _version of request is 0");
     verifyNoMoreInteractions(repository);
   }
 

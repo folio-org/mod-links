@@ -19,12 +19,11 @@ import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
+import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.data.OffsetRequest;
 import org.folio.tenant.domain.dto.Parameter;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -71,7 +70,7 @@ public class AuthorityService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Retryable(
-    retryFor = ObjectOptimisticLockingFailureException.class,
+    retryFor = OptimisticLockingException.class,
     maxAttempts = 2,
     backoff = @Backoff(delay = 500))
   public Authority update(UUID id, Authority modified) {
@@ -84,9 +83,7 @@ public class AuthorityService {
 
     var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
     if (modified.getVersion() < existing.getVersion()) {
-      throw new OptimisticLockingFailureException(
-          String.format("Authority was already modified. Existing version: %s, Version with changes: %s",
-              existing.getVersion(), modified.getVersion()));
+      throw OptimisticLockingException.optimisticLockingOnUpdate(id, existing.getVersion(), modified.getVersion());
     }
 
     validateSourceFile(modified);
