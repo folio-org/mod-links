@@ -94,6 +94,33 @@ class LinksSuggestionsServiceTest {
 
   @ParameterizedTest
   @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
+  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withMultipleRulesForFieldAndFirstNotSuitable(String linkingMatchSubfield) {
+    var rules = getMapRule(Map.of("100", "100", "900", "110"));
+    var bib = getBibParsedRecordContent("100", null);
+    var authority = getAuthorityParsedRecordContent("100");
+    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+
+    linksSuggestionService
+        .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules,
+            linkingMatchSubfield, false);
+
+    var bibField = bib.getFields().get(0);
+    var linkDetails = bibField.getLinkDetails();
+    assertEquals(LinkStatus.NEW, linkDetails.getStatus());
+    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
+    assertEquals(NATURAL_ID, linkDetails.getAuthorityNaturalId());
+    assertEquals(1, linkDetails.getLinkingRuleId());
+    assertNull(linkDetails.getErrorCause());
+
+    var bibSubfields = bibField.getSubfields();
+    assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9").get(0));
+    assertEquals(BASE_URL + NATURAL_ID, bibSubfields.get("0").get(0));
+    assertFalse(bibSubfields.containsKey("a"));
+    assertTrue(bibSubfields.containsKey("b"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
   void fillLinkDetailsWithSuggestedAuthorities_shouldUpdateAndRemoveControlledSubfield(String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var initialBibSubfields = new HashMap<String, List<String>>();
@@ -319,6 +346,31 @@ class LinksSuggestionsServiceTest {
 
     return Map.of(bibField, List.of(rule));
   }
+
+  private Map<String, List<InstanceAuthorityLinkingRule>> getMapRule(Map<String, String> inputMap) {
+    Map<String, List<InstanceAuthorityLinkingRule>> result = new HashMap<>();
+
+    for (Map.Entry<String, String> entry : inputMap.entrySet()) {
+      String bibField = entry.getKey();
+      String authorityField = entry.getValue();
+
+      var modification = new SubfieldModification().source("a").target("b");
+      var existence = Map.of("a", true);
+
+      var rule = new InstanceAuthorityLinkingRule();
+      rule.setId(1);
+      rule.setBibField(bibField);
+      rule.setAuthorityField(authorityField);
+      rule.setAutoLinkingEnabled(true);
+      rule.setAuthoritySubfields(new char[]{'a', 'c'});
+      rule.setSubfieldModifications(List.of(modification));
+      rule.setSubfieldsExistenceValidations(existence);
+
+      result.put(bibField, List.of(rule));
+    }
+    return result;
+  }
+
 
   private void disableAutoLinkingFeature(List<InstanceAuthorityLinkingRule> rules) {
     rules.forEach(rule -> rule.setAutoLinkingEnabled(false));
