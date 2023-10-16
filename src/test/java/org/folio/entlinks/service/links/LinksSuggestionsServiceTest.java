@@ -94,7 +94,7 @@ class LinksSuggestionsServiceTest {
 
   @ParameterizedTest
   @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
-  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withMultipleRulesForFieldAndFirstNotSuitable(String linkingMatchSubfield) {
+  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withRulesForFieldAndFirstNotSuitable(String linkingMatchSubfield) {
     var rules = getMapRule(Map.of("100", "100", "900", "110"));
     var bib = getBibParsedRecordContent("100", null);
     var authority = getAuthorityParsedRecordContent("100");
