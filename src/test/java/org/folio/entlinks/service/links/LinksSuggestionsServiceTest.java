@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,19 +95,22 @@ class LinksSuggestionsServiceTest {
 
   @ParameterizedTest
   @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
-  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withRulesForFieldAndFirstNotSuitable(String linkingMatchSubfield) {
-    var rules = getMapRule(Map.of("100", "100", "900", "110"));
-    var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContent("100");
+  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withMultipleRulesForFieldAndOnlyOneSuitable(
+      String linkingMatchSubfield) {
+    var rules = getMapRule("240", List.of("100", "110", "111"));
+    var bib = getBibParsedRecordContent("240", getActualLinksDetails());
+    var authority = getAuthorityParsedRecordContent("130");
+    var secondAuthority = getAuthorityParsedRecordContent("100");
+    var thirdAuthority = getAuthorityParsedRecordContent("111");
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
-        .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules,
-            linkingMatchSubfield, false);
+        .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority, secondAuthority, thirdAuthority),
+            rules, linkingMatchSubfield, false);
 
     var bibField = bib.getFields().get(0);
     var linkDetails = bibField.getLinkDetails();
-    assertEquals(LinkStatus.NEW, linkDetails.getStatus());
+    assertEquals(LinkStatus.ACTUAL, linkDetails.getStatus());
     assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
     assertEquals(NATURAL_ID, linkDetails.getAuthorityNaturalId());
     assertEquals(1, linkDetails.getLinkingRuleId());
@@ -347,16 +351,12 @@ class LinksSuggestionsServiceTest {
     return Map.of(bibField, List.of(rule));
   }
 
-  private Map<String, List<InstanceAuthorityLinkingRule>> getMapRule(Map<String, String> inputMap) {
-    Map<String, List<InstanceAuthorityLinkingRule>> result = new HashMap<>();
+  private Map<String, List<InstanceAuthorityLinkingRule>> getMapRule(String bibField, List<String> authorityFields) {
+    var modification = new SubfieldModification().source("a").target("b");
+    var existence = Map.of("a", true);
 
-    for (Map.Entry<String, String> entry : inputMap.entrySet()) {
-      String bibField = entry.getKey();
-      String authorityField = entry.getValue();
-
-      var modification = new SubfieldModification().source("a").target("b");
-      var existence = Map.of("a", true);
-
+    var rules = new ArrayList<InstanceAuthorityLinkingRule>();
+    for (String authorityField : authorityFields) {
       var rule = new InstanceAuthorityLinkingRule();
       rule.setId(1);
       rule.setBibField(bibField);
@@ -365,10 +365,10 @@ class LinksSuggestionsServiceTest {
       rule.setAuthoritySubfields(new char[]{'a', 'c'});
       rule.setSubfieldModifications(List.of(modification));
       rule.setSubfieldsExistenceValidations(existence);
-
-      result.put(bibField, List.of(rule));
+      rules.add(rule);
     }
-    return result;
+
+    return Map.of(bibField, rules);
   }
 
 
