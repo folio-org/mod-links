@@ -72,7 +72,7 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withNewLink(String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
+    var authority = getAuthorityParsedRecordContent("100");
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
@@ -100,9 +100,9 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("240", List.of("100", "110", "111"));
     var bib = getBibParsedRecordContent("240", getActualLinksDetails());
     var authorityId = UUID.randomUUID();
-    var authority = getAuthorityParsedRecordContent(UUID.randomUUID(), "130");
-    var secondAuthority = getAuthorityParsedRecordContent(authorityId, "100");
-    var thirdAuthority = getAuthorityParsedRecordContent(UUID.randomUUID(), "111");
+    var authority = getAuthorityParsedRecordContent(UUID.randomUUID(), "130", Map.of("a", List.of("test")));
+    var secondAuthority = getAuthorityParsedRecordContent(authorityId, "110", Map.of("a", List.of("test")));
+    var thirdAuthority = getAuthorityParsedRecordContent(UUID.randomUUID(), "111", Map.of("a", List.of("test")));
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
@@ -131,7 +131,7 @@ class LinksSuggestionsServiceTest {
     var initialBibSubfields = new HashMap<String, List<String>>();
     initialBibSubfields.put("c", List.of("c value"));
     var bib = getBibParsedRecordContent("100", initialBibSubfields, null);
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
+    var authority = getAuthorityParsedRecordContent("100");
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
@@ -157,7 +157,7 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withActualLink(String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
+    var authority = getAuthorityParsedRecordContent("100");
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
@@ -184,7 +184,7 @@ class LinksSuggestionsServiceTest {
     String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100", emptyMap());
+    var authority = getAuthorityParsedRecordContent("100", emptyMap());
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -200,8 +200,8 @@ class LinksSuggestionsServiceTest {
     String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
-    var secondAuthority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
+    var authority = getAuthorityParsedRecordContent("100");
+    var secondAuthority = getAuthorityParsedRecordContent("100");
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority, secondAuthority), rules,
@@ -221,7 +221,7 @@ class LinksSuggestionsServiceTest {
     String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "110");
+    var authority = getAuthorityParsedRecordContent("110");
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -239,7 +239,7 @@ class LinksSuggestionsServiceTest {
     disableAutoLinkingFeature(rules.get("600"));
 
     var bib = getBibParsedRecordContent("600", null);
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "110");
+    var authority = getAuthorityParsedRecordContent("110");
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -256,7 +256,7 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     disableAutoLinkingFeature(rules.get("100"));
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
-    var authority = getAuthorityParsedRecordContent(AUTHORITY_ID, "100");
+    var authority = getAuthorityParsedRecordContent("100");
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
 
     linksSuggestionService
@@ -307,8 +307,14 @@ class LinksSuggestionsServiceTest {
     assertNull(field.getLinkDetails());
   }
 
-  private AuthorityParsedContent getAuthorityParsedRecordContent(UUID authorityId, String authorityField) {
-    return getAuthorityParsedRecordContent(authorityId, authorityField, Map.of("a", List.of("test")));
+  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField) {
+    return getAuthorityParsedRecordContent(authorityField, Map.of("a", List.of("test")));
+  }
+
+  private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField,
+                                                                 Map<String, List<String>> subfields) {
+    var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
+    return new AuthorityParsedContent(AUTHORITY_ID, NATURAL_ID, "", List.of(field));
   }
 
   private AuthorityParsedContent getAuthorityParsedRecordContent(UUID authorityId, String authorityField,
