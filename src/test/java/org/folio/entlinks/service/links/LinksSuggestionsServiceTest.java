@@ -313,8 +313,7 @@ class LinksSuggestionsServiceTest {
 
   private AuthorityParsedContent getAuthorityParsedRecordContent(String authorityField,
                                                                  Map<String, List<String>> subfields) {
-    var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
-    return new AuthorityParsedContent(AUTHORITY_ID, NATURAL_ID, "", List.of(field));
+    return getAuthorityParsedRecordContent(AUTHORITY_ID, authorityField, subfields);
   }
 
   private AuthorityParsedContent getAuthorityParsedRecordContent(UUID authorityId, String authorityField,
