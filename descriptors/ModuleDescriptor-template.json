@@ -156,7 +156,7 @@
           ],
           "modulePermissions": [
             "source-storage.records.fetch",
-            "search.authorities.collection.get"
+            "user-tenants.collection.get"
           ]
         }
       ]
