@@ -11,6 +11,7 @@
 
 ### Bug fixes
 * Updating authority's source file field to null is failed ([MODELINKS-143](https://issues.folio.org/browse/MODELINKS-143))
+* Failed to send update event if sourceFile is null ([MODELINKS-144](https://issues.folio.org/browse/MODELINKS-144))
 
 ### Tech Dept
 * Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
