@@ -207,7 +207,7 @@ public class TestDataUtils {
       new UsersClient.User(
         userIds.get(0).toString(),
         "john_doe",
-        "user",
+        "user1",
         true,
         new UsersClient.User.Personal("John", "Doe")
       ),
