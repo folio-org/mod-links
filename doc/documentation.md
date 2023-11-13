@@ -109,6 +109,7 @@ docker run -t -i -p 8081:8081 mod-entities-links
 | KAFKA_INSTANCE_AUTHORITY_STATS_CONSUMER_CONCURRENCY     | 1                                     | Number of kafka concurrent threads for `links.instance-authority-stats` message consuming                                                                                                            |
 | KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS              | 100                                   | Number of instance-authority links `links.instance-authority` event contains while processing authority link source change.                                                                          |
 | INSTANCE_STORAGE_QUERY_BATCH_SIZE                       | 50                                    | Number of instances to retrieve from inventory storage per one request (Max 90 - based on maximum URI length).                                                                                       |
+| AUTHORITY_ARCHIVES_EXPIRATION_PERIOD                    | 7                                     | The retention period in days for keeping the deleted authorities in authority_archive DB table                                                                                                       |
 
 ### Configuring spring-boot
 
@@ -125,15 +126,16 @@ documentation [Spring Boot Externalized Configuration](https://docs.spring.io/sp
 
 ### Folio modules communication
 
-| Module name               | Interface                     | Notes                                                     |
-|---------------------------|-------------------------------|-----------------------------------------------------------|
-| mod-login                 | login                         | For system user creation and authentication               |
-| mod-permissions           | permissions                   | For system user creation                                  |
-| mod-users                 | users                         | For system user creation                                  |
-| mod-source-record-manager | mapping-rules-provider        | For fetching MARC bibliographic-to-Instance mapping rules |
-| mod-source-record-storage | source-storage-source-records | For fetching Authority source records in MARC format      |
-| mod-inventory-storage     | authority-source-files        | For fetching Authority source file reference data         |
-| mod-inventory-storage     | instance-storage              | For fetching Instance data for statistic                  |
+| Module name               | Interface                     | Notes                                                                       |
+|---------------------------|-------------------------------|-----------------------------------------------------------                  |
+| mod-login                 | login                         | For system user creation and authentication                                 |
+| mod-permissions           | permissions                   | For system user creation                                                    |
+| mod-users                 | users                         | For system user creation                                                    |
+| mod-source-record-manager | mapping-rules-provider        | For fetching MARC bibliographic-to-Instance mapping rules                   |
+| mod-source-record-storage | source-storage-source-records | For fetching Authority source records in MARC format                        |
+| mod-inventory-storage     | authority-source-files        | For fetching Authority source file reference data                           |
+| mod-inventory-storage     | instance-storage              | For fetching Instance data for statistic                                    |
+| mod-settings              | settings                      | For fetching the tenant-specific retention period for archived authorities  |
 
 ### Consuming Kafka messages
 
@@ -608,3 +610,31 @@ Response:
   ]
 }
 ```
+### Configuration setting for Authority Archive records expiration
+In order to provide an ability for a tenant to have specific retention period of authority archives, we need to add the below configuration in mod-settings.
+If no setting is provided by a tenant the retention period value would be taken from `AUTHORITY_ARCHIVES_EXPIRATION_PERIOD` environment variable
+
+#### Permissions
+To make a post call to mod-settings, user should have below permissions.
+```
+  mod-settings.entries.item.post
+  mod-settings.global.write.mod-entities-links
+```
+
+#### Example request
+```
+POST https://{okapi-location}/settings/entries
+  {
+    "id":"1e01066d-4bee-4cf7-926c-ba2c9c6c0001",
+    "scope": "mod-entities-links",
+    "key": "authority-archives-retention",
+    "value":"{\"retentionInDays\":10}"
+}
+```
+
+| parameter | Type        | Description                                                                                                          |
+|---------  |-------------|----------------------------------------------------------------------------------------------------------------------|
+| `id`      | UUID        | id of type UUID should be provided.                                                                                  |
+| `scope`   | String      | Scope should be the module name. Here, it will be "mod-entities-links"                                               |
+| `key`     | String      | Feature or Identifier name matching the setting we are enabling for. Here, it will be "authority-archives-retention" |
+| `value`   | Json Object | Value object for this setting with only one property: `retentionInDays` - retention period in days                   |

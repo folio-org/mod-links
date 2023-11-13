@@ -1,0 +1,17 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/settings/entries"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"items\":[{\"id\":\"d0cf874d-2042-474e-804b-e24d37ea182a\",\"scope\":\"mod-entities-links\",\"key\":\"authority-archives-retention\",\"value\":{\"retentionInDays\":1}}], \"resultInfo\":{\"totalRecords\": 1}}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  ]
+}

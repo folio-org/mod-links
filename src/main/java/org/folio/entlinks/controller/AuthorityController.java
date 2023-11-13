@@ -2,6 +2,7 @@ package org.folio.entlinks.controller;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.folio.entlinks.controller.delegate.AuthorityArchiveServiceDelegate;
 import org.folio.entlinks.controller.delegate.AuthorityServiceDelegate;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthorityController implements AuthorityStorageApi {
 
   private final AuthorityServiceDelegate delegate;
+  private final AuthorityArchiveServiceDelegate authorityArchiveServiceDelegate;
 
   @Override
   public ResponseEntity<AuthorityDto> createAuthority(AuthorityDto authority) {
@@ -45,5 +47,11 @@ public class AuthorityController implements AuthorityStorageApi {
   public ResponseEntity<Void> updateAuthority(UUID id, AuthorityDto authority) {
     delegate.updateAuthority(id, authority);
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> expireAuthorities() {
+    authorityArchiveServiceDelegate.expire();
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 }

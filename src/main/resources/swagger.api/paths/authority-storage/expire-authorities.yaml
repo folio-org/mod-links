@@ -1,0 +1,9 @@
+post:
+  operationId: expireAuthorities
+  tags:
+    - authority-storage
+  responses:
+    '201':
+      description: Successfully published authorities expire job
+    '500':
+      $ref: '../../responses/serverErrorResponse.yaml'
