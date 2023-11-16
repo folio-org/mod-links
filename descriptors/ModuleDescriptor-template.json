@@ -418,7 +418,7 @@
         {
           "methods": [ "POST" ],
           "pathPattern": "/authority-storage/expire/authorities",
-          "unit": "day",
+          "unit": "minute",
           "delay": "1",
           "modulePermissions": [
             "mod-settings.entries.collection.get",
