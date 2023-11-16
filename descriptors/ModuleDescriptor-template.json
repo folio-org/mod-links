@@ -422,7 +422,7 @@
           "delay": "1",
           "modulePermissions": [
             "mod-settings.entries.collection.get",
-            "mod-settings.global.read.mod-entities-links"
+            "mod-settings.global.read.authority-storage"
           ]
         }
       ]
@@ -430,12 +430,12 @@
   ],
   "permissionSets": [
     {
-      "permissionName": "mod-settings.global.write.mod-entities-links",
+      "permissionName": "mod-settings.global.write.authority-storage",
       "displayName": "Entities links settings - Create configuration",
       "description": "To create new configuration in mod settings"
     },
     {
-      "permissionName": "mod-settings.global.read.mod-entities-links",
+      "permissionName": "mod-settings.global.read.authority-storage",
       "displayName": "Entities links settings - Read configuration",
       "description": "To read the configuration from mod settings."
     },
