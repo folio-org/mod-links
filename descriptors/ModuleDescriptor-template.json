@@ -201,6 +201,19 @@
         },
         {
           "methods": [
+            "POST"
+          ],
+          "pathPattern": "/authority-storage/expire/authorities",
+          "permissionsRequired": [
+
+          ],
+          "modulePermissions": [
+            "mod-settings.entries.collection.get",
+            "mod-settings.global.read.authority-storage"
+          ]
+        },
+        {
+          "methods": [
             "PUT"
           ],
           "pathPattern": "/authority-storage/authorities/{id}",
