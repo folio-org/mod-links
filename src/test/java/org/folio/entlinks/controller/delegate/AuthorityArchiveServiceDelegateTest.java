@@ -1,7 +1,11 @@
 package org.folio.entlinks.controller.delegate;
 
+import static org.folio.entlinks.client.SettingsClient.AuthoritiesExpirationSettingValue;
+import static org.folio.entlinks.integration.SettingsService.AUTHORITIES_EXPIRE_SETTING_KEY;
+import static org.folio.entlinks.integration.SettingsService.AUTHORITIES_EXPIRE_SETTING_SCOPE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.sql.Timestamp;
@@ -44,6 +48,18 @@ class AuthorityArchiveServiceDelegateTest {
   private AuthorityArchiveServiceDelegate delegate;
 
   @Test
+  void shouldNotExpireAuthorityArchivesWhenOperationDisabledBySettings() {
+    var setting = new SettingsClient.SettingEntry(UUID.randomUUID(), AUTHORITIES_EXPIRE_SETTING_SCOPE,
+        AUTHORITIES_EXPIRE_SETTING_KEY, new AuthoritiesExpirationSettingValue(false, null));
+    when(settingsService.getAuthorityExpireSetting()).thenReturn(Optional.of(setting));
+
+    delegate.expire();
+
+    verifyNoInteractions(authorityArchiveService);
+    verifyNoInteractions(authorityArchiveRepository);
+  }
+
+  @Test
   void shouldExpireAuthorityArchivesWithDefaultRetentionPeriod() {
     var archive = new AuthorityArchive();
     archive.setUpdatedDate(Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS)));
@@ -59,8 +75,8 @@ class AuthorityArchiveServiceDelegateTest {
   @Test
   void shouldExpireAuthorityArchivesWithRetentionPeriodFromSettings() {
     var archive = new AuthorityArchive();
-    var setting = new SettingsClient.SettingEntry(UUID.randomUUID(), "mod-entities-links",
-        "authority-archives-retention", new SettingsClient.AuthoritiesRetentionSettingValue(1));
+    var setting = new SettingsClient.SettingEntry(UUID.randomUUID(), AUTHORITIES_EXPIRE_SETTING_SCOPE,
+        AUTHORITIES_EXPIRE_SETTING_KEY, new AuthoritiesExpirationSettingValue(true, 1));
     archive.setUpdatedDate(Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS)));
     when(settingsService.getAuthorityExpireSetting()).thenReturn(Optional.of(setting));
     when(authorityArchiveRepository.streamByUpdatedTillDate(any(LocalDateTime.class))).thenReturn(Stream.of(archive));

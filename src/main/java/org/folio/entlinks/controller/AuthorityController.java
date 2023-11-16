@@ -52,6 +52,6 @@ public class AuthorityController implements AuthorityStorageApi {
   @Override
   public ResponseEntity<Void> expireAuthorities() {
     authorityArchiveServiceDelegate.expire();
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
 }

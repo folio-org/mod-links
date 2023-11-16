@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.client.SettingsClient;
+import org.folio.entlinks.exception.FolioIntegrationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,14 +13,15 @@ import org.springframework.stereotype.Service;
 @Log4j2
 public class SettingsService {
 
+  public static final String AUTHORITIES_EXPIRE_SETTING_KEY = "authority-archives-expiration";
+  public static final String AUTHORITIES_EXPIRE_SETTING_SCOPE = "authority-storage";
+
   private static final int DEFAULT_REQUEST_LIMIT = 10000;
-  private static final String AUTHORITIES_EXPIRE_SETTING_SCOPE = "mod-entities-links";
-  private static final String AUTHORITIES_EXPIRE_SETTING_KEY = "authority-archives-retention";
 
   private final SettingsClient settingsClient;
 
   public Optional<SettingsClient.SettingEntry> getAuthorityExpireSetting() {
-    var settingsEntries = settingsClient.getSettingsEntries(DEFAULT_REQUEST_LIMIT);
+    var settingsEntries = fetchSettingsEntries();
 
     if (settingsEntries == null || CollectionUtils.isEmpty(settingsEntries.items())) {
       return Optional.empty();
@@ -29,5 +31,13 @@ public class SettingsService {
         .filter(entry -> entry.scope().equals(AUTHORITIES_EXPIRE_SETTING_SCOPE))
         .filter(entry -> entry.key().equals(AUTHORITIES_EXPIRE_SETTING_KEY))
         .findFirst();
+  }
+
+  private SettingsClient.SettingsEntries fetchSettingsEntries() {
+    try {
+      return settingsClient.getSettingsEntries(DEFAULT_REQUEST_LIMIT);
+    } catch (Exception e) {
+      throw new FolioIntegrationException("Failed to fetch settings", e);
+    }
   }
 }

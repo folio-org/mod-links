@@ -25,6 +25,10 @@
     {
       "id": "mapping-rules-provider",
       "version": "2.0"
+    },
+    {
+      "id": "settings",
+      "version": "1.0"
     }
   ],
   "optional": [
@@ -217,19 +221,6 @@
           ],
           "modulePermissions": [
             "user-tenants.collection.get"
-          ]
-        },
-        {
-          "methods": [
-            "POST"
-          ],
-          "pathPattern": "/authority-storage/expire/authorities",
-          "permissionsRequired": [
-
-          ],
-          "modulePermissions": [
-            "mod-settings.entries.collection.get",
-            "mod-settings.global.read.mod-entities-links"
           ]
         }
       ]

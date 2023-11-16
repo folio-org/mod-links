@@ -29,22 +29,32 @@ public class AuthorityArchiveServiceDelegate {
   public void expire() {
     var retention = fetchAuthoritiesRetentionDuration();
 
-    var tillDate = LocalDateTime.now().minus(retention, ChronoUnit.DAYS);
+    if (retention.isEmpty()) {
+      return;
+    }
+
+    var tillDate = LocalDateTime.now().minus(retention.get(), ChronoUnit.DAYS);
     try (Stream<AuthorityArchive> archives = authorityArchiveRepository.streamByUpdatedTillDate(tillDate)) {
       archives.forEach(authorityArchiveService::delete);
     }
   }
 
-  private Integer fetchAuthoritiesRetentionDuration() {
+  private Optional<Integer> fetchAuthoritiesRetentionDuration() {
     Optional<SettingsClient.SettingEntry> expireSetting = settingsService.getAuthorityExpireSetting();
-    if (expireSetting.isEmpty()) {
-      log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {}",
-          authorityArchiveProperties.getRetentionPeriodInDays());
-      return authorityArchiveProperties.getRetentionPeriodInDays();
+
+    if (expireSetting.isPresent() && expireSetting.get().value() != null
+        && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
+      log.info("Authority archives expiration is disabled for the tenant through setting");
+      return Optional.empty();
     }
 
-    var settingValue = expireSetting.get().value();
-    log.debug("Fetched authority archives retention period (in days): {}", settingValue.retentionInDays());
-    return settingValue.retentionInDays();
+    return expireSetting
+        .map(SettingsClient.SettingEntry::value)
+        .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
+        .or(() -> {
+          log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {}",
+              authorityArchiveProperties.getRetentionPeriodInDays());
+          return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
+        });
   }
 }

@@ -16,13 +16,13 @@ public interface SettingsClient {
 
   record SettingsEntries(List<SettingEntry> items, ResultInfo resultInfo) {}
 
-  record SettingEntry(UUID id, String scope, String key, AuthoritiesRetentionSettingValue value, UUID userId) {
-    public SettingEntry(UUID id, String scope, String key, AuthoritiesRetentionSettingValue value) {
+  record SettingEntry(UUID id, String scope, String key, AuthoritiesExpirationSettingValue value, UUID userId) {
+    public SettingEntry(UUID id, String scope, String key, AuthoritiesExpirationSettingValue value) {
       this(id, scope, key, value, null);
     }
   }
 
-  record AuthoritiesRetentionSettingValue(Integer retentionInDays) {}
+  record AuthoritiesExpirationSettingValue(Boolean expirationEnabled, Integer retentionInDays) {}
 
   record ResultInfo(Integer totalRecords) {}
 }
