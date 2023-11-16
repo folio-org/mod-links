@@ -314,9 +314,6 @@ paths:
   /authority-source-files/{id}:
     $ref: './paths/authority-source-files/authority-source-files-by-id.yaml'
 
-  /authority-storage/expire/authorities:
-    $ref: './paths/authority-storage/expire-authorities.yaml'
-
 components:
   schemas:
     instanceLinkDtoCollection:

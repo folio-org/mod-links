@@ -10,6 +10,7 @@ import org.folio.entlinks.rest.resource.AuthorityStorageApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
@@ -49,7 +50,16 @@ public class AuthorityController implements AuthorityStorageApi {
     return ResponseEntity.noContent().build();
   }
 
-  @Override
+  /**
+   * POST /authority-storage/expire/authorities.
+   *
+   * @return Successfully published authorities expire job (status code 202)
+   *         or Internal server error. (status code 500)
+   */
+  @PostMapping(
+      value = "/authority-storage/expire/authorities",
+      produces = { "application/json" }
+  )
   public ResponseEntity<Void> expireAuthorities() {
     authorityArchiveServiceDelegate.expire();
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();

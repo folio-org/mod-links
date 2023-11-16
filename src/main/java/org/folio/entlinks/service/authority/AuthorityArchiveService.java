@@ -17,7 +17,7 @@ public class AuthorityArchiveService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void delete(AuthorityArchive authorityArchive) {
-    log.info("Deleting authority archive: id = {}", authorityArchive.getId());
+    log.debug("Deleting authority archive: id = {}", authorityArchive.getId());
     repository.delete(authorityArchive);
   }
 }
