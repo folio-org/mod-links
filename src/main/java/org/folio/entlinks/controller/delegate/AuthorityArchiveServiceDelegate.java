@@ -34,12 +34,14 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     var tillDate = LocalDateTime.now().minus(retention.get(), ChronoUnit.DAYS);
+    log.info("Querying authority archives last updated before date: {}", tillDate);
     try (Stream<AuthorityArchive> archives = authorityArchiveRepository.streamByUpdatedTillDate(tillDate)) {
       archives.forEach(authorityArchiveService::delete);
     }
   }
 
   private Optional<Integer> fetchAuthoritiesRetentionDuration() {
+    log.info("Fetching the expiration settings");
     Optional<SettingsClient.SettingEntry> expireSetting = settingsService.getAuthorityExpireSetting();
 
     if (expireSetting.isPresent() && expireSetting.get().value() != null
