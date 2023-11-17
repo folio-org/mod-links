@@ -446,6 +446,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
     awaitUntilAsserted(() ->
         assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID,
             String.format("id = '%s' AND deleted = true", authority.getId()))));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
     tryGet(authorityEndpoint(authority.getId()))
         .andExpect(status().isNotFound())
         .andExpect(exceptionMatch(AuthorityNotFoundException.class));
@@ -465,6 +467,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     awaitUntilAsserted(() ->
         assertEquals(2, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID, "deleted = true")));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
 
     var dateInPast = Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS));
     databaseHelper.updateAuthorityArchiveUpdateDate(TENANT_ID, authority1.getId(), dateInPast);

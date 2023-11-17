@@ -93,9 +93,10 @@ class UpdateAuthorityChangeHandlerTest {
     var changes = Map.of(
       PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "new", "old")
     );
-    var event = new AuthorityChangeHolder(new AuthorityDomainEvent(id), changes, emptyMap(), 0);
-    event.setSourceRecord(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
-    handler.handle(List.of(event));
+    var event = new AuthorityDomainEvent(id, null, null, DomainEventType.UPDATE, null);
+    var changeHolder = new AuthorityChangeHolder(event, changes, emptyMap(), 1);
+    changeHolder.setSourceRecord(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
+    handler.handle(List.of(changeHolder));
 
     verify(linksUpdateKafkaTemplate).sendMessages(producerRecord.capture());
     assertThat(producerRecord.getValue().get(0))
