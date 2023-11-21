@@ -16,6 +16,9 @@ public class SettingsService {
   public static final String AUTHORITIES_EXPIRE_SETTING_KEY = "authority-archives-expiration";
   public static final String AUTHORITIES_EXPIRE_SETTING_SCOPE = "authority-storage";
 
+  private static final String AUTHORITIES_EXPIRE_SETTING_FETCH_QUERY =
+      "scope=authority-storage%20AND%20key=authority-archives-expiration";
+
   private static final int DEFAULT_REQUEST_LIMIT = 10000;
 
   private final SettingsClient settingsClient;
@@ -35,7 +38,7 @@ public class SettingsService {
 
   private SettingsClient.SettingsEntries fetchSettingsEntries() {
     try {
-      return settingsClient.getSettingsEntries(DEFAULT_REQUEST_LIMIT);
+      return settingsClient.getSettingsEntries(AUTHORITIES_EXPIRE_SETTING_FETCH_QUERY, DEFAULT_REQUEST_LIMIT);
     } catch (Exception e) {
       throw new FolioIntegrationException("Failed to fetch settings", e);
     }

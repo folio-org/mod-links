@@ -123,7 +123,7 @@ public class InstanceAuthorityLinkUpdateService {
       return true;
     }
 
-    log.info("Skip message for {} event. Authority UPDATE record [tenantId: {}, id: {}] doesn't have links",
+    log.info("Skip message for {} event. Authority record [tenantId: {}, id: {}] doesn't have links",
         changeHolder.getChangeType(), folioExecutionContext.getTenantId(), changeHolder.getAuthorityId());
     return false;
 

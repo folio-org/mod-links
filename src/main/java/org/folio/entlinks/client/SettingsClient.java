@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface SettingsClient {
 
   @GetMapping(value = "/entries", produces = APPLICATION_JSON_VALUE)
-  SettingsEntries getSettingsEntries(@RequestParam("limit") int limit);
+  SettingsEntries getSettingsEntries(@RequestParam("query") String query, @RequestParam("limit") int limit);
 
   record SettingsEntries(List<SettingEntry> items, ResultInfo resultInfo) {}
 

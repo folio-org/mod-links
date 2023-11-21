@@ -29,7 +29,7 @@ class SettingsServiceTest {
 
   @Test
   void shouldNotReturnAuthorityExpirationSeetingWhenNoSettingsExist() {
-    when(settingsClient.getSettingsEntries(any(Integer.class)))
+    when(settingsClient.getSettingsEntries(any(String.class), any(Integer.class)))
         .thenReturn(new SettingsClient.SettingsEntries(List.of(), null));
 
     var setting = service.getAuthorityExpireSetting();
@@ -39,7 +39,7 @@ class SettingsServiceTest {
 
   @Test
   void shouldThrowIntegrationExceptionWhenFetchingSettingsFailed() {
-    when(settingsClient.getSettingsEntries(any(Integer.class)))
+    when(settingsClient.getSettingsEntries(any(String.class), any(Integer.class)))
         .thenThrow(new RuntimeException());
 
     assertThrows(FolioIntegrationException.class, () -> service.getAuthorityExpireSetting());
@@ -50,7 +50,7 @@ class SettingsServiceTest {
     var settingValue = new SettingsClient.AuthoritiesExpirationSettingValue(true, 5);
     var settingEntry = new SettingsClient.SettingEntry(UUID.randomUUID(),
         SettingsService.AUTHORITIES_EXPIRE_SETTING_SCOPE, SettingsService.AUTHORITIES_EXPIRE_SETTING_KEY, settingValue);
-    when(settingsClient.getSettingsEntries(any(Integer.class)))
+    when(settingsClient.getSettingsEntries(any(String.class), any(Integer.class)))
         .thenReturn(new SettingsClient.SettingsEntries(List.of(settingEntry), new SettingsClient.ResultInfo(1)));
 
     var setting = service.getAuthorityExpireSetting();

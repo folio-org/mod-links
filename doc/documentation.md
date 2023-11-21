@@ -642,5 +642,5 @@ POST https://{okapi-location}/settings/entries
 
 | Value options       | Type    | Description                                                                                                                                                                           |
 |---------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `expirationEnabled` | boolean | Indicates whether or not to enable expiration of Authority Archives for the tenant. Default value is false(disabled).                                                                 |
+| `expirationEnabled` | boolean | Indicates whether or not to enable expiration of Authority Archives for the tenant.                                                                                                   |
 | `retentionInDays`   | int     | Retention period of Authority Archives provided in days. If not specified, the default value would be taken by the `AUTHORITY_ARCHIVES_DEFAULT_EXPIRATION_DAYS` environment variable. |

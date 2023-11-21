@@ -108,10 +108,11 @@ class UpdateAuthorityChangeHandlerTest {
   void handle_positive_whenNaturalIdChanged() {
     var authorityId = UUID.randomUUID();
     var instanceId = UUID.randomUUID();
+    var authority = Authority.builder().id(authorityId).build();
 
     when(instanceAuthorityChangeProperties.getNumPartitions()).thenReturn(2);
     when(linkingService.getLinksByAuthorityId(eq(authorityId), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(
-      new InstanceAuthorityLink(1L, new Authority().withId(authorityId), instanceId,
+      new InstanceAuthorityLink(1L, authority, instanceId,
         new InstanceAuthorityLinkingRule(1, "100", "100", new char[] {'a'}, null, null, true),
         InstanceAuthorityLinkStatus.ACTUAL, null)
     )));
