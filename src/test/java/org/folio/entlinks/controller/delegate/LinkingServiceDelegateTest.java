@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.OffsetDateTime;
@@ -182,6 +183,20 @@ class LinkingServiceDelegateTest {
     verify(linkingService).updateLinks(INSTANCE_ID, links);
     verify(propagationService).propagate(links, ConsortiumAuthorityPropagationService.PropagationType.UPDATE,
       TENANT_ID);
+  }
+
+  @Test
+  void updateLinks_negative_emptyLinks_noPropagation() {
+    final var links = links(INSTANCE_ID);
+    final var dtoCollection = linksDtoCollection(linksDto(INSTANCE_ID));
+
+    doNothing().when(linkingService).updateLinks(INSTANCE_ID, links);
+    when(mapper.convertDto(dtoCollection.getLinks())).thenReturn(links);
+
+    delegate.updateLinks(INSTANCE_ID, dtoCollection);
+
+    verify(linkingService).updateLinks(INSTANCE_ID, links);
+    verifyNoInteractions(propagationService);
   }
 
   @Test

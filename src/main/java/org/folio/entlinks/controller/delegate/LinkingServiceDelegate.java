@@ -73,8 +73,10 @@ public class LinkingServiceDelegate {
     validateLinks(instanceId, links);
     var incomingLinks = mapper.convertDto(links);
     linkingService.updateLinks(instanceId, incomingLinks);
-    propagationService.propagate(incomingLinks, ConsortiumPropagationService.PropagationType.UPDATE,
-      context.getTenantId());
+    if (!incomingLinks.isEmpty()) {
+      propagationService.propagate(incomingLinks, ConsortiumPropagationService.PropagationType.UPDATE,
+          context.getTenantId());
+    }
   }
 
   public LinksCountDtoCollection countLinksByAuthorityIds(UuidCollection authorityIdCollection) {
