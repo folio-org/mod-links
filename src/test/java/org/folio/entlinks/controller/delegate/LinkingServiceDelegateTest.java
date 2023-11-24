@@ -193,7 +193,6 @@ class LinkingServiceDelegateTest {
     final var propagationData = new LinksPropagationData(INSTANCE_ID, links);
 
     doNothing().when(linkingService).updateLinks(INSTANCE_ID, links);
-    when(mapper.convertDto(dtoCollection.getLinks())).thenReturn(links);
 
     delegate.updateLinks(INSTANCE_ID, dtoCollection);
 
