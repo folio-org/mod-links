@@ -305,15 +305,6 @@
         },
         {
           "methods": [
-            "PUT"
-          ],
-          "pathPattern": "/authority-source-files/{id}",
-          "permissionsRequired": [
-            "inventory-storage.authority-source-files.item.put"
-          ]
-        },
-        {
-          "methods": [
             "PATCH"
           ],
           "pathPattern": "/authority-source-files/{id}",
@@ -567,11 +558,6 @@
       "permissionName": "inventory-storage.authority-source-files.item.post",
       "displayName": "inventory storage - create individual authority-source-file",
       "description": "create individual authority-source-file in storage"
-    },
-    {
-      "permissionName": "inventory-storage.authority-source-files.item.put",
-      "displayName": "inventory storage - modify authority-source-file",
-      "description": "modify authority-source-file in storage"
     },
     {
       "permissionName": "inventory-storage.authority-source-files.item.patch",
