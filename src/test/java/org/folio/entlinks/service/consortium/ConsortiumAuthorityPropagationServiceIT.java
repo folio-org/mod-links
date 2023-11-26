@@ -106,6 +106,46 @@ class ConsortiumAuthorityPropagationServiceIT extends IntegrationTestBase {
     tryGet(authorityEndpoint(authorityId), tenantHeaders(UNIVERSITY_TENANT_ID)).andExpect(status().isNotFound());
   }
 
+  @Test
+  @SneakyThrows
+  void testAuthorityUpdatePropagation() {
+    var authorityId = UUID.randomUUID();
+    var dto = new AuthorityDto()
+      .id(authorityId)
+      .version(0)
+      .source("MARC")
+      .naturalId("ns12345")
+      .personalName("Nikola Tesla");
+    doPost(authorityEndpoint(), dto, tenantHeaders(CENTRAL_TENANT_ID));
+    assertThat(requestAuthority(authorityId, CENTRAL_TENANT_ID)).isNotNull();
+    doPut(authorityEndpoint(authorityId), dto.personalName("updated"), tenantHeaders(CENTRAL_TENANT_ID));
+
+    var centralAuthority = requestAuthority(authorityId, CENTRAL_TENANT_ID);
+    assertThat(centralAuthority)
+      .extracting(AuthorityDto::getId, AuthorityDto::getSource, AuthorityDto::getNaturalId,
+        AuthorityDto::getPersonalName)
+      .containsExactly(dto.getId(), dto.getSource(), dto.getNaturalId(), dto.getPersonalName());
+
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_TABLE, COLLEGE_TENANT_ID, "heading = 'updated'")));
+    var collegeAuthority = requestAuthority(authorityId, COLLEGE_TENANT_ID);
+    assertThat(collegeAuthority)
+      .extracting(AuthorityDto::getId, AuthorityDto::getSource, AuthorityDto::getNaturalId,
+        AuthorityDto::getPersonalName)
+      .containsExactly(dto.getId(), CONSORTIUM_SOURCE_PREFIX + dto.getSource(), dto.getNaturalId(),
+          dto.getPersonalName());
+
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_TABLE, UNIVERSITY_TENANT_ID, "heading = 'updated'")));
+    var universityAuthority = requestAuthority(authorityId, UNIVERSITY_TENANT_ID);
+    assertThat(universityAuthority)
+      .extracting(AuthorityDto::getId, AuthorityDto::getSource, AuthorityDto::getNaturalId,
+        AuthorityDto::getPersonalName)
+      .containsExactly(dto.getId(), CONSORTIUM_SOURCE_PREFIX + dto.getSource(), dto.getNaturalId(),
+          dto.getPersonalName());
+
+  }
+
   private AuthorityDto requestAuthority(UUID authorityId, String tenantId)
     throws UnsupportedEncodingException, JsonProcessingException {
     var response = doGet(authorityEndpoint(authorityId), tenantHeaders(tenantId)).andReturn()
