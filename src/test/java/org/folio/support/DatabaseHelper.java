@@ -1,5 +1,6 @@
 package org.folio.support;
 
+import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.Authority;
@@ -20,6 +21,7 @@ public class DatabaseHelper {
   public static final String AUTHORITY_SOURCE_FILE_TABLE = "authority_source_file";
   public static final String AUTHORITY_SOURCE_FILE_CODE_TABLE = "authority_source_file_code";
   public static final String AUTHORITY_TABLE = "authority";
+  public static final String AUTHORITY_ARCHIVE_TABLE = "authority_archive";
   public static final String AUTHORITY_REINDEX_JOB_TABLE = "reindex_job";
 
   private final FolioModuleMetadata metadata;
@@ -67,6 +69,12 @@ public class DatabaseHelper {
     var sql = "UPDATE " + getTable(tenant, AUTHORITY_TABLE)
         + " SET natural_id = ? where id = ?";
     jdbcTemplate.update(sql, naturalId, authorityId);
+  }
+
+  public void updateAuthorityArchiveUpdateDate(String tenant, UUID authorityArchiveId, Timestamp updatedDate) {
+    var sql = "UPDATE " + getTable(tenant, AUTHORITY_ARCHIVE_TABLE)
+        + " SET updated_date = ? where id = ?";
+    jdbcTemplate.update(sql, updatedDate, authorityArchiveId);
   }
 
   public void saveAuthoritySourceFileCode(String tenant, UUID sourceFileId, AuthoritySourceFileCode code) {

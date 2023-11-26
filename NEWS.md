@@ -7,18 +7,20 @@
 * Requires `API_NAME vX.Y`
 
 ### Features
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+* Implement Authority Archiving for deleted authorities ([MODELINKS-138](https://issues.folio.org/browse/MODELINKS-138))
+* Add scheduled job to expire archive records with tenant-level retention policy ([MODELINKS-139](https://issues.folio.org/browse/MODELINKS-139))
 
 ### Bug fixes
+* Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
 * Updating authority's source file field to null is failed ([MODELINKS-143](https://issues.folio.org/browse/MODELINKS-143))
+* Failed to send update event if sourceFile is null ([MODELINKS-144](https://issues.folio.org/browse/MODELINKS-144))
+* Remove foreign key for authority_data_stat ([MODELINKS-155](https://issues.folio.org/browse/MODELINKS-155))
 
 ### Tech Dept
 * Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
 
 ### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME` `2.7.4`
-* Remove `LIB_NAME`
+* Bump `folio-spring-support` from `7.2.0` to `7.2.1`
 
 ---
 
