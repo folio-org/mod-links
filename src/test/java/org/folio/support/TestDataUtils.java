@@ -56,8 +56,8 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.domain.entity.ReindexJob;
 import org.folio.entlinks.domain.entity.ReindexJobResource;
 import org.folio.entlinks.domain.entity.ReindexJobStatus;
-import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
-import org.folio.entlinks.service.reindex.event.DomainEventType;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.spring.client.UsersClient;
 import org.folio.spring.model.ResultList;
 

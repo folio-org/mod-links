@@ -42,8 +42,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.core.ThrowingRunnable;
 import org.folio.entlinks.client.ConsortiumTenantsClient;
 import org.folio.entlinks.client.UserTenantsClient;
-import org.folio.entlinks.service.reindex.event.DomainEvent;
-import org.folio.entlinks.service.reindex.event.DomainEventType;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.EnableKafka;
@@ -265,7 +265,7 @@ public class IntegrationTestBase {
     await().pollInterval(ONE_SECOND).atMost(TEN_SECONDS).untilAsserted(throwingRunnable);
   }
 
-  protected <T> void verifyReceivedDomainEvent(ConsumerRecord<String, DomainEvent> receivedEvent,
+  protected <T> void verifyReceivedDomainEvent(ConsumerRecord<String, AuthorityDomainEvent> receivedEvent,
                                                DomainEventType expectedEventType,
                                                List<String> expectedHeaderKeys,
                                                T expectedDto,
@@ -285,7 +285,7 @@ public class IntegrationTestBase {
     assertThat(domainType).isEqualTo(expectedEventType.toString());
 
     assertNotNull(receivedEvent.value());
-    var event = (DomainEvent<T>) receivedEvent.value();
+    var event = receivedEvent.value();
     var eventDtoAsString = "";
     if (List.of(DomainEventType.CREATE, DomainEventType.UPDATE, DomainEventType.REINDEX).contains(expectedEventType)) {
       eventDtoAsString = objectMapper.writeValueAsString(event.getNewEntity());

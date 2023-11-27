@@ -37,8 +37,8 @@ import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.dto.ReindexJobDto;
 import org.folio.entlinks.domain.dto.ReindexJobDtoCollection;
 import org.folio.entlinks.domain.entity.ReindexJob;
-import org.folio.entlinks.service.reindex.event.DomainEvent;
-import org.folio.entlinks.service.reindex.event.DomainEventType;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
@@ -69,8 +69,8 @@ class AuthorityReindexControllerIT extends IntegrationTestBase {
   @Autowired
   ReindexJobMapper mapper;
 
-  private KafkaMessageListenerContainer<String, DomainEvent> container;
-  private BlockingQueue<ConsumerRecord<String, DomainEvent>> consumerRecords;
+  private KafkaMessageListenerContainer<String, AuthorityDomainEvent> container;
+  private BlockingQueue<ConsumerRecord<String, AuthorityDomainEvent>> consumerRecords;
 
   @BeforeAll
   static void prepare() {
@@ -80,7 +80,8 @@ class AuthorityReindexControllerIT extends IntegrationTestBase {
   @BeforeEach
   void setUp(@Autowired KafkaProperties kafkaProperties) {
     consumerRecords = new LinkedBlockingQueue<>();
-    container = createAndStartTestConsumer(authorityTopic(), consumerRecords, kafkaProperties, DomainEvent.class);
+    container =
+        createAndStartTestConsumer(authorityTopic(), consumerRecords, kafkaProperties, AuthorityDomainEvent.class);
   }
 
   @AfterEach
@@ -201,7 +202,8 @@ class AuthorityReindexControllerIT extends IntegrationTestBase {
         .andExpect(errorMessageMatch(containsString("The job has been finished")));
   }
 
-  private void verifyReceivedEvents(List<ConsumerRecord<String, DomainEvent>> receivedEvents, List<AuthorityDto> dtos)
+  private void verifyReceivedEvents(List<ConsumerRecord<String, AuthorityDomainEvent>> receivedEvents,
+                                    List<AuthorityDto> dtos)
       throws JsonProcessingException {
     for (var receivedEvent : receivedEvents) {
       var expectedDto = dtos.stream()
@@ -253,7 +255,7 @@ class AuthorityReindexControllerIT extends IntegrationTestBase {
 
   @Nullable
   @SneakyThrows
-  private ConsumerRecord<String, DomainEvent> getReceivedEvent() {
+  private ConsumerRecord<String, AuthorityDomainEvent> getReceivedEvent() {
     return consumerRecords.poll(10, TimeUnit.SECONDS);
   }
 
