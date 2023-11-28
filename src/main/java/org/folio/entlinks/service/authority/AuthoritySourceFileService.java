@@ -1,5 +1,6 @@
 package org.folio.entlinks.service.authority;
 
+import static org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum.FOLIO;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
@@ -11,7 +12,9 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
+import org.folio.entlinks.exception.AuthorityDataIntegrityViolationException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.data.OffsetRequest;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 public class AuthoritySourceFileService {
 
   private final AuthoritySourceFileRepository repository;
+  private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
 
   public Page<AuthoritySourceFile> getAll(Integer offset, Integer limit, String cql) {
@@ -84,11 +88,16 @@ public class AuthoritySourceFileService {
   public void deleteById(UUID id) {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
 
-    if (!repository.existsById(id)) {
-      throw new AuthoritySourceFileNotFoundException(id);
+    var referencedAuthority = authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id);
+    if (referencedAuthority.isPresent()) {
+      throw new AuthorityDataIntegrityViolationException("AuthoritySourceFile is used by Authority");
     }
 
-    repository.deleteById(id);
+    var authoritySourceFile = repository.findById(id)
+        .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
+    if (!authoritySourceFile.getType().equals(FOLIO.getValue())) {
+      repository.deleteById(id);
+    }
   }
 
   private void copyModifiableFields(AuthoritySourceFile existingEntity, AuthoritySourceFile modifiedEntity) {

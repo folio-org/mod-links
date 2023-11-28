@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -16,9 +17,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
+import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
+import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
+import org.folio.entlinks.exception.AuthorityDataIntegrityViolationException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.type.UnitTest;
@@ -37,6 +41,9 @@ class AuthoritySourceFileServiceTest {
 
   @Mock
   private AuthoritySourceFileRepository repository;
+
+  @Mock
+  private AuthorityRepository authorityRepository;
 
   @Mock
   private AuthoritySourceFileMapper mapper;
@@ -168,23 +175,57 @@ class AuthoritySourceFileServiceTest {
   }
 
   @Test
-  void shouldDeleteAuthoritySourceFile() {
-    when(repository.existsById(any(UUID.class))).thenReturn(true);
-    doNothing().when(repository).deleteById(any(UUID.class));
+  void shouldDeleteAuthoritySourceFileWhenNoReferencesAndNotFolio() {
+    var id = UUID.randomUUID();
+    var authority = new Authority();
+    authority.setId(id);
 
-    service.deleteById(UUID.randomUUID());
+    var authoritySourceFile = new AuthoritySourceFile();
+    authoritySourceFile.setId(id);
+    authoritySourceFile.setType("non-folio");
 
-    verify(repository).existsById(any(UUID.class));
-    verify(repository).deleteById(any(UUID.class));
+    when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
+    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id)).thenReturn(Optional.empty());
+    doNothing().when(repository).deleteById(id);
+
+    service.deleteById(id);
+
+    verify(repository).findById(id);
+    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
+    verify(repository).deleteById(id);
   }
 
   @Test
-  void shouldThrowExceptionWhenNoEntityExistsToDelete() {
+  void shouldThrowExceptionWhenAuthorityReferencesExist() {
     var id = UUID.randomUUID();
-    when(repository.existsById(any(UUID.class))).thenReturn(false);
 
-    var thrown = assertThrows(AuthoritySourceFileNotFoundException.class, () -> service.deleteById(id));
+    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id))
+        .thenReturn(Optional.of(new Authority()));
 
-    assertThat(thrown.getMessage()).containsOnlyOnce(id.toString());
+    var exception = assertThrows(AuthorityDataIntegrityViolationException.class, () -> service.deleteById(id));
+
+    assertEquals("AuthoritySourceFile is used by Authority", exception.getMessage());
+
+    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
+    verify(repository, never()).findById(any(UUID.class));
+    verify(repository, never()).deleteById(any(UUID.class));
+  }
+
+  @Test
+  void shouldNotDeleteWhenFolioType() {
+    UUID id = UUID.randomUUID();
+
+    var authoritySourceFile = new AuthoritySourceFile();
+    authoritySourceFile.setId(id);
+    authoritySourceFile.setType("folio");
+
+    when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
+    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id)).thenReturn(Optional.empty());
+
+    service.deleteById(id);
+
+    verify(repository).findById(id);
+    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
+    verify(repository, never()).deleteById(any(UUID.class));
   }
 }
