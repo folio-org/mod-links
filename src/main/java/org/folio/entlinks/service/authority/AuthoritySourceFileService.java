@@ -14,7 +14,6 @@ import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
-import org.folio.entlinks.exception.AuthorityDataIntegrityViolationException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.data.OffsetRequest;
@@ -33,7 +32,7 @@ public class AuthoritySourceFileService {
 
   public Page<AuthoritySourceFile> getAll(Integer offset, Integer limit, String cql) {
     log.debug("getAll:: Attempts to find all AuthoritySourceFile by [offset: {}, limit: {}, cql: {}]", offset, limit,
-      cql);
+        cql);
 
     if (StringUtils.isBlank(cql)) {
       return repository.findAll(new OffsetRequest(offset, limit));
@@ -75,7 +74,7 @@ public class AuthoritySourceFileService {
 
     if (!Objects.equals(id, modified.getId())) {
       throw new RequestBodyValidationException("Request should have id = " + id,
-        List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
+          List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
     }
 
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
@@ -87,12 +86,6 @@ public class AuthoritySourceFileService {
 
   public void deleteById(UUID id) {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
-
-    var referencedAuthority = authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id);
-    if (referencedAuthority.isPresent()) {
-      throw new AuthorityDataIntegrityViolationException("AuthoritySourceFile is used by Authority");
-    }
-
     var authoritySourceFile = repository.findById(id)
         .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (!authoritySourceFile.getType().equals(FOLIO.getValue())) {

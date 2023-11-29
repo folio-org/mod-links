@@ -17,12 +17,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
-import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
-import org.folio.entlinks.exception.AuthorityDataIntegrityViolationException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.type.UnitTest;
@@ -175,57 +173,45 @@ class AuthoritySourceFileServiceTest {
   }
 
   @Test
-  void shouldDeleteAuthoritySourceFileWhenNoReferencesAndNotFolio() {
+  void shouldDeleteAuthoritySourceFile() {
     var id = UUID.randomUUID();
-    var authority = new Authority();
-    authority.setId(id);
-
     var authoritySourceFile = new AuthoritySourceFile();
     authoritySourceFile.setId(id);
     authoritySourceFile.setType("non-folio");
 
-    when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
-    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id)).thenReturn(Optional.empty());
-    doNothing().when(repository).deleteById(id);
+    when(repository.findById(any(UUID.class))).thenReturn(Optional.of(authoritySourceFile));
+    doNothing().when(repository).deleteById(any(UUID.class));
 
-    service.deleteById(id);
+    service.deleteById(UUID.randomUUID());
 
-    verify(repository).findById(id);
-    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
-    verify(repository).deleteById(id);
+    verify(repository).findById(any(UUID.class));
+    verify(repository).deleteById(any(UUID.class));
   }
 
   @Test
-  void shouldThrowExceptionWhenAuthorityReferencesExist() {
+  void shouldThrowExceptionWhenNoEntityExistsToDelete() {
     var id = UUID.randomUUID();
 
-    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id))
-        .thenReturn(Optional.of(new Authority()));
+    when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
-    var exception = assertThrows(AuthorityDataIntegrityViolationException.class, () -> service.deleteById(id));
+    var thrown = assertThrows(AuthoritySourceFileNotFoundException.class, () -> service.deleteById(id));
 
-    assertEquals("AuthoritySourceFile is used by Authority", exception.getMessage());
-
-    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
-    verify(repository, never()).findById(any(UUID.class));
+    assertThat(thrown.getMessage()).containsOnlyOnce(id.toString());
     verify(repository, never()).deleteById(any(UUID.class));
   }
 
   @Test
   void shouldNotDeleteWhenFolioType() {
     UUID id = UUID.randomUUID();
-
     var authoritySourceFile = new AuthoritySourceFile();
     authoritySourceFile.setId(id);
     authoritySourceFile.setType("folio");
 
     when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
-    when(authorityRepository.findByAuthoritySourceFileIdAndDeletedFalse(id)).thenReturn(Optional.empty());
 
     service.deleteById(id);
 
     verify(repository).findById(id);
-    verify(authorityRepository).findByAuthoritySourceFileIdAndDeletedFalse(id);
     verify(repository, never()).deleteById(any(UUID.class));
   }
 }
