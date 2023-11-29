@@ -27,6 +27,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
+import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -387,6 +388,18 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   }
 
   @Test
+  @DisplayName("DELETE: Folio Authority Source File cannot be deleted")
+  void deleteAuthority_negative_folioType() throws Exception {
+    var entity = prepareFolioSourceFile(0);
+    createAuthoritySourceFile(entity);
+
+    tryDelete(authoritySourceFilesEndpoint(entity.getId()))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(exceptionMatch(RequestBodyValidationException.class))
+        .andExpect(errorMessageMatch(containsString("Cannot delete FOLIO source file")));
+  }
+
+  @Test
   @DisplayName("DELETE: Return 404 for non-existing entity")
   void deleteAuthoritySourceFile_negative_entityNotFound() throws Exception {
 
@@ -431,6 +444,24 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     entity.setUpdatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
     entity.setUpdatedByUserId(UUID.fromString(USER_ID));
     entity.setAuthoritySourceFileCodes(Set.of(code));
+
+    return entity;
+  }
+
+  public AuthoritySourceFile prepareFolioSourceFile(int sourceFileIdNum) {
+    var entity = new AuthoritySourceFile();
+    entity.setId(SOURCE_FILE_IDS[sourceFileIdNum]);
+    entity.setName(SOURCE_FILE_NAMES[sourceFileIdNum]);
+    entity.setSource(SOURCE_FILE_SOURCES[sourceFileIdNum].getValue());
+    entity.setType("folio");
+    entity.setBaseUrl(SOURCE_FILE_URLS[sourceFileIdNum] + "/");
+
+    var code = prepareAuthoritySourceFileCode(sourceFileIdNum);
+    entity.setCreatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
+    entity.setCreatedByUserId(UUID.fromString(USER_ID));
+    entity.setUpdatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
+    entity.setUpdatedByUserId(UUID.fromString(USER_ID));
+    entity.addCode(code);
 
     return entity;
   }

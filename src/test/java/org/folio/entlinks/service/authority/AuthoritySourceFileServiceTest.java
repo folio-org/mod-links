@@ -19,7 +19,6 @@ import java.util.UUID;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -39,9 +38,6 @@ class AuthoritySourceFileServiceTest {
 
   @Mock
   private AuthoritySourceFileRepository repository;
-
-  @Mock
-  private AuthorityRepository authorityRepository;
 
   @Mock
   private AuthoritySourceFileMapper mapper;
@@ -209,8 +205,9 @@ class AuthoritySourceFileServiceTest {
 
     when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
 
-    service.deleteById(id);
+    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.deleteById(id));
 
+    assertThat(thrown.getMessage()).isEqualTo("Cannot delete FOLIO source file");
     verify(repository).findById(id);
     verify(repository, never()).deleteById(any(UUID.class));
   }
