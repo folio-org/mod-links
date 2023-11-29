@@ -88,6 +88,9 @@ public class AuthoritySourceFileService {
         .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (!authoritySourceFile.getType().equals(FOLIO.getValue())) {
       repository.deleteById(id);
+    } else {
+      throw new RequestBodyValidationException("Cannot delete FOLIO source file",
+          List.of(new Parameter("id").value(String.valueOf(id))));
     }
   }
 
