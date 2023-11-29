@@ -20,6 +20,4 @@ public interface AuthorityRepository extends JpaRepository<Authority, UUID>, Aut
   Optional<Authority> findByIdAndDeletedFalse(UUID id);
 
   List<Authority> findAllByIdInAndDeletedFalse(Collection<UUID> ids);
-
-  Optional<Authority> findByAuthoritySourceFileIdAndDeletedFalse(UUID authoritySourceFileId);
 }

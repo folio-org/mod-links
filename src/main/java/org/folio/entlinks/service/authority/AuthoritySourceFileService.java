@@ -32,7 +32,7 @@ public class AuthoritySourceFileService {
 
   public Page<AuthoritySourceFile> getAll(Integer offset, Integer limit, String cql) {
     log.debug("getAll:: Attempts to find all AuthoritySourceFile by [offset: {}, limit: {}, cql: {}]", offset, limit,
-        cql);
+      cql);
 
     if (StringUtils.isBlank(cql)) {
       return repository.findAll(new OffsetRequest(offset, limit));
@@ -74,7 +74,7 @@ public class AuthoritySourceFileService {
 
     if (!Objects.equals(id, modified.getId())) {
       throw new RequestBodyValidationException("Request should have id = " + id,
-          List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
+        List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
     }
 
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
