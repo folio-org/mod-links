@@ -12,7 +12,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service;
 public class AuthoritySourceFileService {
 
   private final AuthoritySourceFileRepository repository;
-  private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
 
   public Page<AuthoritySourceFile> getAll(Integer offset, Integer limit, String cql) {
