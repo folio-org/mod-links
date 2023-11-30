@@ -1,4 +1,4 @@
-## v2.1.0 In progress
+## v3.0.0 in progress
 ### Breaking changes
 * Delete PUT endpoint from authority-source-files api([MODELINKS-161](https://issues.folio.org/browse/MODELINKS-161))
 
