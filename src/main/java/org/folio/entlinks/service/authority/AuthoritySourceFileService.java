@@ -1,6 +1,6 @@
 package org.folio.entlinks.service.authority;
 
-import static org.folio.entlinks.domain.entity.SourceEnum.FOLIO;
+import static org.folio.entlinks.domain.entity.AuthoritySourceType.FOLIO;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
