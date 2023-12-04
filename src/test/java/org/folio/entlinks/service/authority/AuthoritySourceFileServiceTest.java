@@ -201,13 +201,13 @@ class AuthoritySourceFileServiceTest {
     UUID id = UUID.randomUUID();
     var authoritySourceFile = new AuthoritySourceFile();
     authoritySourceFile.setId(id);
-    authoritySourceFile.setType("folio");
+    authoritySourceFile.setSource("folio");
 
     when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
 
     var thrown = assertThrows(RequestBodyValidationException.class, () -> service.deleteById(id));
 
-    assertThat(thrown.getMessage()).isEqualTo("Cannot delete FOLIO source file");
+    assertThat(thrown.getMessage()).isEqualTo("Cannot delete Authority source file with source 'folio'");
     verify(repository).findById(id);
     verify(repository, never()).deleteById(any(UUID.class));
   }

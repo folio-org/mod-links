@@ -1,6 +1,6 @@
 package org.folio.entlinks.service.authority;
 
-import static org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum.FOLIO;
+import static org.folio.entlinks.domain.entity.SourceEnum.FOLIO;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
@@ -86,11 +86,11 @@ public class AuthoritySourceFileService {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
     var authoritySourceFile = repository.findById(id)
         .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    if (!authoritySourceFile.getType().equals(FOLIO.getValue())) {
+    if (!FOLIO.getValue().equals(authoritySourceFile.getSource())) {
       repository.deleteById(id);
     } else {
-      throw new RequestBodyValidationException("Cannot delete FOLIO source file",
-          List.of(new Parameter("id").value(String.valueOf(id))));
+      throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
+          List.of(new Parameter("source").value(authoritySourceFile.getSource())));
     }
   }
 
