@@ -39,7 +39,6 @@ import org.folio.entlinks.domain.dto.ReindexJobDtoCollection;
 import org.folio.entlinks.domain.entity.ReindexJob;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -62,9 +61,6 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
   DatabaseHelper.AUTHORITY_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
 class AuthorityReindexControllerIT extends IntegrationTestBase {
-
-  private static final List<String> DOMAIN_EVENT_HEADER_KEYS =
-      List.of(XOkapiHeaders.TENANT, XOkapiHeaders.URL, XOkapiHeaders.USER_ID, DOMAIN_EVENT_HEADER_KEY);
 
   @Autowired
   ReindexJobMapper mapper;
@@ -203,14 +199,12 @@ class AuthorityReindexControllerIT extends IntegrationTestBase {
   }
 
   private void verifyReceivedEvents(List<ConsumerRecord<String, AuthorityDomainEvent>> receivedEvents,
-                                    List<AuthorityDto> dtos)
-      throws JsonProcessingException {
+                                    List<AuthorityDto> dtos) {
     for (var receivedEvent : receivedEvents) {
       var expectedDto = dtos.stream()
           .filter(dto -> dto.getId().toString().equals(receivedEvent.key()))
           .findFirst().get();
-      verifyReceivedDomainEvent(receivedEvent, DomainEventType.REINDEX, DOMAIN_EVENT_HEADER_KEYS,
-          expectedDto, AuthorityDto.class, "metadata.createdDate", "metadata.updatedDate");
+      verifyConsumedAuthorityEvent(receivedEvent, DomainEventType.REINDEX, expectedDto);
     }
   }
 

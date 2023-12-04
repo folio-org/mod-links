@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.folio.entlinks.integration.dto.BaseEvent;
 
 @Data
 @NoArgsConstructor
