@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
+import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
@@ -155,7 +156,8 @@ class InstanceAuthorityLinkUpdateServiceTest {
   void handleAuthoritiesChanges_positive_deleteEvent() {
     final var id = UUID.randomUUID();
     final var authorityEvents = List.of(
-      new AuthorityDomainEvent(id, new AuthorityDto().naturalId("old"), null, DomainEventType.DELETE, TENANT_ID));
+      new AuthorityDomainEvent(id, new AuthorityDto().naturalId("old"), null, DomainEventType.DELETE,
+          AuthorityDeleteEventSubType.SOFT_DELETE, TENANT_ID));
 
     var changeEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
 

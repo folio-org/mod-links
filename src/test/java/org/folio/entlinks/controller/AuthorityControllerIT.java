@@ -478,6 +478,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     doPost(authorityExpireEndpoint(), null);
 
+    getConsumedEvent();
     var consumedEvent = getConsumedEvent();
     assertAll(() -> {
       assertNotNull(consumedEvent);
