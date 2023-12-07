@@ -27,6 +27,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
+import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.extension.DatabaseCleanup;
 import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -53,7 +54,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
   private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};
   private static final SourceEnum[] SOURCE_FILE_SOURCES =
-    new SourceEnum[] {SourceEnum.FOLIO, SourceEnum.LOCAL, SourceEnum.FOLIO};
+    new SourceEnum[] {SourceEnum.LOCAL, SourceEnum.LOCAL, SourceEnum.FOLIO};
   private static final String[] SOURCE_FILE_TYPES = new String[] {"type1", "type2", "type3"};
   private static final String[] SOURCE_FILE_URLS = new String[] {"baseUrl1", "baseUrl2", "baseUrl3"};
 
@@ -226,116 +227,6 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   }
 
-  // Tests for PUT
-
-  @Test
-  @DisplayName("PUT: update existing Authority Source File")
-  void updateAuthoritySourceFile_positive_entityUpdated() throws Exception {
-    var entity = prepareAuthoritySourceFile(0);
-    createAuthoritySourceFile(entity);
-
-    var modified = new AuthoritySourceFileDto();
-    modified.setName("updated name");
-    modified.setSource(SourceEnum.LOCAL);
-    modified.setCodes(List.of(SOURCE_FILE_CODES[0], "code2"));
-    modified.setId(entity.getId());
-    modified.setType(entity.getType());
-    modified.setBaseUrl(entity.getBaseUrl());
-
-    tryPut(authoritySourceFilesEndpoint(modified.getId()), modified).andExpect(status().isNoContent());
-
-    var content = doGet(authoritySourceFilesEndpoint(modified.getId()))
-      .andExpect(jsonPath("name", is(modified.getName())))
-      .andExpect(jsonPath("source", is(modified.getSource().getValue())))
-      .andExpect(jsonPath("codes", hasSize(2)))
-      .andExpect(jsonPath("metadata.createdDate", notNullValue()))
-      .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
-      .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
-      .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)))
-      .andReturn().getResponse().getContentAsString();
-    var resultDto = objectMapper.readValue(content, AuthoritySourceFileDto.class);
-
-    assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(modified.getCodes())));
-  }
-
-  @Test
-  @DisplayName("PUT: update new Authority Source File with existed name")
-  void updateAuthoritySourceFile_negative_existedName() throws Exception {
-    var createdEntities = createAuthoritySourceTypes();
-
-    var dto = new AuthoritySourceFileDto(createdEntities.get(1).getName(),
-      List.of("code1"), "type", SourceEnum.FOLIO).baseUrl("new url");
-    dto.setId(createdEntities.get(0).getId());
-
-    tryPut(authoritySourceFilesEndpoint(dto.getId()), dto)
-      .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Authority source file with the given 'name' already exists.")))
-      .andExpect(exceptionMatch(DataIntegrityViolationException.class));
-
-    assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
-  }
-
-  @Test
-  @DisplayName("PUT: update new Authority Source File with existed url")
-  void updateAuthoritySourceFile_negative_existedUrl() throws Exception {
-    var createdEntities = createAuthoritySourceTypes();
-
-    var dto = new AuthoritySourceFileDto("new name",
-      List.of("code1"), "type", SourceEnum.FOLIO).baseUrl(createdEntities.get(1).getBaseUrl());
-    dto.setId(createdEntities.get(0).getId());
-
-    tryPut(authoritySourceFilesEndpoint(dto.getId()), dto)
-      .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Authority source file with the given 'baseUrl' already exists.")))
-      .andExpect(exceptionMatch(DataIntegrityViolationException.class));
-
-    assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
-  }
-
-  @Test
-  @DisplayName("PUT: update new Authority Source File with existed code")
-  void updateAuthoritySourceFile_negative_existedCode() throws Exception {
-    var createdEntities = createAuthoritySourceTypes();
-
-    var dto = new AuthoritySourceFileDto("new name",
-      List.of("code2"), "type", SourceEnum.FOLIO).baseUrl(createdEntities.get(1).getBaseUrl());
-    dto.setId(createdEntities.get(0).getId());
-
-    tryPut(authoritySourceFilesEndpoint(dto.getId()), dto)
-      .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Authority source file with the given 'code' already exists.")))
-      .andExpect(exceptionMatch(DataIntegrityViolationException.class));
-
-    assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
-  }
-
-  @Test
-  @DisplayName("PUT: return 404 for non-existing note type")
-  void updateAuthoritySourceFile_negative_entityNotFound() throws Exception {
-    var id = UUID.randomUUID();
-    var dto = new AuthoritySourceFileDto("name", List.of("code"), "type", SourceEnum.LOCAL).id(id);
-
-    tryPut(authoritySourceFilesEndpoint(id), dto).andExpect(status().isNotFound())
-        .andExpect(exceptionMatch(AuthoritySourceFileNotFoundException.class))
-        .andExpect(errorMessageMatch(containsString("was not found")));
-  }
-
-  @Test
-  @DisplayName("PUT: return 422 for invalid source file dto")
-  void updateAuthoritySourceFile_negative_invalidRequestDto() throws Exception {
-    var id = UUID.randomUUID();
-    var dto = new AuthoritySourceFileDto("name", List.of("code"), null, SourceEnum.LOCAL).id(id);
-
-    tryPut(authoritySourceFilesEndpoint(id), dto).andExpect(status().isUnprocessableEntity())
-        .andExpect(exceptionMatch(MethodArgumentNotValidException.class))
-        .andExpect(jsonPath("$.errors.[0].parameters[0].key", is("type")))
-        .andExpect(jsonPath("$.errors.[0].parameters[0].value", is("null")))
-        .andExpect(errorMessageMatch(containsString("must not be null")));
-  }
-
   // Tests for PATCH
 
   @Test
@@ -387,6 +278,19 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   }
 
   @Test
+  @DisplayName("DELETE: Folio Authority Source File cannot be deleted")
+  void deleteAuthority_negative_folioType() throws Exception {
+    var entity = prepareFolioSourceFile(0);
+    createAuthoritySourceFile(entity);
+
+    tryDelete(authoritySourceFilesEndpoint(entity.getId()))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(exceptionMatch(RequestBodyValidationException.class))
+        .andExpect(errorMessageMatch(containsString(
+            "Cannot delete Authority source file with source 'folio'")));
+  }
+
+  @Test
   @DisplayName("DELETE: Return 404 for non-existing entity")
   void deleteAuthoritySourceFile_negative_entityNotFound() throws Exception {
 
@@ -431,6 +335,24 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     entity.setUpdatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
     entity.setUpdatedByUserId(UUID.fromString(USER_ID));
     entity.setAuthoritySourceFileCodes(Set.of(code));
+
+    return entity;
+  }
+
+  public AuthoritySourceFile prepareFolioSourceFile(int sourceFileIdNum) {
+    var entity = new AuthoritySourceFile();
+    entity.setId(SOURCE_FILE_IDS[sourceFileIdNum]);
+    entity.setName(SOURCE_FILE_NAMES[sourceFileIdNum]);
+    entity.setSource(SourceEnum.FOLIO.getValue());
+    entity.setType(SOURCE_FILE_TYPES[sourceFileIdNum]);
+    entity.setBaseUrl(SOURCE_FILE_URLS[sourceFileIdNum] + "/");
+
+    var code = prepareAuthoritySourceFileCode(sourceFileIdNum);
+    entity.setCreatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
+    entity.setCreatedByUserId(UUID.fromString(USER_ID));
+    entity.setUpdatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
+    entity.setUpdatedByUserId(UUID.fromString(USER_ID));
+    entity.addCode(code);
 
     return entity;
   }
