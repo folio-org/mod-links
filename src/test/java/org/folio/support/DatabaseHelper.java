@@ -65,6 +65,28 @@ public class DatabaseHelper {
       entity.getUpdatedDate(), entity.getCreatedByUserId(), entity.getUpdatedByUserId());
   }
 
+  public String queryAuthoritySourceFileSequenceName(String tenant, UUID id) {
+    var sql = "SELECT * from " + getTable(tenant, AUTHORITY_SOURCE_FILE_TABLE) + " where id = ?";
+    return jdbcTemplate.query(sql, new Object[] {id}, rs -> {
+      if (rs.next()) {
+        return rs.getString("sequence_name");
+      } else {
+        return null;
+      }
+    });
+  }
+
+  public Integer queryAuthoritySourceFileSequenceStartNumber(String sequenceName) {
+    var sql = "SELECT * from information_schema.sequences where sequence_name='" + sequenceName + "'";
+    return jdbcTemplate.query(sql, rs -> {
+      if (rs.next()) {
+        return rs.getInt("start_value");
+      } else {
+        return null;
+      }
+    });
+  }
+
   public void updateAuthorityNaturalId(String tenant, UUID authorityId, String naturalId) {
     var sql = "UPDATE " + getTable(tenant, AUTHORITY_TABLE)
         + " SET natural_id = ? where id = ?";

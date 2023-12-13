@@ -1,5 +1,6 @@
 package org.folio.entlinks.controller.delegate;
 
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -8,6 +9,8 @@ import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.springframework.stereotype.Service;
@@ -32,10 +35,14 @@ public class AuthoritySourceFileServiceDelegate {
     return mapper.toDto(entity);
   }
 
-  public AuthoritySourceFileDto createAuthoritySourceFile(AuthoritySourceFileDto authoritySourceFile) {
+  public AuthoritySourceFileDto createAuthoritySourceFile(AuthoritySourceFilePostDto authoritySourceFile) {
     var entity = mapper.toEntity(authoritySourceFile);
     normalizeBaseUrl(entity);
     var created = service.create(entity);
+
+    var sequenceStartNumber = getAuthoritySourceFileSequenceStartNumber(authoritySourceFile);
+    service.createSequence(created.getSequenceName(), sequenceStartNumber);
+
     return mapper.toDto(created);
   }
 
@@ -62,5 +69,12 @@ public class AuthoritySourceFileServiceDelegate {
       }
       entity.setBaseUrl(baseUrl);
     }
+  }
+
+  private int getAuthoritySourceFileSequenceStartNumber(AuthoritySourceFilePostDto authoritySourceFile) {
+    return Optional.ofNullable(authoritySourceFile)
+        .map(AuthoritySourceFilePostDto::getHridManagement)
+        .map(AuthoritySourceFilePostDtoHridManagement::getStartNumber)
+        .orElse(1);
   }
 }

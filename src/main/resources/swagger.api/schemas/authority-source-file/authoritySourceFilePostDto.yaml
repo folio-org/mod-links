@@ -8,12 +8,9 @@ properties:
   name:
     type: string
     description: Authority source file name
-  codes:
-    type: array
-    description: List of identifying prefix
-    items:
-      type: string
-      description: identifying prefix, i.e. 'n', 'D', 'fst'
+  code:
+    type: string
+    description: Label identifying prefix, i.e. 'n', 'D', 'fst'
   type:
     type: string
     description: Type of authority records stored in source file
@@ -28,9 +25,15 @@ properties:
       - local
   selectable:
     type: boolean
-  metadata:
-    $ref: '../common/metadata.yaml'
+    default: false
+  hridManagement:
+    description: Identifies HRID management properties
+    type: object
+    properties:
+      startNumber:
+        type: integer
+        default: 1
 required:
   - name
-  - codes
+  - code
   - source

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.utils.DateUtils;
@@ -27,10 +28,11 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "updatedByUserId", ignore = true)
   @Mapping(target = "createdDate", ignore = true)
   @Mapping(target = "createdByUserId", ignore = true)
+  @Mapping(target = "sequenceName", ignore = true)
   @Mapping(target = "authoritySourceFileCodes",
-           expression = "java(toEntityCodes(authoritySourceFileDto.getCodes()))")
-  @Mapping(target = "source", expression = "java(toSource(authoritySourceFileDto.getSource()))")
-  AuthoritySourceFile toEntity(AuthoritySourceFileDto authoritySourceFileDto);
+      expression = "java(toEntityCodes(List.of(authoritySourceFilePostDto.getCode())))")
+  @Mapping(target = "source", expression = "java(toSource(authoritySourceFilePostDto.getSource()))")
+  AuthoritySourceFile toEntity(AuthoritySourceFilePostDto authoritySourceFilePostDto);
 
   @Mapping(target = "codes",
            expression = "java(toDtoCodes(authoritySourceFile.getAuthoritySourceFileCodes()))")
@@ -54,7 +56,7 @@ public interface AuthoritySourceFileMapper {
     return AuthoritySourceFileDto.SourceEnum.fromValue(source);
   }
 
-  default String toSource(AuthoritySourceFileDto.SourceEnum dtoSource) {
+  default String toSource(AuthoritySourceFilePostDto.SourceEnum dtoSource) {
     if (dtoSource == null) {
       return null;
     }
@@ -79,12 +81,14 @@ public interface AuthoritySourceFileMapper {
 
   default Set<AuthoritySourceFileCode> toEntityCodes(List<String> codes) {
     return codes.stream()
-      .map(code -> {
-        var authoritySourceFileCode = new AuthoritySourceFileCode();
-        authoritySourceFileCode.setCode(code);
-        return authoritySourceFileCode;
-      })
+      .map(this::toEntityCode)
       .collect(Collectors.toSet());
+  }
+
+  default AuthoritySourceFileCode toEntityCode(String code) {
+    var authoritySourceFileCode = new AuthoritySourceFileCode();
+    authoritySourceFileCode.setCode(code);
+    return authoritySourceFileCode;
   }
 
   default List<String> toDtoCodes(Set<AuthoritySourceFileCode> codes) {

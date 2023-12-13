@@ -62,6 +62,12 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @OneToMany(mappedBy = "authoritySourceFile", fetch = FetchType.LAZY)
   private Set<Authority> authorities = new LinkedHashSet<>();
 
+  @Column(name = "sequence_name", length = 50)
+  private String sequenceName;
+
+  @Column(name = "selectable")
+  private boolean selectable = false;
+
   @Transient
   private boolean isNew = true;
 
@@ -80,6 +86,8 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
     this.authorities = Optional.ofNullable(other.authorities).orElse(Set.of()).stream()
         .map(Authority::new)
         .collect(Collectors.toSet());
+    this.sequenceName = other.sequenceName;
+    this.selectable = other.selectable;
   }
 
   public void addCode(AuthoritySourceFileCode code) {
