@@ -25,7 +25,6 @@ import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -114,15 +113,13 @@ class AuthoritySourceFileServiceTest {
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code));
     entity.setSource("local");
-    var expected = new AuthoritySourceFile();
-    when(repository.save(any(AuthoritySourceFile.class))).thenReturn(expected);
-    var argumentCaptor = ArgumentCaptor.forClass(AuthoritySourceFile.class);
+    var expected = new AuthoritySourceFile(entity);
+    when(repository.save(any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[0]);
 
     var created = service.create(entity);
 
+    expected.setId(created.getId());
     assertThat(created).isEqualTo(expected);
-    verify(repository).save(argumentCaptor.capture());
-    assertThat(argumentCaptor.getValue().getId()).isNotNull();
   }
 
   @Test

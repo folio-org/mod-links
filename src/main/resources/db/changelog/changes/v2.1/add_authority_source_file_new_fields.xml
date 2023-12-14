@@ -16,6 +16,7 @@
         <constraints unique="true" uniqueConstraintName="authority_source_file_sequence_name_unq"/>
       </column>
       <column name="selectable" type="BOOLEAN" defaultValueBoolean="false"/>
+      <column name="hrid_start_number" type="INT"/>
     </addColumn>
   </changeSet>
 

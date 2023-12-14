@@ -29,6 +29,7 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "createdDate", ignore = true)
   @Mapping(target = "createdByUserId", ignore = true)
   @Mapping(target = "sequenceName", ignore = true)
+  @Mapping(target = "hridStartNumber", source = "hridManagement.startNumber")
   @Mapping(target = "authoritySourceFileCodes",
       expression = "java(toEntityCodes(List.of(authoritySourceFilePostDto.getCode())))")
   @Mapping(target = "source", expression = "java(toSource(authoritySourceFilePostDto.getSource()))")
@@ -41,6 +42,7 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "metadata.updatedByUserId", source = "updatedByUserId")
   @Mapping(target = "metadata.createdDate", source = "createdDate")
   @Mapping(target = "metadata.createdByUserId", source = "createdByUserId")
+  @Mapping(target = "hridManagement.startNumber", source = "hridStartNumber")
   AuthoritySourceFileDto toDto(AuthoritySourceFile authoritySourceFile);
 
   @Mapping(target = "authoritySourceFileCodes",

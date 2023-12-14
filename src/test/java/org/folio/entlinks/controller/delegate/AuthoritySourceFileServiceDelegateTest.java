@@ -81,6 +81,7 @@ class AuthoritySourceFileServiceDelegateTest {
     var expected = new AuthoritySourceFile();
     expected.setBaseUrl(INPUT_BASE_URL);
     expected.setSequenceName("sequence_name");
+    expected.setHridStartNumber(dto.getHridManagement().getStartNumber());
 
     when(mapper.toEntity(dto)).thenReturn(expected);
     when(service.create(expected)).thenReturn(expected);
@@ -92,7 +93,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(mapper).toEntity(dto);
     verify(service).create(expected);
     verify(mapper).toDto(expected);
-    verify(service).createSequence(expected.getSequenceName(), dto.getHridManagement().getStartNumber());
+    verify(service).createSequence(expected.getSequenceName(), expected.getHridStartNumber());
     verifyNoMoreInteractions(mapper, service);
   }
 

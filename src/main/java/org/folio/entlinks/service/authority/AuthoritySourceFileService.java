@@ -72,12 +72,7 @@ public class AuthoritySourceFileService {
 
     validateOnCreate(entity);
 
-    initId(entity);
-
-    var sourceFileCode = entity.getAuthoritySourceFileCodes().iterator().next();
-    sourceFileCode.setAuthoritySourceFile(entity);
-    var sequenceName = String.format(AUTHORITY_SEQUENCE_NAME_TEMPLATE, sourceFileCode.getCode());
-    entity.setSequenceName(sequenceName);
+    initOnCreate(entity);
 
     return repository.save(entity);
   }
@@ -135,6 +130,19 @@ public class AuthoritySourceFileService {
           .collect(Collectors.joining(","));
       throw new RequestBodyValidationException("Authority Source File with source Local should have only one prefix",
           List.of(new Parameter("code").value(codes)));
+    }
+  }
+
+  private void initOnCreate(AuthoritySourceFile entity) {
+    initId(entity);
+
+    var sourceFileCode = entity.getAuthoritySourceFileCodes().iterator().next();
+    sourceFileCode.setAuthoritySourceFile(entity);
+    var sequenceName = String.format(AUTHORITY_SEQUENCE_NAME_TEMPLATE, sourceFileCode.getCode());
+    entity.setSequenceName(sequenceName);
+
+    if (entity.getHridStartNumber() == null) {
+      entity.setHridStartNumber(1);
     }
   }
 

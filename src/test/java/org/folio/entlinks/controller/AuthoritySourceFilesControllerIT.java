@@ -82,6 +82,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     tryGet(authoritySourceFilesEndpoint())
       .andExpect(status().isOk())
       .andExpect(jsonPath("totalRecords", is(createdEntities.size())))
+      .andExpect(jsonPath("authoritySourceFiles[1].hridManagement.startNumber", is(2)))
       .andExpect(jsonPath("authoritySourceFiles[0].metadata", notNullValue()))
       .andExpect(jsonPath("authoritySourceFiles[0].metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("authoritySourceFiles[0].metadata.updatedDate", notNullValue()))
@@ -118,6 +119,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
     doGet(authoritySourceFilesEndpoint(sourceFile.getId()))
         .andExpect(jsonPath("name", is(sourceFile.getName())))
+        .andExpect(jsonPath("hridManagement.startNumber", is(1)))
         .andExpect(jsonPath("metadata.createdDate", notNullValue()))
         .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)));
   }
@@ -336,6 +338,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     entity.setSource(SOURCE_FILE_SOURCES[i].getValue());
     entity.setType(SOURCE_FILE_TYPES[i]);
     entity.setBaseUrl(SOURCE_FILE_URLS[i]  + "/");
+    entity.setHridStartNumber(i + 1);
 
     var code = prepareAuthoritySourceFileCode(i);
     entity.setCreatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));

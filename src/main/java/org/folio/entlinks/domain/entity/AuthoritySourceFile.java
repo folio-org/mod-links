@@ -68,6 +68,9 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @Column(name = "selectable")
   private boolean selectable = false;
 
+  @Column(name = "hrid_start_number")
+  private Integer hridStartNumber;
+
   @Transient
   private boolean isNew = true;
 
@@ -88,6 +91,7 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
         .collect(Collectors.toSet());
     this.sequenceName = other.sequenceName;
     this.selectable = other.selectable;
+    this.hridStartNumber = other.hridStartNumber;
   }
 
   public void addCode(AuthoritySourceFileCode code) {
