@@ -104,12 +104,10 @@ public class AuthoritySourceFileService {
     }
   }
 
-  @Transactional
   public long getNextSequenceNumber(String sequenceName) {
     return repository.getNextSequenceNumber(sequenceName);
   }
 
-  @Transactional
   public void createSequence(String sequenceName, int startNumber) {
     var command = String.format("""
         CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name

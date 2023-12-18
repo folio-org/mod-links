@@ -42,7 +42,7 @@ class AuthoritySourceFileMapperTest {
     assertThat(dto.getName()).isEqualTo(entity.getName());
     assertThat(dto.getType()).isEqualTo(entity.getType());
     assertThat(dto.getBaseUrl()).isEqualTo(entity.getBaseUrl());
-    assertThat(dto.getSource().getValue()).isEqualTo(entity.getSource());
+    assertThat(entity.getSource()).isEqualTo("local");
     assertThat(entity.getAuthoritySourceFileCodes()).hasSize(1);
     assertThat(dto.getCode()).isEqualTo(entity.getAuthoritySourceFileCodes().iterator().next().getCode());
   }
@@ -138,7 +138,6 @@ class AuthoritySourceFileMapperTest {
     dto.setType(SOURCE_FILE_TYPE);
     dto.setBaseUrl(INPUT_BASE_URL);
     dto.setCode(SOURCE_FILE_CODE);
-    dto.setSource(AuthoritySourceFilePostDto.SourceEnum.FOLIO);
     return dto;
   }
 }

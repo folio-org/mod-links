@@ -1,7 +1,6 @@
 package org.folio.entlinks.controller;
 
 import static java.util.UUID.randomUUID;
-import static org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto.SourceEnum.LOCAL;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
 import static org.folio.support.base.TestConstants.authoritySourceFilesEndpoint;
@@ -56,8 +55,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
   private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
   private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};
-  private static final SourceEnum[] SOURCE_FILE_SOURCES =
-    new SourceEnum[] {SourceEnum.LOCAL, SourceEnum.LOCAL, SourceEnum.FOLIO};
+  private static final String[] SOURCE_FILE_SOURCES = {"local", "local", "folio"};
   private static final String[] SOURCE_FILE_TYPES = new String[] {"type1", "type2", "type3"};
   private static final String[] SOURCE_FILE_URLS = new String[] {"baseUrl1", "baseUrl2", "baseUrl3"};
 
@@ -152,15 +150,15 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     assumeTrue(databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID) == 0);
 
     var id = UUID.randomUUID();
-    var dto = new AuthoritySourceFilePostDto().id(id).name("name").code("code").type("type")
-        .source(LOCAL).baseUrl("url").selectable(true)
+    var dto = new AuthoritySourceFilePostDto()
+        .id(id).name("name").code("code").type("type").baseUrl("url").selectable(true)
         .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
     var expectedSequenceName = "hrid_authority_local_file_code_seq";
 
     tryPost(authoritySourceFilesEndpoint(), dto)
       .andExpect(status().isCreated())
       .andExpect(jsonPath("name", is(dto.getName())))
-      .andExpect(jsonPath("source", is(dto.getSource().getValue())))
+      .andExpect(jsonPath("source", is("local")))
       .andExpect(jsonPath("codes", is(List.of(dto.getCode()))))
       .andExpect(jsonPath("selectable", is(true)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
@@ -179,7 +177,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   void createAuthoritySourceFile_negative_existedName() throws Exception {
     var createdEntities = createAuthoritySourceTypes();
 
-    var dto = new AuthoritySourceFilePostDto(createdEntities.get(0).getName(), "code", LOCAL)
+    var dto = new AuthoritySourceFilePostDto(createdEntities.get(0).getName(), "code")
         .baseUrl("url").type("type");
 
     tryPost(authoritySourceFilesEndpoint(), dto)
@@ -196,7 +194,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   void createAuthoritySourceFile_negative_existedUrl() throws Exception {
     var createdEntities = createAuthoritySourceTypes();
 
-    var dto = new AuthoritySourceFilePostDto("new name", "code", LOCAL)
+    var dto = new AuthoritySourceFilePostDto("new name", "code")
         .baseUrl(createdEntities.get(0).getBaseUrl()).type("type");
 
     tryPost(authoritySourceFilesEndpoint(), dto)
@@ -213,7 +211,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   void createAuthoritySourceFile_negative_existedCode() throws Exception {
     var createdEntities = createAuthoritySourceTypes();
 
-    var dto = new AuthoritySourceFilePostDto("new name", "code1", LOCAL).baseUrl("new url").type("type");
+    var dto = new AuthoritySourceFilePostDto("new name", "code1").baseUrl("new url").type("type");
 
     tryPost(authoritySourceFilesEndpoint(), dto)
       .andExpect(status().isUnprocessableEntity())
@@ -227,7 +225,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("POST: return 422 for authority source file without name")
   void createAuthoritySourceFile_negative_entityWithoutNameNotCreated() throws Exception {
-    var dto = new AuthoritySourceFilePostDto(null, "code", LOCAL).type("type");
+    var dto = new AuthoritySourceFilePostDto(null, "code").type("type");
 
     tryPost(authoritySourceFilesEndpoint(), dto)
         .andExpect(status().isUnprocessableEntity())
@@ -243,7 +241,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("PATCH: partially update Authority Source File")
   void updateAuthoritySourceFilePartially_positive_entityGetUpdated() throws Exception {
-    var dto = new AuthoritySourceFilePostDto("name", "code1", LOCAL).type("type").baseUrl("url");
+    var dto = new AuthoritySourceFilePostDto("name", "code1").type("type").baseUrl("url");
 
     doPost(authoritySourceFilesEndpoint(), dto);
     var existingAsString = doGet(authoritySourceFilesEndpoint()).andReturn().getResponse().getContentAsString();
@@ -335,7 +333,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     var entity = new AuthoritySourceFile();
     entity.setId(SOURCE_FILE_IDS[i]);
     entity.setName(SOURCE_FILE_NAMES[i]);
-    entity.setSource(SOURCE_FILE_SOURCES[i].getValue());
+    entity.setSource(SOURCE_FILE_SOURCES[i]);
     entity.setType(SOURCE_FILE_TYPES[i]);
     entity.setBaseUrl(SOURCE_FILE_URLS[i]  + "/");
     entity.setHridStartNumber(i + 1);

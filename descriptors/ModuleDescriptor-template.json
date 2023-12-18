@@ -278,7 +278,7 @@
     },
     {
       "id": "authority-source-files",
-      "version": "3.0",
+      "version": "2.0",
       "handlers": [
         {
           "methods": [

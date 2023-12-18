@@ -32,7 +32,7 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "hridStartNumber", source = "hridManagement.startNumber")
   @Mapping(target = "authoritySourceFileCodes",
       expression = "java(toEntityCodes(List.of(authoritySourceFilePostDto.getCode())))")
-  @Mapping(target = "source", expression = "java(toSource(authoritySourceFilePostDto.getSource()))")
+  @Mapping(target = "source", constant = "local")
   AuthoritySourceFile toEntity(AuthoritySourceFilePostDto authoritySourceFilePostDto);
 
   @Mapping(target = "codes",
@@ -56,14 +56,6 @@ public interface AuthoritySourceFileMapper {
 
   default AuthoritySourceFileDto.SourceEnum toDtoSource(String source) {
     return AuthoritySourceFileDto.SourceEnum.fromValue(source);
-  }
-
-  default String toSource(AuthoritySourceFilePostDto.SourceEnum dtoSource) {
-    if (dtoSource == null) {
-      return null;
-    }
-
-    return dtoSource.getValue();
   }
 
   default String toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
