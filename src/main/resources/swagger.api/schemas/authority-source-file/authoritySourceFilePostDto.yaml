@@ -19,7 +19,7 @@ properties:
     description: Base URL of the source file origin
   selectable:
     type: boolean
-    default: false
+    default: true
   hridManagement:
     description: Identifies HRID management properties
     type: object
