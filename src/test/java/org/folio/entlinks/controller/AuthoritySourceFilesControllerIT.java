@@ -28,6 +28,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
+import org.folio.entlinks.domain.entity.AuthoritySourceType;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.extension.DatabaseCleanup;
@@ -55,7 +56,8 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
   private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
   private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};
-  private static final String[] SOURCE_FILE_SOURCES = {"local", "local", "folio"};
+  private static final AuthoritySourceType[] SOURCE_FILE_SOURCES =
+    new AuthoritySourceType[] {AuthoritySourceType.LOCAL, AuthoritySourceType.LOCAL, AuthoritySourceType.FOLIO};
   private static final String[] SOURCE_FILE_TYPES = new String[] {"type1", "type2", "type3"};
   private static final String[] SOURCE_FILE_URLS = new String[] {"baseUrl1", "baseUrl2", "baseUrl3"};
 
@@ -352,7 +354,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     var entity = new AuthoritySourceFile();
     entity.setId(SOURCE_FILE_IDS[sourceFileIdNum]);
     entity.setName(SOURCE_FILE_NAMES[sourceFileIdNum]);
-    entity.setSource(SourceEnum.FOLIO.getValue());
+    entity.setSource(AuthoritySourceType.FOLIO);
     entity.setType(SOURCE_FILE_TYPES[sourceFileIdNum]);
     entity.setBaseUrl(SOURCE_FILE_URLS[sourceFileIdNum] + "/");
 

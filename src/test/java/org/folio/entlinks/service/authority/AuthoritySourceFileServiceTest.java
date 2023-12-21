@@ -19,6 +19,7 @@ import java.util.UUID;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
+import org.folio.entlinks.domain.entity.AuthoritySourceType;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -112,7 +113,7 @@ class AuthoritySourceFileServiceTest {
     var code = new AuthoritySourceFileCode();
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code));
-    entity.setSource("local");
+    entity.setSource(AuthoritySourceType.LOCAL);
     var expected = new AuthoritySourceFile(entity);
     when(repository.save(any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -127,14 +128,14 @@ class AuthoritySourceFileServiceTest {
     var code = new AuthoritySourceFileCode();
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code));
-    entity.setSource("folio");
+    entity.setSource(AuthoritySourceType.FOLIO);
 
     var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
 
     verifyNoInteractions(repository);
     assertThat(thrown.getInvalidParameters()).hasSize(1);
     assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("source");
-    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource());
+    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource().getValue());
   }
 
   @Test
@@ -145,7 +146,7 @@ class AuthoritySourceFileServiceTest {
     code2.setCode("code2");
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code1, code2));
-    entity.setSource("local");
+    entity.setSource(AuthoritySourceType.LOCAL);
 
     var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
 
@@ -161,7 +162,7 @@ class AuthoritySourceFileServiceTest {
     UUID id = UUID.randomUUID();
     entity.setId(id);
     entity.setName("updated name");
-    entity.setSource("updated source");
+    entity.setSource(AuthoritySourceType.LOCAL);
     var codeNew = new AuthoritySourceFileCode();
     codeNew.setCode("codeNew");
     entity.addCode(codeNew);
@@ -232,7 +233,7 @@ class AuthoritySourceFileServiceTest {
     UUID id = UUID.randomUUID();
     var authoritySourceFile = new AuthoritySourceFile();
     authoritySourceFile.setId(id);
-    authoritySourceFile.setSource("folio");
+    authoritySourceFile.setSource(AuthoritySourceType.FOLIO);
 
     when(repository.findById(id)).thenReturn(Optional.of(authoritySourceFile));
 
