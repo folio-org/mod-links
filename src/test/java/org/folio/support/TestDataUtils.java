@@ -299,7 +299,10 @@ public class TestDataUtils {
         new String[] {"personalName", "corporateName", "genreTerm", "genreTerm"};
     private static final Character[] HEADING_CODES = new Character[] {'a', 'b', 'c', 'd'};
 
-    private static final UUID[] SOURCE_FILE_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID()};
+    private static final UUID[] SOURCE_FILE_IDS = new UUID[] {
+        UUID.fromString("51243be4-27cb-4d78-9206-c956299483b1"),
+        UUID.fromString("453e9a34-31a3-4f82-b3f5-1057f20b050e"),
+        UUID.fromString("08c9fd60-d038-46bb-be83-45f93a8e53b7")};
     private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
     private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
     private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};

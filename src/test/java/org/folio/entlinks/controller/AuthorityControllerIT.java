@@ -131,7 +131,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     "2, 2, descending, source1"
   })
   @DisplayName("Get Collection: return list of authorities for the given limit and offset")
-  void getCollection_positive_entitiesSortedByNameAndLimitedWithOffset(String offset, String limit, String sortOrder,
+  void getCollection_positive_entitiesSortedBySourceAndLimitedWithOffset(String offset, String limit, String sortOrder,
                                                                        String firstSourceName) throws Exception {
     createAuthorities();
     // the following two authorities should be filtered out and not included in the result because of deleted = true
@@ -151,6 +151,22 @@ class AuthorityControllerIT extends IntegrationTestBase {
       .andExpect(jsonPath("authorities[0].metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("authorities[0].metadata.createdByUserId", is(USER_ID)))
       .andExpect(jsonPath("totalRecords").value(3));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "headingType=personalName, 1",
+      "authoritySourceFile.id=" + "51243be4-27cb-4d78-9206-c956299483b1, 3",
+      "createdDate>2021-10-25 00:00:00.000000, 3"
+  })
+  @DisplayName("Get Collection: return list of authorities for the given query")
+  void getCollection_positive_filterAuthoritiesByGivenQuery(String query, int numberOfRecords) throws Exception {
+    createAuthorities();
+
+    var cqlQuery = "(cql.allRecords=1 and " + query + ")";
+    doGet(authorityEndpoint() + "?query={cql}", cqlQuery)
+        .andExpect(jsonPath("authorities[0].personalName", notNullValue()))
+        .andExpect(jsonPath("totalRecords").value(numberOfRecords));
   }
 
   // Tests for Get By ID
