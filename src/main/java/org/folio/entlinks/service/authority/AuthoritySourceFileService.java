@@ -96,11 +96,11 @@ public class AuthoritySourceFileService {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
     var authoritySourceFile = repository.findById(id)
         .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    if (!FOLIO.getValue().equals(authoritySourceFile.getSource())) {
+    if (!FOLIO.equals(authoritySourceFile.getSource())) {
       repository.deleteById(id);
     } else {
       throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
-          List.of(new Parameter("source").value(authoritySourceFile.getSource())));
+          List.of(new Parameter("source").value(authoritySourceFile.getSource().getValue())));
     }
   }
 
@@ -117,9 +117,9 @@ public class AuthoritySourceFileService {
   }
 
   private void validateOnCreate(AuthoritySourceFile entity) {
-    if (!AuthoritySourceType.LOCAL.getValue().equals(entity.getSource())) {
+    if (!AuthoritySourceType.LOCAL.equals(entity.getSource())) {
       throw new RequestBodyValidationException("Only Authority Source File with source Local can be created",
-          List.of(new Parameter("source").value(entity.getSource())));
+          List.of(new Parameter("source").value(entity.getSource().getValue())));
     }
 
     if (entity.getAuthoritySourceFileCodes().size() != 1) {
