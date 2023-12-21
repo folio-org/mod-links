@@ -45,7 +45,7 @@ public class SourceFileDeserializer extends StdDeserializer<AuthoritySourceFile>
     var type = Optional.ofNullable(node.get("type")).map(JsonNode::asText).orElse(null);
     var name = Optional.ofNullable(node.get("name")).map(JsonNode::asText).orElse(null);
     var url = Optional.ofNullable(node.get("baseUrl")).map(JsonNode::asText).orElse(null);
-    var source = Optional.ofNullable(node.get("source")).map(JsonNode::asText).orElse(null);
+    final var source = Optional.ofNullable(node.get("source")).map(JsonNode::asText).orElse(null);
 
     sourceFile.setId(id);
     sourceFile.setName(name);
