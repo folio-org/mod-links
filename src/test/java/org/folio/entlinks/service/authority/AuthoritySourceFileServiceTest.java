@@ -26,6 +26,8 @@ import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -111,6 +113,7 @@ class AuthoritySourceFileServiceTest {
   @Test
   void shouldCreateAuthoritySourceFile() {
     var code = new AuthoritySourceFileCode();
+    code.setCode("code");
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code));
     entity.setSource(AuthoritySourceType.LOCAL);
@@ -136,6 +139,23 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters()).hasSize(1);
     assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("source");
     assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource().getValue());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "123", "#", "abc123", "abc def"})
+  void shouldNotBePossibleToCreateAuthoritySourceFileWithInvalidCode(String code) {
+    var sourceFileCode = new AuthoritySourceFileCode();
+    sourceFileCode.setCode(code);
+    var entity = new AuthoritySourceFile();
+    entity.setAuthoritySourceFileCodes(Set.of(sourceFileCode));
+    entity.setSource("local");
+
+    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
+
+    verifyNoInteractions(repository);
+    assertThat(thrown.getInvalidParameters()).hasSize(1);
+    assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("code");
+    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(code);
   }
 
   @Test
