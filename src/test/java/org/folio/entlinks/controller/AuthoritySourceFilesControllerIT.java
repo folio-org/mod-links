@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -325,13 +326,15 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("DELETE: Should delete existing authority source file")
   void deleteAuthoritySourceFile_positive_deleteExistingEntity() {
-    var noteType = prepareAuthoritySourceFile(0);
-    createAuthoritySourceFile(noteType);
+    var sourceFile = prepareAuthoritySourceFile(0);
+    sourceFile.setSequenceName(String.format("hrid_authority_local_file_%s_seq", SOURCE_FILE_CODE_IDS[0]));
+    createAuthoritySourceFile(sourceFile);
 
-    doDelete(authoritySourceFilesEndpoint(noteType.getId()));
+    doDelete(authoritySourceFilesEndpoint(sourceFile.getId()));
 
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
+    assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sourceFile.getSequenceName()));
   }
 
   @Test
