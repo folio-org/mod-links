@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.entlinks.domain.entity.AuthoritySourceType.LOCAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -116,7 +117,7 @@ class AuthoritySourceFileServiceTest {
     code.setCode("code");
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code));
-    entity.setSource(AuthoritySourceType.LOCAL);
+    entity.setSource(LOCAL);
     var expected = new AuthoritySourceFile(entity);
     when(repository.save(any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -148,7 +149,7 @@ class AuthoritySourceFileServiceTest {
     sourceFileCode.setCode(code);
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(sourceFileCode));
-    entity.setSource("local");
+    entity.setSource(LOCAL);
 
     var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
 
@@ -166,7 +167,7 @@ class AuthoritySourceFileServiceTest {
     code2.setCode("code2");
     var entity = new AuthoritySourceFile();
     entity.setAuthoritySourceFileCodes(Set.of(code1, code2));
-    entity.setSource(AuthoritySourceType.LOCAL);
+    entity.setSource(LOCAL);
 
     var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
 
@@ -182,7 +183,7 @@ class AuthoritySourceFileServiceTest {
     UUID id = UUID.randomUUID();
     entity.setId(id);
     entity.setName("updated name");
-    entity.setSource(AuthoritySourceType.LOCAL);
+    entity.setSource(LOCAL);
     var codeNew = new AuthoritySourceFileCode();
     codeNew.setCode("codeNew");
     entity.addCode(codeNew);
