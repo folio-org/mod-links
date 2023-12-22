@@ -2,9 +2,12 @@ package org.folio.entlinks.controller.delegate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
+import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +20,10 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
+import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
+import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.test.type.UnitTest;
 import org.folio.support.TestDataUtils;
 import org.junit.jupiter.api.Test;
@@ -42,6 +48,12 @@ class AuthoritySourceFileServiceDelegateTest {
 
   @Mock
   private AuthoritySourceFileService service;
+
+  @Mock
+  private ConsortiumTenantsService tenantsService;
+
+  @Mock
+  private FolioExecutionContext context;
 
   @InjectMocks
   private AuthoritySourceFileServiceDelegate delegate;
@@ -120,5 +132,22 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
     verifyNoMoreInteractions(mapper, service);
+  }
+
+  @Test
+  void shouldNotCreateForConsortiumMemberTenant() {
+    var dto = new AuthoritySourceFilePostDto();
+
+    when(context.getTenantId()).thenReturn(TENANT_ID);
+    when(tenantsService.getConsortiumTenants(TENANT_ID)).thenReturn(List.of("test", TENANT_ID));
+
+    var exc = assertThrows(RequestBodyValidationException.class, () -> delegate.createAuthoritySourceFile(dto));
+
+    assertThat(exc.getMessage()).isEqualTo("Create is not supported for consortium member tenant");
+    assertThat(exc.getInvalidParameters()).hasSize(1);
+    assertThat(exc.getInvalidParameters().get(0))
+        .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
+    verifyNoInteractions(mapper);
+    verifyNoInteractions(service);
   }
 }
