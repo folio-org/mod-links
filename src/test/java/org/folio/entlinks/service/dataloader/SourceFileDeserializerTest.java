@@ -32,23 +32,9 @@ public class SourceFileDeserializerTest {
 
   @Test
   void testDeserialize_folio_type() throws IOException {
-    var rootNode = mock(JsonNode.class);
-    var baseUrlNode = mock(JsonNode.class);
     var sourceNode = mock(JsonNode.class);
-    var codec = mock(ObjectCodec.class);
-    when(jsonParser.getCodec()).thenReturn(codec);
-    when(codec.readTree(jsonParser)).thenReturn(rootNode);
 
-    when(rootNode.get("id")).thenReturn(mock(JsonNode.class));
-    when(rootNode.get("type")).thenReturn(mock(JsonNode.class));
-    when(rootNode.get("name")).thenReturn(mock(JsonNode.class));
-    var codesNode = mock(JsonNode.class);
-    when(rootNode.get("codes")).thenReturn(codesNode);
-    when(codesNode.elements()).thenReturn(mock(Iterator.class));
-    when(rootNode.get("baseUrl")).thenReturn(baseUrlNode);
-    when(rootNode.get("source")).thenReturn(sourceNode);
-
-    when(baseUrlNode.asText()).thenReturn(BASE_URL);
+    setUpCommonMockBehaviors(sourceNode);
     when(sourceNode.asText()).thenReturn(FOLIO.getValue());
 
     var deserializer = new SourceFileDeserializer();
@@ -58,25 +44,12 @@ public class SourceFileDeserializerTest {
     assertEquals(FOLIO.getValue(), sourceFile.getSource().getValue());
   }
 
+
   @Test
   void testDeserialize_local_type() throws IOException {
-    var rootNode = mock(JsonNode.class);
-    var baseUrlNode = mock(JsonNode.class);
     var sourceNode = mock(JsonNode.class);
-    var codec = mock(ObjectCodec.class);
-    when(jsonParser.getCodec()).thenReturn(codec);
-    when(codec.readTree(jsonParser)).thenReturn(rootNode);
 
-    when(rootNode.get("id")).thenReturn(mock(JsonNode.class));
-    when(rootNode.get("type")).thenReturn(mock(JsonNode.class));
-    when(rootNode.get("name")).thenReturn(mock(JsonNode.class));
-    var codesNode = mock(JsonNode.class);
-    when(rootNode.get("codes")).thenReturn(codesNode);
-    when(codesNode.elements()).thenReturn(mock(Iterator.class));
-    when(rootNode.get("baseUrl")).thenReturn(baseUrlNode);
-    when(rootNode.get("source")).thenReturn(sourceNode);
-
-    when(baseUrlNode.asText()).thenReturn(BASE_URL);
+    setUpCommonMockBehaviors(sourceNode);
     when(sourceNode.asText()).thenReturn(LOCAL.getValue());
 
     var deserializer = new SourceFileDeserializer();
@@ -84,5 +57,25 @@ public class SourceFileDeserializerTest {
 
     assertEquals(BASE_URL, sourceFile.getBaseUrl());
     assertEquals(LOCAL.getValue(), sourceFile.getSource().getValue());
+  }
+
+  private void setUpCommonMockBehaviors(JsonNode sourceNode) throws IOException {
+    var codec = mock(ObjectCodec.class);
+    var codesNode = mock(JsonNode.class);
+    var rootNode = mock(JsonNode.class);
+    var baseUrlNode = mock(JsonNode.class);
+
+    when(jsonParser.getCodec()).thenReturn(codec);
+    when(codec.readTree(jsonParser)).thenReturn(rootNode);
+
+    when(rootNode.get("id")).thenReturn(mock(JsonNode.class));
+    when(rootNode.get("type")).thenReturn(mock(JsonNode.class));
+    when(rootNode.get("name")).thenReturn(mock(JsonNode.class));
+    when(rootNode.get("codes")).thenReturn(codesNode);
+    when(codesNode.elements()).thenReturn(mock(Iterator.class));
+    when(rootNode.get("baseUrl")).thenReturn(baseUrlNode);
+    when(rootNode.get("source")).thenReturn(sourceNode);
+    when(baseUrlNode.asText()).thenReturn(BASE_URL);
+
   }
 }
