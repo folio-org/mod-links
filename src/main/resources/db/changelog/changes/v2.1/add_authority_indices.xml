@@ -1,0 +1,63 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+  <changeSet id="MODELINKS-141@@create-authority-heading_type-index" author="Mukhiddin_Yusupov">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists indexName="idx_authority-heading_type" tableName="authority"/>
+      </not>
+    </preConditions>
+
+    <comment>Create B-tree index for heading_type in authority</comment>
+
+    <createIndex tableName="authority" indexName="idx_authority-heading_type">
+      <column name="heading_type"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="MODELINKS-141@@create-authority-source_file_id-index" author="Mukhiddin_Yusupov">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists indexName="idx_authority_source_file_id" tableName="authority"/>
+      </not>
+    </preConditions>
+
+    <comment>Create B-tree index for source_file_id in authority</comment>
+
+    <createIndex tableName="authority" indexName="idx_authority_source_file_id">
+      <column name="source_file_id"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="MODELINKS-141@@create-authority-created_date-index" author="Mukhiddin_Yusupov">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists indexName="idx_authority_created_date" tableName="authority"/>
+      </not>
+    </preConditions>
+
+    <comment>Create B-tree index for created_date in authority</comment>
+
+    <createIndex tableName="authority" indexName="idx_authority_created_date">
+      <column name="created_date"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="MODELINKS-141@@create-authority-updated_date-index" author="Mukhiddin_Yusupov">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists indexName="idx_authority_updated_date" tableName="authority"/>
+      </not>
+    </preConditions>
+
+    <comment>Create B-tree index for updated_date in authority</comment>
+
+    <createIndex tableName="authority" indexName="idx_authority_updated_date">
+      <column name="updated_date"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

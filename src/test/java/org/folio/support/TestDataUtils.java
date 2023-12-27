@@ -290,7 +290,8 @@ public class TestDataUtils {
 
   @UtilityClass
   public class AuthorityTestData {
-    private static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
+    public static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
+    public static final String UPDATED_DATE = "2021-10-25T06:31:31+05:00";
 
     private static final String[] SOURCES = new String[] {"source1", "source2", "source3", "source4"};
     private static final String[] HEADINGS =
@@ -322,7 +323,7 @@ public class TestDataUtils {
       entity.setSubjectHeadingCode(HEADING_CODES[authorityIdNum]);
       entity.setCreatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
       entity.setCreatedByUserId(UUID.fromString(USER_ID));
-      entity.setUpdatedDate(Timestamp.from(Instant.parse(CREATED_DATE)));
+      entity.setUpdatedDate(Timestamp.from(Instant.parse(UPDATED_DATE)));
       entity.setUpdatedByUserId(UUID.fromString(USER_ID));
       entity.setAuthoritySourceFile(authoritySourceFile(sourceFileIdNum));
       return entity;
