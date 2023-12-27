@@ -1,13 +1,15 @@
 package org.folio.entlinks.domain.entity;
 
-public enum AuthoritySourceType {
+public enum AuthoritySourceFileSource {
   FOLIO("folio"),
 
-  LOCAL("local");
+  LOCAL("local"),
+
+  CONSORTIUM("consortium");
 
   private final String value;
 
-  AuthoritySourceType(String value) {
+  AuthoritySourceFileSource(String value) {
     this.value = value;
   }
 

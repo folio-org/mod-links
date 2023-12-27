@@ -58,7 +58,7 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @Enumerated(EnumType.STRING)
   @Type(PostgreSQLEnumType.class)
   @Column(name = "source", length = 100)
-  private AuthoritySourceType source;
+  private AuthoritySourceFileSource source;
 
   @ToString.Exclude
   @OneToMany(mappedBy = "authoritySourceFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

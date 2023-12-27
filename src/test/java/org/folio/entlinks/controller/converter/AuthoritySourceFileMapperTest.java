@@ -15,7 +15,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.entity.AuthoritySourceType;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.spring.test.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -126,7 +126,7 @@ class AuthoritySourceFileMapperTest {
     sourceFile.setType(SOURCE_FILE_TYPE);
     sourceFile.setBaseUrl(INPUT_BASE_URL);
     sourceFile.setAuthoritySourceFileCodes(Set.of());
-    sourceFile.setSource(AuthoritySourceType.FOLIO);
+    sourceFile.setSource(AuthoritySourceFileSource.FOLIO);
     return sourceFile;
   }
 

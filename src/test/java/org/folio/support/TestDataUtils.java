@@ -49,7 +49,7 @@ import org.folio.entlinks.domain.entity.AuthorityDataStatAction;
 import org.folio.entlinks.domain.entity.AuthorityDataStatStatus;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.entlinks.domain.entity.AuthoritySourceType;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
@@ -303,8 +303,11 @@ public class TestDataUtils {
     private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
     private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
     private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};
-    private static final AuthoritySourceType[] SOURCE_FILE_SOURCES =
-        new AuthoritySourceType[]{AuthoritySourceType.FOLIO, AuthoritySourceType.LOCAL, AuthoritySourceType.FOLIO};
+    private static final AuthoritySourceFileSource[] SOURCE_FILE_SOURCES = new AuthoritySourceFileSource[] {
+      AuthoritySourceFileSource.LOCAL,
+      AuthoritySourceFileSource.LOCAL,
+      AuthoritySourceFileSource.FOLIO
+    };
     private static final String[] SOURCE_FILE_TYPES = new String[] {"type1", "type2", "type3"};
     private static final String[] SOURCE_FILE_URLS = new String[] {"baseUrl1", "baseUrl2", "baseUrl3"};
 

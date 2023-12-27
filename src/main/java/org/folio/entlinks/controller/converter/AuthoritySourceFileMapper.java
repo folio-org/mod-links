@@ -11,7 +11,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.entlinks.domain.entity.AuthoritySourceType;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.utils.DateUtils;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -33,7 +33,7 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "hridStartNumber", source = "hridManagement.startNumber")
   @Mapping(target = "authoritySourceFileCodes",
       expression = "java(toEntityCodes(List.of(authoritySourceFilePostDto.getCode())))")
-  @Mapping(target = "source", expression = "java(org.folio.entlinks.domain.entity.AuthoritySourceType.LOCAL)")
+  @Mapping(target = "source", expression = "java(org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL)")
   AuthoritySourceFile toEntity(AuthoritySourceFilePostDto authoritySourceFilePostDto);
 
   @Mapping(target = "codes",
@@ -55,16 +55,16 @@ public interface AuthoritySourceFileMapper {
 
   List<AuthoritySourceFileDto> toDtoList(Iterable<AuthoritySourceFile> authoritySourceFileIterable);
 
-  default AuthoritySourceFileDto.SourceEnum toDtoSource(AuthoritySourceType source) {
+  default AuthoritySourceFileDto.SourceEnum toDtoSource(AuthoritySourceFileSource source) {
     return AuthoritySourceFileDto.SourceEnum.valueOf(source.name());
   }
 
-  default AuthoritySourceType toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
+  default AuthoritySourceFileSource toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
     if (dtoSource == null) {
       return null;
     }
 
-    return AuthoritySourceType.valueOf(dtoSource.name());
+    return AuthoritySourceFileSource.valueOf(dtoSource.name());
   }
 
   default AuthoritySourceFileDtoCollection toAuthoritySourceFileCollection(

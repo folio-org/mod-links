@@ -1,6 +1,6 @@
 package org.folio.entlinks.service.authority;
 
-import static org.folio.entlinks.domain.entity.AuthoritySourceType.FOLIO;
+import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.entlinks.domain.entity.AuthoritySourceType;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -117,7 +117,7 @@ public class AuthoritySourceFileService {
   }
 
   private void validateOnCreate(AuthoritySourceFile entity) {
-    if (!AuthoritySourceType.LOCAL.equals(entity.getSource())) {
+    if (!AuthoritySourceFileSource.LOCAL.equals(entity.getSource())) {
       throw new RequestBodyValidationException("Only Authority Source File with source Local can be created",
           List.of(new Parameter("source").value(entity.getSource().getValue())));
     }
