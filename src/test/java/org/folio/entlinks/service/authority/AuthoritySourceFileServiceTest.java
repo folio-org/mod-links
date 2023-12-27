@@ -139,7 +139,7 @@ class AuthoritySourceFileServiceTest {
     verifyNoInteractions(repository);
     assertThat(thrown.getInvalidParameters()).hasSize(1);
     assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("source");
-    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource().getValue());
+    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource().name());
   }
 
   @ParameterizedTest

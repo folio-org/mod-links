@@ -1,22 +1,22 @@
 package org.folio.entlinks.service.dataloader;
 
-import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
-import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.io.IOException;
-import java.util.Iterator;
 import org.folio.spring.test.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -35,13 +35,13 @@ public class SourceFileDeserializerTest {
     var sourceNode = mock(JsonNode.class);
 
     setUpCommonMockBehaviors(sourceNode);
-    when(sourceNode.asText()).thenReturn(FOLIO.getValue());
+    when(sourceNode.asText()).thenReturn("FOLIO");
 
     var deserializer = new SourceFileDeserializer();
     var sourceFile = deserializer.deserialize(jsonParser, deserializationContext);
 
     assertEquals(BASE_URL, sourceFile.getBaseUrl());
-    assertEquals(FOLIO.getValue(), sourceFile.getSource().getValue());
+    assertEquals("FOLIO", sourceFile.getSource().name());
   }
 
 
@@ -50,13 +50,13 @@ public class SourceFileDeserializerTest {
     var sourceNode = mock(JsonNode.class);
 
     setUpCommonMockBehaviors(sourceNode);
-    when(sourceNode.asText()).thenReturn(LOCAL.getValue());
+    when(sourceNode.asText()).thenReturn("LOCAL");
 
     var deserializer = new SourceFileDeserializer();
     var sourceFile = deserializer.deserialize(jsonParser, deserializationContext);
 
     assertEquals(BASE_URL, sourceFile.getBaseUrl());
-    assertEquals(LOCAL.getValue(), sourceFile.getSource().getValue());
+    assertEquals(LOCAL, sourceFile.getSource());
   }
 
   private void setUpCommonMockBehaviors(JsonNode sourceNode) throws IOException {

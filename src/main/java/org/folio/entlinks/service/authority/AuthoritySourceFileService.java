@@ -100,7 +100,7 @@ public class AuthoritySourceFileService {
       repository.deleteById(id);
     } else {
       throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
-          List.of(new Parameter("source").value(authoritySourceFile.getSource().getValue())));
+          List.of(new Parameter("source").value(authoritySourceFile.getSource().name())));
     }
   }
 
@@ -119,7 +119,7 @@ public class AuthoritySourceFileService {
   private void validateOnCreate(AuthoritySourceFile entity) {
     if (!AuthoritySourceFileSource.LOCAL.equals(entity.getSource())) {
       throw new RequestBodyValidationException("Only Authority Source File with source Local can be created",
-          List.of(new Parameter("source").value(entity.getSource().getValue())));
+          List.of(new Parameter("source").value(entity.getSource().name())));
     }
 
     if (entity.getAuthoritySourceFileCodes().size() != 1) {

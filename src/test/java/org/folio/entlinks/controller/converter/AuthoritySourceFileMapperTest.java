@@ -42,7 +42,7 @@ class AuthoritySourceFileMapperTest {
     assertThat(dto.getName()).isEqualTo(entity.getName());
     assertThat(dto.getType()).isEqualTo(entity.getType());
     assertThat(dto.getBaseUrl()).isEqualTo(entity.getBaseUrl());
-    assertThat(entity.getSource().getValue()).isEqualTo("local");
+    assertThat(entity.getSource().name()).isEqualTo("LOCAL");
     assertThat(entity.getAuthoritySourceFileCodes()).hasSize(1);
     assertThat(dto.getCode()).isEqualTo(entity.getAuthoritySourceFileCodes().iterator().next().getCode());
   }
