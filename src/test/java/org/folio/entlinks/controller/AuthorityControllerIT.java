@@ -529,8 +529,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     tryDelete(authoritySourceFilesEndpoint(expected.getSourceFileId()))
       .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with" +
-          " Authority/Authority Source File.")))
+      .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
+          + " Authority/Authority Source File.")))
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
   }
 
