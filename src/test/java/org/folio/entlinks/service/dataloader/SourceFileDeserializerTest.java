@@ -1,5 +1,6 @@
 package org.folio.entlinks.service.dataloader;
 
+import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -34,13 +35,13 @@ public class SourceFileDeserializerTest {
     var sourceNode = mock(JsonNode.class);
 
     setUpCommonMockBehaviors(sourceNode);
-    when(sourceNode.asText()).thenReturn("FOLIO");
+    when(sourceNode.asText()).thenReturn("folio");
 
     var deserializer = new SourceFileDeserializer();
     var sourceFile = deserializer.deserialize(jsonParser, deserializationContext);
 
     assertEquals(BASE_URL, sourceFile.getBaseUrl());
-    assertEquals("FOLIO", sourceFile.getSource().name());
+    assertEquals(FOLIO, sourceFile.getSource());
   }
 
 
@@ -49,7 +50,7 @@ public class SourceFileDeserializerTest {
     var sourceNode = mock(JsonNode.class);
 
     setUpCommonMockBehaviors(sourceNode);
-    when(sourceNode.asText()).thenReturn("LOCAL");
+    when(sourceNode.asText()).thenReturn("local");
 
     var deserializer = new SourceFileDeserializer();
     var sourceFile = deserializer.deserialize(jsonParser, deserializationContext);
