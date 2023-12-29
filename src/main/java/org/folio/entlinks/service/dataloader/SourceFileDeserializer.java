@@ -57,9 +57,10 @@ public class SourceFileDeserializer extends StdDeserializer<AuthoritySourceFile>
 
   private static void setSourceType(AuthoritySourceFile sourceFile, String source) {
     if (source != null) {
-      switch (source) {
-        case "folio" -> sourceFile.setSource(AuthoritySourceFileSource.FOLIO);
-        default -> throw new IllegalArgumentException("Unknown source type: " + source);
+      if (source.equals("folio")) {
+        sourceFile.setSource(AuthoritySourceFileSource.FOLIO);
+      } else {
+        throw new IllegalArgumentException("Unknown source type: " + source);
       }
     }
   }

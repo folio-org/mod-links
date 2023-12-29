@@ -44,21 +44,6 @@ public class SourceFileDeserializerTest {
     assertEquals(FOLIO, sourceFile.getSource());
   }
 
-
-  @Test
-  void testDeserialize_local_type() throws IOException {
-    var sourceNode = mock(JsonNode.class);
-
-    setUpCommonMockBehaviors(sourceNode);
-    when(sourceNode.asText()).thenReturn("local");
-
-    var deserializer = new SourceFileDeserializer();
-    var sourceFile = deserializer.deserialize(jsonParser, deserializationContext);
-
-    assertEquals(BASE_URL, sourceFile.getBaseUrl());
-    assertEquals(LOCAL, sourceFile.getSource());
-  }
-
   private void setUpCommonMockBehaviors(JsonNode sourceNode) throws IOException {
     var codec = mock(ObjectCodec.class);
     var codesNode = mock(JsonNode.class);
