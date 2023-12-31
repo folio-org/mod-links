@@ -1,7 +1,6 @@
 package org.folio.entlinks.service.dataloader;
 
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
-import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
