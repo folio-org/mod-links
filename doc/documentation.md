@@ -656,15 +656,17 @@ POST https://{okapi-location}/settings/entries
 > _Basic fields for filtering authorities:_
 > * _headingType_
 > * _authoritySourceFile.id_
+> * _authoritySourceFile.name_
 > * _createdDate_
 > * _updatedDate_
 
 #### Example queries to retrieve authorities with filtering
 
 
-| Example                                | Description                                                                                                          |
-|:---------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
-| `headingType = personalName`           | Matches authorities with `Personal Name` heading type                                                                |
-| `authoritySourceFile.id = 12345`       | Matches authorities with `12345` source file id                                                                      |
-| `createdDate > 2021-10-25T12:00:00.0"` | Matches authorities that were created after `2021-10-25 12:00:00`                                                    |
-| `updatedDate <= 2021-10-28T12:00:00.0` | Matches authorities that were updated before or at `2021-10-28 12:00:00`                                             |
+| Example                                           | Description                                                              |
+|:--------------------------------------------------|:-------------------------------------------------------------------------|
+| `headingType = personalName`                      | Matches authorities with `Personal Name` heading type                    |
+| `authoritySourceFile.id = 12345`                  | Matches authorities with `12345` source file id                          |
+| `createdDate > 2021-10-25T12:00:00.0"`            | Matches authorities that were created after `2021-10-25 12:00:00`        |
+| `updatedDate <= 2021-10-28T12:00:00.0`            | Matches authorities that were updated before or at `2021-10-28 12:00:00` |
+| `authoritySourceFile.name = LC Genre/Form Terms`  | Matches authorities with source file name `LC Genre/Form Terms`          |
