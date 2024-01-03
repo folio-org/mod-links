@@ -3,9 +3,30 @@ get:
   tags:
     - authority-storage
   parameters:
+    - name: deleted
+      in: query
+      required: false
+      description: Indicates if only deleted authority records should be retrieved
+      schema:
+        type: boolean
+        default: false
+    - name: idOnly
+      in: query
+      required: false
+      description: Indicates if only IDs of authority records should be retrieved
+      schema:
+        type: boolean
+        default: false
     - $ref: '../../parameters/offset-param.yaml'
     - $ref: '../../parameters/limit-param.yaml'
     - $ref: '../../parameters/cql-query.yaml'
+    - name: contentType
+      in: header
+      required: false
+      description: Specifies Content-type for the response to be fetched
+      schema:
+        type: string
+        default: "application/json"
   responses:
     '200':
       description: Returns a list of authorities
@@ -14,6 +35,9 @@ get:
           example: examples/authorities.sample
           schema:
             $ref: '../../schemas/authority-storage/authorityDtoCollection.yaml'
+        text/plain;charset=utf-8:
+          schema:
+            type: string
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '500':

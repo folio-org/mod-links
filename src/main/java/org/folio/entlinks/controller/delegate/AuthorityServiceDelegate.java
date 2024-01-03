@@ -12,6 +12,7 @@ import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
@@ -32,9 +33,22 @@ public class AuthorityServiceDelegate {
   private final AuthorityDomainEventPublisher eventPublisher;
   private final ConsortiumAuthorityPropagationService propagationService;
 
-  public AuthorityDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery) {
-    var entities = service.getAll(offset, limit, cqlQuery);
-    return mapper.toAuthorityCollection(entities);
+  public AuthorityDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery,
+                                                            Boolean idOnly) {
+    var entitiesPage = service.getAll(offset, limit, cqlQuery)
+        .map(AuthorityBase.class::cast);
+    var archivesCollection = mapper.toAuthorityCollection(entitiesPage);
+
+    if (Boolean.TRUE.equals(idOnly)) {
+      return new AuthorityDtoCollection(
+          archivesCollection.getAuthorities().stream()
+              .map(dto -> new AuthorityDto().id(dto.getId()))
+              .toList(),
+          archivesCollection.getTotalRecords()
+      );
+    }
+
+    return archivesCollection;
   }
 
   public AuthorityDto getAuthorityById(UUID id) {
