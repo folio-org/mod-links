@@ -1,6 +1,7 @@
 package org.folio.entlinks.controller.delegate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.base.TestConstants.CENTRAL_TENANT_ID;
 import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -95,6 +96,31 @@ class AuthoritySourceFileServiceDelegateTest {
     expected.setSequenceName("sequence_name");
     expected.setHridStartNumber(dto.getHridManagement().getStartNumber());
 
+    when(mapper.toEntity(dto)).thenReturn(expected);
+    when(service.create(expected)).thenReturn(expected);
+    when(mapper.toDto(expected)).thenReturn(new AuthoritySourceFileDto());
+
+    delegate.createAuthoritySourceFile(dto);
+
+    assertEquals(SANITIZED_BASE_URL, expected.getBaseUrl());
+    verify(mapper).toEntity(dto);
+    verify(service).create(expected);
+    verify(mapper).toDto(expected);
+    verify(service).createSequence(expected.getSequenceName(), expected.getHridStartNumber());
+    verifyNoMoreInteractions(mapper, service);
+  }
+
+  @Test
+  void shouldNormalizeBaseUrlForSourceFileCreateOnConsortiumCentralTenant() {
+    var dto = new AuthoritySourceFilePostDto().baseUrl(INPUT_BASE_URL)
+        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
+    var expected = new AuthoritySourceFile();
+    expected.setBaseUrl(INPUT_BASE_URL);
+    expected.setSequenceName("sequence_name");
+    expected.setHridStartNumber(dto.getHridManagement().getStartNumber());
+
+    when(context.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
+    when(tenantsService.getConsortiumTenants(CENTRAL_TENANT_ID)).thenReturn(List.of("test", TENANT_ID));
     when(mapper.toEntity(dto)).thenReturn(expected);
     when(service.create(expected)).thenReturn(expected);
     when(mapper.toDto(expected)).thenReturn(new AuthoritySourceFileDto());
