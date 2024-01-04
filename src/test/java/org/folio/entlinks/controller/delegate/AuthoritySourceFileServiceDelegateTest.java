@@ -18,7 +18,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.folio.support.TestDataUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

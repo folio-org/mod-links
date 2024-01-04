@@ -53,8 +53,8 @@ import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
-import org.folio.spring.test.extension.DatabaseCleanup;
-import org.folio.spring.test.type.IntegrationTest;
+import org.folio.spring.testing.extension.DatabaseCleanup;
+import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
 import org.folio.support.base.IntegrationTestBase;
 import org.hamcrest.Matcher;
@@ -207,7 +207,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("POST: create new Authority with defined ID")
   void createAuthority_positive_entityCreatedWithProvidedId() throws Exception {
-    assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 0);
+    //assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 0);
 
     var dto = authorityDto(0, 0);
     var id = randomUUID();
