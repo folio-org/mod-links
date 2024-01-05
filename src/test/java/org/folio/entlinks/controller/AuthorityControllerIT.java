@@ -140,10 +140,12 @@ class AuthorityControllerIT extends IntegrationTestBase {
         .andExpect(jsonPath("totalRecords", is(createdEntities.size())))
         .andReturn().getResponse().getContentAsString();
     var collection = objectMapper.readValue(content, AuthorityDtoCollection.class);
+    var expectedCollection = new AuthorityDtoCollection(
+        createdEntities.stream().map(authority -> new AuthorityDto().id(authority.getId())).toList(),
+        createdEntities.size()
+    );
 
-    assertEquals(
-        createdEntities.stream().map(Authority::getId).collect(Collectors.toSet()),
-        collection.getAuthorities().stream().map(AuthorityDto::getId).collect(Collectors.toSet()));
+    assertEquals(expectedCollection, collection);
   }
 
   @Test
