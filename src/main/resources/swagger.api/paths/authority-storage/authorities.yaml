@@ -38,6 +38,7 @@ get:
         text/plain;charset=utf-8:
           schema:
             type: string
+          example: examples/authorities_ids.sample
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '500':
