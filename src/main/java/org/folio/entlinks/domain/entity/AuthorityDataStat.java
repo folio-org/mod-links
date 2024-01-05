@@ -45,7 +45,6 @@ public class AuthorityDataStat extends AuditableEntity implements Identifiable<U
   private Authority authority;
 
   @Enumerated(EnumType.STRING)
-  //@Type(PostgreSQLEnumType.class)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "action", nullable = false)
   private AuthorityDataStatAction action;
@@ -84,7 +83,6 @@ public class AuthorityDataStat extends AuditableEntity implements Identifiable<U
   private int lbFailed;
 
   @Enumerated(EnumType.STRING)
-  //@Type(PostgreSQLEnumType.class)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "status", nullable = false)
   private AuthorityDataStatStatus status;

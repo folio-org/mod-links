@@ -207,7 +207,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("POST: create new Authority with defined ID")
   void createAuthority_positive_entityCreatedWithProvidedId() throws Exception {
-    //assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 0);
+    assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 0);
 
     var dto = authorityDto(0, 0);
     var id = randomUUID();
