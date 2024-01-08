@@ -49,10 +49,10 @@ import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
-import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.spring.test.extension.DatabaseCleanup;
@@ -60,6 +60,7 @@ import org.folio.spring.test.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
 import org.folio.support.base.IntegrationTestBase;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -167,6 +168,10 @@ class AuthorityControllerIT extends IntegrationTestBase {
   @DisplayName("Get Collection: find all Authority Archives IDs with content-type text/plain and application/json")
   void getCollectionOfIdsOnly_positive_authorityArchivesFound() throws Exception {
     var createdEntities = createAuthorityArchives();
+    var expectedCollection = new AuthorityDtoCollection(
+        createdEntities.stream().map(archive -> new AuthorityDto().id(archive.getId())).collect(Collectors.toList()),
+        createdEntities.size()
+    );
 
     var content = tryGet(authorityEndpoint() + "?deleted={d}&idOnly={io}", true, true)
         .andExpect(status().isOk())
@@ -174,13 +179,10 @@ class AuthorityControllerIT extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     var collection = objectMapper.readValue(content, AuthorityDtoCollection.class);
 
-    assertEquals(
-        createdEntities.stream().map(AuthorityArchive::getId).collect(Collectors.toSet()),
-        collection.getAuthorities().stream().map(AuthorityDto::getId).collect(Collectors.toSet()));
-
+    assertEquals(expectedCollection, collection);
 
     var headers = defaultHeaders();
-    headers.setContentType(MediaType.TEXT_PLAIN);
+    headers.setAccept(List.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON));
     var expectedContent = createdEntities.stream()
         .map(AuthorityArchive::getId)
         .map(UUID::toString)
@@ -195,19 +197,23 @@ class AuthorityControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("Get Collection: retrieve all Authorities and Archives in plain text")
   void getCollection_negative_authoritiesAndArchivesNotRetrievableInPlainText() throws Exception {
-    var createdEntities = createAuthorityArchives();
+    createAuthorityArchives();
     var headers = defaultHeaders();
-    headers.setContentType(MediaType.TEXT_PLAIN);
+    headers.setAccept(List.of(MediaType.TEXT_PLAIN));
 
     tryGet(authorityEndpoint() + "?deleted={d}", headers, true)
-        .andExpect(status().isUnprocessableEntity())
-        .andExpect(errorMessageMatch(is(AuthorityController.RETRIEVE_COLLECTION_DTO_ERROR_MESSAGE)))
-        .andExpect(exceptionMatch(RequestBodyValidationException.class));
+        .andExpect(status().isBadRequest())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN_VALUE))
+        .andExpect(MockMvcResultMatchers.content()
+            .string(Matchers.containsString(AuthorityController.RETRIEVE_COLLECTION_INVALID_ACCEPT_MESSAGE)))
+        .andExpect(exceptionMatch(AuthoritiesRequestNotSupportedMediaTypeException.class));
 
     tryGet(authorityEndpoint() + "?deleted={d}", headers, false)
-        .andExpect(status().isUnprocessableEntity())
-        .andExpect(errorMessageMatch(is(AuthorityController.RETRIEVE_COLLECTION_DTO_ERROR_MESSAGE)))
-        .andExpect(exceptionMatch(RequestBodyValidationException.class));
+        .andExpect(status().isBadRequest())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN_VALUE))
+        .andExpect(MockMvcResultMatchers.content()
+            .string(Matchers.containsString(AuthorityController.RETRIEVE_COLLECTION_INVALID_ACCEPT_MESSAGE)))
+        .andExpect(exceptionMatch(AuthoritiesRequestNotSupportedMediaTypeException.class));
   }
 
   @ParameterizedTest

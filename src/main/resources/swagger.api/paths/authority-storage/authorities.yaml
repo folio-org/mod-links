@@ -20,12 +20,15 @@ get:
     - $ref: '../../parameters/offset-param.yaml'
     - $ref: '../../parameters/limit-param.yaml'
     - $ref: '../../parameters/cql-query.yaml'
-    - name: contentType
+    - name: Accept
       in: header
       required: false
-      description: Specifies Content-type for the response to be fetched
+      description: Specifies accepting media-types for the response
       schema:
-        type: string
+        type: array
+        items:
+          type: string
+          description: identifies media-type
         default: "application/json"
   responses:
     '200':
