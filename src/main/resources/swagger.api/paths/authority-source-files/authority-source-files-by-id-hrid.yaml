@@ -6,6 +6,7 @@ post:
     - authority-source-file
   responses:
     '201':
+      description: Provide next HRID for the authority source file
       content:
         application/json:
           schema:
