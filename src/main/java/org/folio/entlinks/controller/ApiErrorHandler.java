@@ -35,6 +35,7 @@ import org.folio.tenant.domain.dto.Errors;
 import org.folio.tenant.domain.dto.Parameter;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -135,8 +136,11 @@ public class ApiErrorHandler {
       });
   }
 
-  @ExceptionHandler(DataIntegrityViolationException.class)
-  public ResponseEntity<Errors> conflict(DataIntegrityViolationException e) {
+  @ExceptionHandler({
+    DataIntegrityViolationException.class,
+    InvalidDataAccessApiUsageException.class
+  })
+  public ResponseEntity<Errors> conflict(Exception e) {
     var cause = e.getCause();
     if (cause instanceof ConstraintViolationException cve) {
       var constraintName = cve.getConstraintName();

@@ -74,6 +74,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -260,8 +261,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
     "updatedDate>=2021-10-24T12:00:00.0 and updatedDate<=2021-10-28T12:00:00.0, corporateName, 1",
     "authoritySourceFile.name=name1 and createdDate>2021-10-28T12:00:00.0, corporateName, 1",
   })
-  @DisplayName("Get Collection: return list of authorities for the given query")
-  void getCollection_positive_filterAuthoritiesByGivenQuery(String query, String heading, int numberOfRecords)
+  @DisplayName("Get Collection: return list of authorities and archives for the given query")
+  void getCollection_positive_filterAuthoritiesAndArchivesByQuery(String query, String heading, int numberOfRecords)
       throws Exception {
     createSourceFile(0);
     createSourceFile(1);
@@ -276,10 +277,41 @@ class AuthorityControllerIT extends IntegrationTestBase {
     databaseHelper.saveAuthority(TENANT_ID, authority2);
     databaseHelper.saveAuthority(TENANT_ID, authority3);
 
+    var archive1 = authorityArchive(0, 0);
+    archive1.setCreatedDate(authority1.getCreatedDate());
+    archive1.setUpdatedDate(authority1.getUpdatedDate());
+    var archive2 = authorityArchive(1, 0);
+    archive2.setCreatedDate(authority2.getCreatedDate());
+    var archive3 = authorityArchive(2, 1);
+    archive3.setUpdatedDate(authority3.getUpdatedDate());
+    databaseHelper.saveAuthorityArchive(TENANT_ID, archive1);
+    databaseHelper.saveAuthorityArchive(TENANT_ID, archive2);
+    databaseHelper.saveAuthorityArchive(TENANT_ID, archive3);
+
+    // query and filter authorities
     var cqlQuery = "(cql.allRecords=1 and " + query + ")sortby createdDate";
     doGet(authorityEndpoint() + "?query={cql}", cqlQuery)
         .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
         .andExpect(jsonPath("totalRecords").value(numberOfRecords));
+
+    // query and filter authority archives
+    doGet(authorityEndpoint() + "?query={cql}&deleted=true", cqlQuery)
+        .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
+        .andExpect(jsonPath("totalRecords").value(numberOfRecords));
+  }
+
+  @Test
+  @DisplayName("Get Collection: retrieve authorities by providing invalid query field name")
+  void getCollection_negative_shouldNotFilterByQueryForIncorrectFilterField() throws Exception {
+    createSourceFile(0);
+    createAuthority(0, 0);
+
+    var cqlQuery = "(cql.allRecords=1 and headingTypeTest=personalName)";
+    tryGet(authorityEndpoint() + "?query={cql}", cqlQuery)
+        .andExpect(status().isBadRequest())
+        .andExpect(errorMessageMatch(is(
+            "Could not resolve attribute 'headingTypeTest' of 'org.folio.entlinks.domain.entity.Authority'")))
+        .andExpect(exceptionMatch(InvalidDataAccessApiUsageException.class));
   }
 
   // Tests for Get By ID
