@@ -1,5 +1,9 @@
 package org.folio.entlinks.controller;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
 import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_ID;
 import static org.folio.entlinks.integration.dto.event.DomainEventType.CREATE;
@@ -28,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +73,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -93,7 +99,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   void setUp(@Autowired KafkaProperties kafkaProperties) {
     consumerRecords = new LinkedBlockingQueue<>();
     container =
-        createAndStartTestConsumer(authorityTopic(), consumerRecords, kafkaProperties, AuthorityDomainEvent.class);
+      createAndStartTestConsumer(authorityTopic(), consumerRecords, kafkaProperties, AuthorityDomainEvent.class);
   }
 
   @AfterEach
@@ -134,7 +140,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   })
   @DisplayName("Get Collection: return list of authorities for the given limit and offset")
   void getCollection_positive_entitiesSortedBySourceAndLimitedWithOffset(String offset, String limit, String sortOrder,
-                                                                       String firstSourceName) throws Exception {
+                                                                         String firstSourceName) throws Exception {
     createAuthorities();
     // the following two authorities should be filtered out and not included in the result because of deleted = true
     createSourceFile(1);
@@ -167,7 +173,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   })
   @DisplayName("Get Collection: return list of authorities for the given query")
   void getCollection_positive_filterAuthoritiesByGivenQuery(String query, String heading, int numberOfRecords)
-      throws Exception {
+    throws Exception {
     createSourceFile(0);
     createSourceFile(1);
     var authority1 = authority(0, 0);
@@ -183,8 +189,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     var cqlQuery = "(cql.allRecords=1 and " + query + ")sortby createdDate";
     doGet(authorityEndpoint() + "?query={cql}", cqlQuery)
-        .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
-        .andExpect(jsonPath("totalRecords").value(numberOfRecords));
+      .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
+      .andExpect(jsonPath("totalRecords").value(numberOfRecords));
   }
 
   // Tests for Get By ID
@@ -366,7 +372,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     var resultDto = objectMapper.readValue(content, AuthorityDto.class);
     var event = getConsumedEvent();
     awaitUntilAsserted(() ->
-        assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
 
     verifyConsumedAuthorityEvent(event, UPDATE, resultDto);
     assertEquals(expected.getNotes(), resultDto.getNotes());
@@ -387,18 +393,18 @@ class AuthorityControllerIT extends IntegrationTestBase {
     doPost(authorityEndpoint(), dto);
     getConsumedEvent();
     var existingAsString = doGet(authorityEndpoint())
-        .andExpect(jsonPath("authorities[0]._version", is(0)))
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(jsonPath("authorities[0]._version", is(0)))
+      .andReturn().getResponse().getContentAsString();
     var collection = objectMapper.readValue(existingAsString, AuthorityDtoCollection.class);
     var putDto = collection.getAuthorities().get(0);
 
     tryPut(authorityEndpoint(putDto.getId()), putDto).andExpect(status().isNoContent());
 
     var content = doGet(authorityEndpoint(putDto.getId()))
-        .andExpect(jsonPath("_version", is(1)))
-        .andExpect(jsonPath("metadata.createdDate", notNullValue()))
-        .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(jsonPath("_version", is(1)))
+      .andExpect(jsonPath("metadata.createdDate", notNullValue()))
+      .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
+      .andReturn().getResponse().getContentAsString();
     var resultDto = objectMapper.readValue(content, AuthorityDto.class);
 
     assertTrue(resultDto.getMetadata().getUpdatedDate().isAfter(putDto.getMetadata().getUpdatedDate()));
@@ -434,18 +440,19 @@ class AuthorityControllerIT extends IntegrationTestBase {
     doPost(authorityEndpoint(), dto);
     getConsumedEvent();
     var existingAsString = doGet(authorityEndpoint())
-        .andExpect(jsonPath("authorities[0]._version", is(0)))
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(jsonPath("authorities[0]._version", is(0)))
+      .andReturn().getResponse().getContentAsString();
     var collection = objectMapper.readValue(existingAsString, AuthorityDtoCollection.class);
     var putDto = collection.getAuthorities().get(0);
     var expectedError = String.format("Cannot update record %s because it has been changed (optimistic locking): "
-            + "Stored _version is %d, _version of request is %d", putDto.getId().toString(), 1, 0);
+                                      + "Stored _version is %d, _version of request is %d", putDto.getId().toString(),
+      1, 0);
 
     tryPut(authorityEndpoint(putDto.getId()), putDto).andExpect(status().isNoContent());
     tryPut(authorityEndpoint(putDto.getId()), putDto)
-        .andExpect(status().isConflict())
-        .andExpect(errorMessageMatch(is(expectedError)))
-        .andExpect(exceptionMatch(OptimisticLockingException.class));
+      .andExpect(status().isConflict())
+      .andExpect(errorMessageMatch(is(expectedError)))
+      .andExpect(exceptionMatch(OptimisticLockingException.class));
   }
 
   @Test
@@ -476,21 +483,23 @@ class AuthorityControllerIT extends IntegrationTestBase {
     verifyConsumedAuthorityEvent(event, DELETE, expectedDto);
 
     awaitUntilAsserted(() ->
-        assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
     awaitUntilAsserted(() ->
-        assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID,
-            String.format("id = '%s' AND deleted = true", authority.getId()))));
+      assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID,
+        String.format("id = '%s' AND deleted = true", authority.getId()))));
     awaitUntilAsserted(() ->
-        assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
+      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
     tryGet(authorityEndpoint(authority.getId()))
-        .andExpect(status().isNotFound())
-        .andExpect(exceptionMatch(AuthorityNotFoundException.class));
+      .andExpect(status().isNotFound())
+      .andExpect(exceptionMatch(AuthorityNotFoundException.class));
   }
 
   @Test
-  @DisplayName("DELETE: Should delete existing authority archives")
+  @DisplayName("DELETE: Should delete existing authority archives by retention in settings")
   void expireAuthorityArchives_positive_shouldExpireExistingArchives()
-      throws JsonProcessingException, UnsupportedEncodingException {
+    throws JsonProcessingException, UnsupportedEncodingException {
+    mockSuccessfulSettingsRequest();
+
     createSourceFile(0);
     var authority1 = createAuthority(0, 0);
     var authority2 = createAuthority(1, 0);
@@ -502,9 +511,9 @@ class AuthorityControllerIT extends IntegrationTestBase {
     doDelete(authorityEndpoint(authority2.getId()));
     getConsumedEvent();
     awaitUntilAsserted(() ->
-        assertEquals(2, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID, "deleted = true")));
+      assertEquals(2, databaseHelper.countRowsWhere(AUTHORITY_ARCHIVE_TABLE, TENANT_ID, "deleted = true")));
     awaitUntilAsserted(() ->
-        assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
+      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
 
     var dateInPast = Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS));
     databaseHelper.updateAuthorityArchiveUpdateDate(TENANT_ID, authority1.getId(), dateInPast);
@@ -524,6 +533,26 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     verifyConsumedAuthorityEvent(consumedEvent, DELETE, dto);
     assertEquals(AuthorityDeleteEventSubType.HARD_DELETE, consumedEvent.value().getDeleteEventSubType());
+    assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, TENANT_ID));
+  }
+
+  @Test
+  @DisplayName("DELETE: Should delete existing authority archives by default retention")
+  void expireAuthorityArchives_negative_settingsUnfetchable_shouldUseDefaultRetentionValue() {
+    mockFailedSettingsRequest();
+    createSourceFile(0);
+    var authority1 = createAuthority(0, 0);
+    var authority2 = createAuthority(1, 0);
+
+    doDelete(authorityEndpoint(authority1.getId()));
+    doDelete(authorityEndpoint(authority2.getId()));
+
+    var dateInPast = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+    databaseHelper.updateAuthorityArchiveUpdateDate(TENANT_ID, authority1.getId(), dateInPast);
+    databaseHelper.updateAuthorityArchiveUpdateDate(TENANT_ID, authority2.getId(), dateInPast);
+
+    doPost(authorityExpireEndpoint(), null);
+
     assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, TENANT_ID));
   }
 
@@ -564,8 +593,39 @@ class AuthorityControllerIT extends IntegrationTestBase {
     tryDelete(authoritySourceFilesEndpoint(expected.getSourceFileId()))
       .andExpect(status().isUnprocessableEntity())
       .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
-          + " Authority/Authority Source File.")))
+                                      + " Authority/Authority Source File.")))
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
+  }
+
+  private void mockSuccessfulSettingsRequest() {
+    okapi.wireMockServer().stubFor(get(urlPathEqualTo("/settings/entries"))
+      .withQueryParam("query", equalTo("(scope=authority-storage AND key=authority-archives-expiration)"))
+      .withQueryParam("limit", equalTo("10000"))
+      .willReturn(aResponse()
+        .withStatus(200)
+        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+        .withBody("""
+          {
+              "items": [
+                  {
+                      "id": "1e01066d-4bee-4cf7-926c-ba2c9c6c0001",
+                      "scope": "authority-storage",
+                      "key": "authority-archives-expiration",
+                      "value": {
+                          "expirationEnabled":true,
+                          "retentionInDays":1
+                      }
+                  }
+              ]
+          }
+          """)));
+  }
+
+  private void mockFailedSettingsRequest() {
+    okapi.wireMockServer().stubFor(get(urlPathEqualTo("/settings/entries"))
+      .withQueryParam("query", equalTo("(scope=authority-storage AND key=authority-archives-expiration)"))
+      .withQueryParam("limit", equalTo("10000"))
+      .willReturn(aResponse().withStatus(500)));
   }
 
   private List<Authority> createAuthorities() {
@@ -588,7 +648,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     databaseHelper.saveAuthoritySourceFile(TENANT_ID, entity);
 
     entity.getAuthoritySourceFileCodes().forEach(code ->
-        databaseHelper.saveAuthoritySourceFileCode(TENANT_ID, entity.getId(), code));
+      databaseHelper.saveAuthoritySourceFileCode(TENANT_ID, entity.getId(), code));
     return entity;
   }
 
