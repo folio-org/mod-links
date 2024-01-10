@@ -376,7 +376,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   }
 
   @Test
-  @DisplayName("POST: create new Authority Source File")
+  @DisplayName("POST: Generate next HR ID for the specified Authority Source File")
   void newAuthoritySourceFileNextHrid_positive_hridReturned() throws Exception {
     // Arrange
     var id = UUID.randomUUID();
