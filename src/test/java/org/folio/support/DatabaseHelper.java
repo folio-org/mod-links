@@ -124,7 +124,7 @@ public class DatabaseHelper {
   }
 
   public void saveAuthorityArchive(String tenant, AuthorityArchive entity) {
-    var sql = "INSERT INTO " + getTable(tenant, AUTHORITY_ARCHIVE_TABLE)
+    var sql = "INSERT INTO " + getDbPath(tenant, AUTHORITY_ARCHIVE_TABLE)
         +  " (id, _version, natural_id, source, heading, heading_type, subject_heading_code, created_date, "
         + "created_by_user_id, updated_date, updated_by_user_id, deleted, source_file_id) "
         + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
