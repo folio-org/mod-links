@@ -18,11 +18,10 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.folio.entlinks.config.constants.ErrorCode;
@@ -35,7 +34,6 @@ import org.folio.tenant.domain.dto.Error;
 import org.folio.tenant.domain.dto.Errors;
 import org.folio.tenant.domain.dto.Parameter;
 import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,9 +61,6 @@ public class ApiErrorHandler {
     "authority_source_file_sequence_name_unq", DUPLICATE_AUTHORITY_SOURCE_FILE_SEQUENCE,
     "pk_authority_source_file", DUPLICATE_AUTHORITY_SOURCE_FILE_ID);
 
-  @Autowired
-  private ObjectMapper objectMapper;
-
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Errors> handleGlobalExceptions(Exception e) {
     logException(WARN, e);
@@ -91,7 +86,7 @@ public class ApiErrorHandler {
 
   @ExceptionHandler(AuthoritiesRequestNotSupportedMediaTypeException.class)
   public ResponseEntity<String> handleAuthoritiesMediaTypeValidationException(
-      AuthoritiesRequestNotSupportedMediaTypeException e) throws JsonProcessingException {
+      AuthoritiesRequestNotSupportedMediaTypeException e) {
     logException(DEBUG, e);
     var errorResponse = buildPlainTextValidationError(e, e.getInvalidParameters());
     var headers = new HttpHeaders();
@@ -185,8 +180,12 @@ public class ApiErrorHandler {
     return new Errors().errors(List.of(error)).totalRecords(1);
   }
 
-  private String buildPlainTextValidationError(Exception e, List<Parameter> parameters) throws JsonProcessingException {
-    var error = buildValidationError(e, parameters);
-    return objectMapper.writeValueAsString(error);
+  private String buildPlainTextValidationError(Exception e, List<Parameter> parameters) {
+    return "message: " + e.getMessage() + System.lineSeparator()
+          + "type: " + e.getClass().getSimpleName() + System.lineSeparator()
+          + "code: " + VALIDATION_ERROR.getValue() + System.lineSeparator()
+          + "parameters: [" + parameters.stream()
+              .map(param -> "(key: " + param.getKey() + ", value: " + param.getValue() + ")")
+              .collect(Collectors.joining(",")) + "]";
   }
 }

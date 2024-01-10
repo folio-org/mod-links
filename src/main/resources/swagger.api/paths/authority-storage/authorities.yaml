@@ -19,7 +19,18 @@ get:
         default: false
     - $ref: '../../parameters/offset-param.yaml'
     - $ref: '../../parameters/limit-param.yaml'
-    - $ref: '../../parameters/cql-query.yaml'
+    - in: query
+      name: query
+      required: false
+      description: 'A query expressed as a CQL string
+        (see [dev.folio.org/reference/glossary#cql](https://dev.folio.org/reference/glossary#cql))
+        using valid searchable fields.
+        Authorities can be queried using the following fields: headingType, authoritySourceFile.id,
+        authoritySourceFile.name, createdDate, updatedDate.
+        Example: headingType=personalName & authoritySourceFile.name=LC Genre/Form Terms & createdDate>2021-10-25T12:00:00.0'
+      schema:
+        type: string
+        default: cql.allRecords=1
     - name: Accept
       in: header
       required: false
