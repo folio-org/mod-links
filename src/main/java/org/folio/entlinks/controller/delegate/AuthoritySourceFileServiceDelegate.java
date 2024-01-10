@@ -18,7 +18,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
-import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
+import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.tenant.domain.dto.Parameter;
@@ -33,7 +33,7 @@ public class AuthoritySourceFileServiceDelegate {
 
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
-  private final ConsortiumTenantsService tenantsService;
+  private final UserTenantsService tenantsService;
   private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
   private final FolioExecutionContext context;
 
@@ -93,7 +93,8 @@ public class AuthoritySourceFileServiceDelegate {
 
   private void validateCreateRightsForTenant() {
     var tenantId = context.getTenantId();
-    if (tenantsService.getConsortiumTenants(tenantId).contains(tenantId)) {
+    var centralTenantId = tenantsService.getCentralTenant(tenantId);
+    if (centralTenantId.isPresent() && !tenantId.equals(centralTenantId.get())) {
       throw new RequestBodyValidationException("Create is not supported for consortium member tenant",
           List.of(new Parameter("tenantId").value(tenantId)));
     }
