@@ -31,9 +31,7 @@
     <lombok.mapstruct-binding.version>0.2.0</lombok.mapstruct-binding.version>
     <marc4j.version>2.9.5</marc4j.version>
 
-    <wiremock.version>3.0.1</wiremock.version>
     <awaitility.version>4.2.0</awaitility.version>
-    <mockrunner-jdbc.version>2.0.7</mockrunner-jdbc.version>
 
     <maven-openapi-generator-plugin.version>7.2.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
@@ -160,26 +158,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>5.2.0</version>
-      <scope>test</scope>
-    </dependency>
-
-
-    <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>${awaitility.version}</version>
       <scope>test</scope>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>com.mockrunner</groupId>-->
-<!--      <artifactId>mockrunner-jdbc</artifactId>-->
-<!--      <version>${mockrunner-jdbc.version}</version>-->
-<!--      <scope>test</scope>-->
-<!--    </dependency>-->
   </dependencies>
 
 
