@@ -37,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -148,7 +149,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
         createdEntities.size()
     );
 
-    assertEquals(expectedCollection, collection);
+    assertEquals(expectedCollection.getTotalRecords(), collection.getTotalRecords());
+    assertEquals(new HashSet<>(expectedCollection.getAuthorities()), new HashSet<>(collection.getAuthorities()));
   }
 
   @Test
@@ -181,7 +183,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     var collection = objectMapper.readValue(content, AuthorityDtoCollection.class);
 
-    assertEquals(expectedCollection, collection);
+    assertEquals(new HashSet<>(expectedCollection.getAuthorities()), new HashSet<>(collection.getAuthorities()));
+    assertEquals(expectedCollection.getTotalRecords(), collection.getTotalRecords());
 
     var headers = defaultHeaders();
     headers.setAccept(List.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON));

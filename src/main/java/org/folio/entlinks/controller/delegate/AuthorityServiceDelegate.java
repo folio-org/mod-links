@@ -13,6 +13,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityBase;
+import org.folio.entlinks.domain.entity.projection.AuthorityIdDto;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
@@ -35,20 +36,15 @@ public class AuthorityServiceDelegate {
 
   public AuthorityDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery,
                                                             Boolean idOnly) {
-    var entitiesPage = service.getAll(offset, limit, cqlQuery)
-        .map(AuthorityBase.class::cast);
-    var archivesCollection = mapper.toAuthorityCollection(entitiesPage);
-
     if (Boolean.TRUE.equals(idOnly)) {
-      return new AuthorityDtoCollection(
-          archivesCollection.getAuthorities().stream()
-              .map(dto -> new AuthorityDto().id(dto.getId()))
-              .toList(),
-          archivesCollection.getTotalRecords()
-      );
+      var entities = service.getAllIds(offset, limit, cqlQuery)
+          .map(AuthorityIdDto::id).map(id -> new AuthorityDto().id(id)).stream().toList();
+      return new AuthorityDtoCollection(entities, entities.size());
     }
 
-    return archivesCollection;
+    var entitiesPage = service.getAll(offset, limit, cqlQuery)
+        .map(AuthorityBase.class::cast);
+    return mapper.toAuthorityCollection(entitiesPage);
   }
 
   public AuthorityDto getAuthorityById(UUID id) {

@@ -13,6 +13,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthorityBase;
+import org.folio.entlinks.domain.entity.projection.AuthorityIdDto;
 import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
@@ -34,20 +35,15 @@ public class AuthorityArchiveServiceDelegate {
 
   public AuthorityDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
                                                           Boolean idOnly) {
-    var entitiesPage = authorityArchiveService.findAll(offset, limit, cqlQuery)
-        .map(AuthorityBase.class::cast);
-    var archivesCollection = authorityMapper.toAuthorityCollection(entitiesPage);
-
     if (Boolean.TRUE.equals(idOnly)) {
-      return new AuthorityDtoCollection(
-          archivesCollection.getAuthorities().stream()
-              .map(dto -> new AuthorityDto().id(dto.getId()))
-              .toList(),
-          archivesCollection.getTotalRecords()
-      );
+      var entities = authorityArchiveService.findAllIds(offset, limit, cqlQuery)
+          .map(AuthorityIdDto::id).map(id -> new AuthorityDto().id(id)).stream().toList();
+      return new AuthorityDtoCollection(entities, entities.size());
     }
 
-    return archivesCollection;
+    var entitiesPage = authorityArchiveService.findAll(offset, limit, cqlQuery)
+        .map(AuthorityBase.class::cast);
+    return authorityMapper.toAuthorityCollection(entitiesPage);
   }
 
   @Transactional(readOnly = true)
