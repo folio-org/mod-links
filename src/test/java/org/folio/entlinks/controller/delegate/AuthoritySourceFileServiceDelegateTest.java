@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -207,7 +206,7 @@ class AuthoritySourceFileServiceDelegateTest {
     var id = UUID.randomUUID();
     var code = "CODE10";
     when(context.getTenantId()).thenReturn(TENANT_ID);
-    when(tenantsService.getConsortiumTenants(TENANT_ID)).thenReturn(Collections.emptyList());
+    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.empty());
     when(service.nextHrid(id)).thenReturn(code);
 
     var hridDto = delegate.getAuthoritySourceFileNextHrid(id);
@@ -221,7 +220,7 @@ class AuthoritySourceFileServiceDelegateTest {
   @Test
   void shouldNotNextHridForConsortiumMemberTenant() {
     when(context.getTenantId()).thenReturn(TENANT_ID);
-    when(tenantsService.getConsortiumTenants(TENANT_ID)).thenReturn(List.of("test", TENANT_ID));
+    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
 
     var id = UUID.randomUUID();
     var exc = assertThrows(RequestBodyValidationException.class, () -> delegate.getAuthoritySourceFileNextHrid(id));
