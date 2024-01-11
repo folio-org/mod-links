@@ -26,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
+import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.exception.ResourceNotFoundException;
@@ -76,6 +77,11 @@ public class ApiErrorHandler {
   @ExceptionHandler(OptimisticLockingException.class)
   public ResponseEntity<Errors> handleOptimisticLockingException(OptimisticLockingException e) {
     return buildResponseEntity(e, HttpStatus.CONFLICT, ErrorType.OPTIMISTIC_LOCKING_ERROR);
+  }
+
+  @ExceptionHandler(AuthoritySourceFileHridException.class)
+  public ResponseEntity<Errors> handleAuthoritySourceFileHridException(AuthoritySourceFileHridException e) {
+    return buildResponseEntity(e, UNPROCESSABLE_ENTITY, e.getErrorType());
   }
 
   @ExceptionHandler(RequestBodyValidationException.class)
