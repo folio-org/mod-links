@@ -82,9 +82,7 @@ public interface AuthoritySourceFileMapper {
       return;
     }
 
-    var url = getUrl(source.getBaseUrl());
-    target.setBaseUrlProtocol(url.getProtocol());
-    target.setBaseUrl(getHostPath(url));
+    setUrlProperties(source.getBaseUrl(), target);
   }
 
   @AfterMapping
@@ -93,9 +91,7 @@ public interface AuthoritySourceFileMapper {
       return;
     }
 
-    var url = getUrl(source.getBaseUrl());
-    target.setBaseUrlProtocol(url.getProtocol());
-    target.setBaseUrl(getHostPath(url));
+    setUrlProperties(source.getBaseUrl(), target);
   }
 
   @AfterMapping
@@ -104,9 +100,7 @@ public interface AuthoritySourceFileMapper {
       return;
     }
 
-    var url = getUrl(source.getBaseUrl());
-    target.setBaseUrlProtocol(url.getProtocol());
-    target.setBaseUrl(getHostPath(url));
+    setUrlProperties(source.getBaseUrl(), target);
   }
 
   @AfterMapping
@@ -158,6 +152,12 @@ public interface AuthoritySourceFileMapper {
   @NotNull
   private static String getHostPath(URL url) {
     return StringUtils.appendIfMissing(url.getHost() + url.getPath(), "/");
+  }
+
+  private static void setUrlProperties(String baseUrlDto, AuthoritySourceFile target) {
+    var url = getUrl(baseUrlDto);
+    target.setBaseUrlProtocol(url.getProtocol());
+    target.setBaseUrl(getHostPath(url));
   }
 
   @NotNull
