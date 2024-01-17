@@ -8,7 +8,6 @@ import static org.folio.support.TestDataUtils.AuthorityTestData.authority;
 import static org.folio.support.TestDataUtils.NATURAL_IDS;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
-import static org.folio.support.base.TestConstants.DELETE_TYPE;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.UPDATE_TYPE;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
@@ -38,8 +37,8 @@ import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.spring.integration.XOkapiHeaders;
-import org.folio.spring.test.extension.DatabaseCleanup;
-import org.folio.spring.test.type.IntegrationTest;
+import org.folio.spring.testing.extension.DatabaseCleanup;
+import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
 import org.folio.support.TestDataUtils;
 import org.folio.support.TestDataUtils.Link;
@@ -114,7 +113,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
     var link3 = Link.of(0, 0, NATURAL_IDS[0]);
     doPut(linksInstanceEndpoint(), linksDtoCollection(linksDto(instanceId3, link3)), instanceId3);
 
-    var event = TestDataUtils.authorityEvent(DELETE_TYPE, null,
+    var event = TestDataUtils.authoritySoftDeleteEvent(null,
       new AuthorityDto().id(link1.authorityId()).naturalId("oldNaturalId"));
     sendKafkaMessage(authorityTopic(), link1.authorityId().toString(), event);
 

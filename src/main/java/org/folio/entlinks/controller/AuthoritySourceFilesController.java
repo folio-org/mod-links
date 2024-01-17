@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.folio.entlinks.controller.delegate.AuthoritySourceFileServiceDelegate;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
+import org.folio.entlinks.domain.dto.AuthoritySourceFileHridDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.rest.resource.AuthoritySourceFileApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +24,14 @@ public class AuthoritySourceFilesController implements AuthoritySourceFileApi {
   private final AuthoritySourceFileServiceDelegate delegate;
 
   @Override
-  public ResponseEntity<AuthoritySourceFileDto> createAuthoritySourceFile(AuthoritySourceFileDto authoritySourceFile) {
-    var created = delegate.createAuthoritySourceFile(authoritySourceFile);
+  public ResponseEntity<AuthoritySourceFileDto> createAuthoritySourceFile(AuthoritySourceFilePostDto postDto) {
+    var created = delegate.createAuthoritySourceFile(postDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
   @Override
   public ResponseEntity<Void> deleteAuthoritySourceFile(UUID id) {
-    delegate.deleteAuthorityNoteTypeById(id);
+    delegate.deleteAuthoritySourceFileById(id);
     return noContent().build();
   }
 
@@ -53,8 +55,7 @@ public class AuthoritySourceFilesController implements AuthoritySourceFileApi {
   }
 
   @Override
-  public ResponseEntity<Void> updateAuthoritySourceFile(UUID id, AuthoritySourceFileDto authoritySourceFile) {
-    delegate.updateAuthoritySourceFile(id, authoritySourceFile);
-    return noContent().build();
+  public ResponseEntity<AuthoritySourceFileHridDto> newAuthoritySourceFileNextHrid(UUID id) {
+    return ResponseEntity.ok(delegate.getAuthoritySourceFileNextHrid(id));
   }
 }

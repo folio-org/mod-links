@@ -1,5 +1,8 @@
 package org.folio.entlinks.service.consortium;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.base.TestConstants.AUTHORITY_CONSORTIUM_SOURCE;
+import static org.folio.support.base.TestConstants.AUTHORITY_SOURCE;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -14,7 +17,7 @@ import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.service.authority.AuthorityService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,10 +36,12 @@ class ConsortiumAuthorityPropagationServiceTest {
 
   @Test
   void testPropagateCreate() throws FolioIntegrationException {
-    Authority authority = new Authority();
+    var authority = authority();
+
     doMocks();
     propagationService.propagate(authority, ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
 
+    assertThat(authority.getSource()).isEqualTo(AUTHORITY_CONSORTIUM_SOURCE);
     verify(tenantsService).getConsortiumTenants(TENANT_ID);
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
     verify(authorityService, times(3)).create(authority);
@@ -44,11 +49,12 @@ class ConsortiumAuthorityPropagationServiceTest {
 
   @Test
   void testPropagateUpdate() throws FolioIntegrationException {
-    Authority authority = new Authority();
+    var authority = authority();
     authority.setId(UUID.randomUUID());
     doMocks();
     propagationService.propagate(authority, ConsortiumAuthorityPropagationService.PropagationType.UPDATE, TENANT_ID);
 
+    assertThat(authority.getSource()).isEqualTo(AUTHORITY_CONSORTIUM_SOURCE);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
     verify(authorityService, times(3)).update(authority.getId(), authority);
@@ -56,11 +62,12 @@ class ConsortiumAuthorityPropagationServiceTest {
 
   @Test
   void testPropagateDelete() throws FolioIntegrationException {
-    Authority authority = new Authority();
+    var authority = authority();
     authority.setId(UUID.randomUUID());
     doMocks();
     propagationService.propagate(authority, ConsortiumAuthorityPropagationService.PropagationType.DELETE, TENANT_ID);
 
+    assertThat(authority.getSource()).isEqualTo(AUTHORITY_CONSORTIUM_SOURCE);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
     verify(authorityService, times(3)).deleteById(authority.getId());
@@ -70,12 +77,18 @@ class ConsortiumAuthorityPropagationServiceTest {
   void testPropagateException() throws FolioIntegrationException {
     Mockito.doThrow(FolioIntegrationException.class).when(tenantsService).getConsortiumTenants(any());
 
-    Authority authority = new Authority();
+    var authority = authority();
     propagationService.propagate(authority, ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
 
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(0)).executeAsyncSystemUserScoped(any(), any());
     verify(authorityService, times(0)).create(any());
+  }
+
+  private Authority authority() {
+    var authority = new Authority();
+    authority.setSource(AUTHORITY_SOURCE);
+    return authority;
   }
 
   private void doMocks() {

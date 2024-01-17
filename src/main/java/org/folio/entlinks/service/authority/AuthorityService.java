@@ -15,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.domain.entity.projection.AuthorityIdDto;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
@@ -47,6 +48,18 @@ public class AuthorityService {
     }
 
     return repository.findByCqlAndDeletedFalse(cql, new OffsetRequest(offset, limit));
+  }
+
+  public Page<AuthorityIdDto> getAllIds(Integer offset, Integer limit, String cql) {
+    log.debug("getAll:: Attempts to find all Authority IDs by [offset: {}, limit: {}, cql: {}]",
+        offset, limit, cql);
+
+    if (StringUtils.isBlank(cql)) {
+      return repository.findAllIdsByDeletedFalse(new OffsetRequest(offset, limit))
+          .map(projection -> new AuthorityIdDto(projection.getId()));
+    }
+
+    return repository.findIdsByCqlAndDeletedFalse(cql, new OffsetRequest(offset, limit));
   }
 
   public Authority getById(UUID id) {
@@ -92,6 +105,11 @@ public class AuthorityService {
     return repository.save(existing);
   }
 
+  /**
+   * Performs soft-delete of {@link Authority} records.
+   *
+   * @param id authority record id of {@link UUID} type
+   */
   @Transactional
   public void deleteById(UUID id) {
     log.debug("deleteById:: Attempt to delete Authority by [id: {}]", id);
@@ -101,6 +119,16 @@ public class AuthorityService {
     authority.setDeleted(true);
 
     repository.save(authority);
+  }
+
+  /**
+   * Performs hard-delete of {@link Authority} records.
+   *
+   * @param ids collection of authority record ids of {@link UUID} type
+   */
+  @Transactional
+  public void batchDeleteByIds(Collection<UUID> ids) {
+    repository.deleteAllByIdInBatch(ids);
   }
 
   private void copyModifiableFields(Authority existing, Authority modified) {

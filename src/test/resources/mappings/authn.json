@@ -75,7 +75,10 @@
       },
       "response": {
         "status": 204,
-        "body": ""
+        "body": "",
+        "headers": {
+          "Content-Type": "application/json"
+        }
       }
     }
   ]

@@ -26,10 +26,18 @@ properties:
     enum:
       - folio
       - local
+      - consortium
+  selectable:
+    type: boolean
+  hridManagement:
+    description: Identifies HRID management properties
+    type: object
+    properties:
+      startNumber:
+        type: integer
   metadata:
     $ref: '../common/metadata.yaml'
 required:
   - name
   - codes
-  - type
   - source

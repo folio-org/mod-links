@@ -37,9 +37,10 @@ import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.internal.InstanceStorageService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumLinksPropagationService;
+import org.folio.entlinks.service.consortium.propagation.model.LinksPropagationData;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.folio.support.TestDataUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -173,6 +174,7 @@ class LinkingServiceDelegateTest {
       TestDataUtils.Link.of(2, 3),
       TestDataUtils.Link.of(3, 2)
     ));
+    final var propagationData = new LinksPropagationData(INSTANCE_ID, links);
 
     doNothing().when(linkingService).updateLinks(INSTANCE_ID, links);
     when(mapper.convertDto(dtoCollection.getLinks())).thenReturn(links);
@@ -180,8 +182,23 @@ class LinkingServiceDelegateTest {
     delegate.updateLinks(INSTANCE_ID, dtoCollection);
 
     verify(linkingService).updateLinks(INSTANCE_ID, links);
-    verify(propagationService).propagate(links, ConsortiumAuthorityPropagationService.PropagationType.UPDATE,
+    verify(propagationService).propagate(propagationData, ConsortiumAuthorityPropagationService.PropagationType.UPDATE,
       TENANT_ID);
+  }
+
+  @Test
+  void updateLinks_positive_emptyLinks() {
+    final var links = links(INSTANCE_ID);
+    final var dtoCollection = linksDtoCollection(linksDto(INSTANCE_ID));
+    final var propagationData = new LinksPropagationData(INSTANCE_ID, links);
+
+    doNothing().when(linkingService).updateLinks(INSTANCE_ID, links);
+
+    delegate.updateLinks(INSTANCE_ID, dtoCollection);
+
+    verify(linkingService).updateLinks(INSTANCE_ID, links);
+    verify(propagationService).propagate(propagationData, ConsortiumAuthorityPropagationService.PropagationType.UPDATE,
+        TENANT_ID);
   }
 
   @Test

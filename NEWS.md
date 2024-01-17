@@ -1,26 +1,35 @@
-## v2.1.0 In progress
+## v3.0.0 in progress
 ### Breaking changes
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+* Delete PUT endpoint from authority-source-files api([MODELINKS-161](https://issues.folio.org/browse/MODELINKS-161))
 
 ### New APIs versions
 * Provides `API_NAME vX.Y`
 * Requires `API_NAME vX.Y`
 
 ### Features
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+* Implement Authority Archiving for deleted authorities ([MODELINKS-138](https://issues.folio.org/browse/MODELINKS-138))
+* Add scheduled job to expire archive records with tenant-level retention policy ([MODELINKS-139](https://issues.folio.org/browse/MODELINKS-139))
+* Update authority-source-files DELETE endpoint error message([MODELINKS-162](https://issues.folio.org/browse/MODELINKS-162))
+* Update authority-source-files POST API request body and DB table schemas with new fields([MODELINKS-123](https://issues.folio.org/browse/MODELINKS-123))
+* Change the AuthoritySourceType field type from String to Enum([MODELINKS-170](https://issues.folio.org/browse/MODELINKS-170))
+* Prohibit update/delete of authority consortium shadow copy([MODELINKS-174](https://issues.folio.org/browse/MODELINKS-174))
+* Prohibit authority source files creation from consortium member tenant([MODELINKS-174](https://issues.folio.org/browse/MODELINKS-174))
+* Adjust /authority-storage/authorities endpoint to allow retrieving authorities archives and only IDs of records([MODELINKS-142](https://issues.folio.org/browse/MODELINKS-142))
+* Propagate authority source files to member tenants([MODELINKS-175](https://issues.folio.org/browse/MODELINKS-175))
+* Implement next hrid endpoint for authority source file([MODELINKS-122](https://issues.folio.org/browse/MODELINKS-122))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
 * Updating authority's source file field to null is failed ([MODELINKS-143](https://issues.folio.org/browse/MODELINKS-143))
 * Failed to send update event if sourceFile is null ([MODELINKS-144](https://issues.folio.org/browse/MODELINKS-144))
+* Remove foreign key for authority_data_stat ([MODELINKS-155](https://issues.folio.org/browse/MODELINKS-155))
+* Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
 
 ### Tech Dept
 * Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
 
 ### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME` `2.7.4`
-* Remove `LIB_NAME`
+* Bump `folio-spring-support` from `7.2.0` to `7.2.1`
 
 ---
 

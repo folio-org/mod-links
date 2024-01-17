@@ -15,7 +15,7 @@ import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -91,7 +91,7 @@ class DataStatsMapperTest {
   @NotNull
   private static AuthorityDataStat createAuthorityDataStat() {
     AuthorityDataStat source = new AuthorityDataStat();
-    source.setAuthority(new Authority().withId(TEST_ID));
+    source.setAuthority(Authority.builder().id(TEST_ID).build());
     source.setAuthorityNaturalIdOld("OldNaturalId");
     source.setAuthorityNaturalIdNew("NewNaturalId");
     source.setAuthoritySourceFileOld(TEST_ID);

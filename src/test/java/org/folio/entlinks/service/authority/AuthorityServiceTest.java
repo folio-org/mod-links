@@ -3,6 +3,7 @@ package org.folio.entlinks.service.authority;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -24,7 +25,7 @@ import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -272,5 +273,12 @@ class AuthorityServiceTest {
     assertThat(thrown.getMessage()).containsOnlyOnce(id.toString());
     verify(repository).findByIdAndDeletedFalse(any(UUID.class));
     verifyNoMoreInteractions(repository);
+  }
+
+  @Test
+  void shouldHardDeleteAuthoritiesByIds() {
+    service.batchDeleteByIds(List.of(UUID.randomUUID()));
+
+    verify(repository).deleteAllByIdInBatch(anyIterable());
   }
 }

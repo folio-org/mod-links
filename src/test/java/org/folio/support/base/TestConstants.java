@@ -14,12 +14,16 @@ import org.folio.entlinks.domain.dto.LinkStatus;
 public class TestConstants {
 
   public static final String TENANT_ID = "test";
+  public static final String CENTRAL_TENANT_ID = "consortium";
+  public static final String CONSORTIUM_SOURCE_PREFIX = "CONSORTIUM-";
   public static final String USER_ID = "38d3a441-c100-5e8d-bd12-71bde492b723";
   public static final String SOURCE_FILE_NAME = "sourceFileName";
   public static final String SOURCE_FILE_TYPE = "sourceFileType";
   public static final String SOURCE_FILE_CODE = "sourceFileType";
   public static final String SOURCE_FILE_NATURAL_ID = "sourceFileNaturalId";
   public static final String SOURCE_FILE_SOURCE = "sourceFileSource";
+  public static final String AUTHORITY_SOURCE = "SOURCE";
+  public static final String AUTHORITY_CONSORTIUM_SOURCE = CONSORTIUM_SOURCE_PREFIX + AUTHORITY_SOURCE;
   public static final String TEST_PROPERTY_VALUE = "value";
   public static final UUID TEST_ID = UUID.randomUUID();
   public static final int TEST_VERSION = 2;
@@ -29,7 +33,6 @@ public class TestConstants {
   public static final String INSTANCE_AUTHORITY_TOPIC = "links.instance-authority";
   public static final String INSTANCE_AUTHORITY_STATS_TOPIC = "links.instance-authority-stats";
   public static final String AUTHORITY_TOPIC = "authorities.authority";
-  public static final String DELETE_TYPE = "DELETE";
   public static final String UPDATE_TYPE = "UPDATE";
   public static final String TEST_STRING = "test, ";
 
@@ -44,6 +47,7 @@ public class TestConstants {
   private static final String AUTHORITY_NOTE_TYPES_ENDPOINT = "/authority-note-types";
   private static final String AUTHORITY_SOURCE_FILES_ENDPOINT = "/authority-source-files";
   private static final String AUTHORITY_STORAGE_ENDPOINT = "/authority-storage/authorities";
+  private static final String AUTHORITY_STORAGE_EXPIRE_ENDPOINT = "/authority-storage/expire/authorities";
   private static final String AUTHORITY_STORAGE_REINDEX_ENDPOINT = "/authority-storage/reindex";
 
   public static String authorityTopic() {
@@ -121,12 +125,20 @@ public class TestConstants {
     return AUTHORITY_SOURCE_FILES_ENDPOINT + "/" + id;
   }
 
+  public static String authoritySourceFilesHridEndpoint(UUID id) {
+    return AUTHORITY_SOURCE_FILES_ENDPOINT + "/" + id + "/" + "hrid";
+  }
+
   public static String authorityEndpoint() {
     return AUTHORITY_STORAGE_ENDPOINT;
   }
 
   public static String authorityEndpoint(UUID id) {
     return AUTHORITY_STORAGE_ENDPOINT + "/" + id;
+  }
+
+  public static String authorityExpireEndpoint() {
+    return AUTHORITY_STORAGE_EXPIRE_ENDPOINT;
   }
 
   public static String authorityReindexEndpoint() {

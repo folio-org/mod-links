@@ -314,6 +314,9 @@ paths:
   /authority-source-files/{id}:
     $ref: './paths/authority-source-files/authority-source-files-by-id.yaml'
 
+  /authority-source-files/{id}/hrid:
+    $ref: './paths/authority-source-files/authority-source-files-by-id-hrid.yaml'
+
 components:
   schemas:
     instanceLinkDtoCollection:
@@ -532,7 +535,7 @@ components:
     linksChangeEvent:
       type: object
       description: Links change event body
-      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
+      x-implements: ['org.folio.entlinks.integration.dto.event.BaseEvent']
       properties:
         jobId:
           description: Links change job ID
@@ -645,7 +648,7 @@ components:
     linkUpdateReport:
       description: Link update report
       type: object
-      x-implements: ['org.folio.entlinks.integration.dto.BaseEvent']
+      x-implements: ['org.folio.entlinks.integration.dto.event.BaseEvent']
       properties:
         jobId:
           description: Linked bibs update job id, UUID

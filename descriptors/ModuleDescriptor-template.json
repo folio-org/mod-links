@@ -25,6 +25,10 @@
     {
       "id": "mapping-rules-provider",
       "version": "2.0"
+    },
+    {
+      "id": "settings",
+      "version": "1.0"
     }
   ],
   "optional": [
@@ -274,7 +278,7 @@
     },
     {
       "id": "authority-source-files",
-      "version": "1.0",
+      "version": "2.1",
       "handlers": [
         {
           "methods": [
@@ -305,15 +309,6 @@
         },
         {
           "methods": [
-            "PUT"
-          ],
-          "pathPattern": "/authority-source-files/{id}",
-          "permissionsRequired": [
-            "inventory-storage.authority-source-files.item.put"
-          ]
-        },
-        {
-          "methods": [
             "PATCH"
           ],
           "pathPattern": "/authority-source-files/{id}",
@@ -328,6 +323,15 @@
           "pathPattern": "/authority-source-files/{id}",
           "permissionsRequired": [
             "inventory-storage.authority-source-files.item.delete"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/authority-source-files/{id}/hrid",
+          "permissionsRequired": [
+            "inventory-storage.authority-source-files.hrid.post"
           ]
         }
       ]
@@ -347,6 +351,7 @@
             "users.collection.get",
             "users.item.post",
             "login.item.post",
+            "login.item.delete",
             "perms.users.get",
             "perms.users.item.post",
             "perms.users.assign.immutable",
@@ -404,9 +409,36 @@
           ]
         }
       ]
+    },
+    {
+      "id": "_timer",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/authority-storage/expire/authorities",
+          "unit": "day",
+          "delay": "1",
+          "modulePermissions": [
+            "mod-settings.entries.collection.get",
+            "mod-settings.global.read.authority-storage"
+          ]
+        }
+      ]
     }
   ],
   "permissionSets": [
+    {
+      "permissionName": "mod-settings.global.write.authority-storage",
+      "displayName": "Entities links settings - Create configuration",
+      "description": "To create new configuration in mod settings"
+    },
+    {
+      "permissionName": "mod-settings.global.read.authority-storage",
+      "displayName": "Entities links settings - Read configuration",
+      "description": "To read the configuration from mod settings."
+    },
     {
       "permissionName": "instance-authority-links.instances.collection.get",
       "displayName": "Entities Links - get instance-authority links",
@@ -569,11 +601,6 @@
       "description": "create individual authority-source-file in storage"
     },
     {
-      "permissionName": "inventory-storage.authority-source-files.item.put",
-      "displayName": "inventory storage - modify authority-source-file",
-      "description": "modify authority-source-file in storage"
-    },
-    {
       "permissionName": "inventory-storage.authority-source-files.item.patch",
       "displayName": "inventory storage - patch authority-source-file",
       "description": "patch authority-source-file in storage"
@@ -582,6 +609,24 @@
       "permissionName": "inventory-storage.authority-source-files.item.delete",
       "displayName": "inventory storage - delete individual authority-source-file",
       "description": "delete individual authority-source-file from storage"
+    },
+    {
+      "permissionName": "inventory-storage.authority-source-files.hrid.post",
+      "displayName": "inventory storage - get next HRID for authority-source-file",
+      "description": "get next HRID for authority-source-file"
+    },
+    {
+      "permissionName": "inventory-storage.authority-source-files.all",
+      "displayName": "all authority source files permissions",
+      "description": "Entire set of permissions needed to use authority source files",
+      "subPermissions": [
+        "inventory-storage.authority-source-files.collection.get",
+        "inventory-storage.authority-source-files.item.get",
+        "inventory-storage.authority-source-files.item.post",
+        "inventory-storage.authority-source-files.item.patch",
+        "inventory-storage.authority-source-files.item.delete",
+        "inventory-storage.authority-source-files.hrid.post"
+      ]
     }
   ],
   "launchDescriptor": {
@@ -763,6 +808,11 @@
         "name": "INSTANCE_STORAGE_QUERY_BATCH_SIZE",
         "value": "50",
         "description": "Number of instances to retrieve from inventory storage per one request (Max 90 - based on maximum URI length)"
+      },
+      {
+        "name": "AUTHORITY_ARCHIVES_EXPIRATION_PERIOD",
+        "value": "7",
+        "description": "The retention period in days for keeping the deleted authorities in authority_archive DB table"
       }
     ]
   }

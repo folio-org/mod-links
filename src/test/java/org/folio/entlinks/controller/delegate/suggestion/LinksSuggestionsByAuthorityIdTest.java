@@ -16,7 +16,7 @@ import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.LinksSuggestionService;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -77,7 +77,8 @@ class LinksSuggestionsByAuthorityIdTest {
 
   @Test
   void extractId_positive() {
-    var authority = new Authority().withId(UUID.randomUUID());
+    var authority = new Authority();
+    authority.setId(UUID.randomUUID());
     var actual = delegate.extractId(authority);
     assertThat(actual).isEqualTo(authority.getId());
   }

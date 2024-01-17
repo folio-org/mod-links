@@ -8,11 +8,13 @@ import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.dto.AuthorityDtoIdentifier;
 import org.folio.entlinks.domain.dto.AuthorityDtoNote;
 import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.domain.entity.AuthorityIdentifier;
 import org.folio.entlinks.domain.entity.AuthorityNote;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.utils.DateUtils;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -20,7 +22,10 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    componentModel = MappingConstants.ComponentModel.SPRING,
+    builder = @Builder(disableBuilder = true))
 public interface AuthorityMapper {
 
   @Mapping(target = "updatedDate", ignore = true)
@@ -38,7 +43,7 @@ public interface AuthorityMapper {
   @Mapping(target = "sourceFileId", source = "authoritySourceFile.id")
   @Mapping(target = "subjectHeadings",
       expression = "java(toSubjectHeadingsDto(authority.getSubjectHeadingCode()))")
-  AuthorityDto toDto(Authority authority);
+  AuthorityDto toDto(AuthorityBase authority);
 
   AuthorityIdentifier toAuthorityIdentifier(AuthorityDtoIdentifier dto);
 
@@ -48,10 +53,10 @@ public interface AuthorityMapper {
 
   AuthorityDtoNote toAuthorityDtoNote(AuthorityNote note);
 
-  List<AuthorityDto> toDtoList(Iterable<Authority> authorityStorageIterable);
+  List<AuthorityDto> toDtoList(Iterable<AuthorityBase> authorityStorageIterable);
 
   default AuthorityDtoCollection toAuthorityCollection(
-      Page<Authority> authorityStorageIterable) {
+      Page<AuthorityBase> authorityStorageIterable) {
     var authorityDtos = toDtoList(authorityStorageIterable.getContent());
     return new AuthorityDtoCollection(authorityDtos, (int) authorityStorageIterable.getTotalElements());
   }
@@ -84,14 +89,14 @@ public interface AuthorityMapper {
   }
 
   @AfterMapping
-  default void authorityPostProcess(AuthorityDto source, @MappingTarget Authority target) {
+  default void authorityPostProcess(AuthorityDto source, @MappingTarget AuthorityBase target) {
     AuthorityUtilityMapper.extractAuthorityHeading(source, target);
     AuthorityUtilityMapper.extractAuthoritySftHeadings(source, target);
     AuthorityUtilityMapper.extractAuthoritySaftHeadings(source, target);
   }
 
   @AfterMapping
-  default void authorityDtoPostProcessing(Authority source, @MappingTarget AuthorityDto target) {
+  default void authorityDtoPostProcessing(AuthorityBase source, @MappingTarget AuthorityDto target) {
     AuthorityUtilityMapper.extractAuthorityDtoHeadingValue(source, target);
     AuthorityUtilityMapper.extractAuthorityDtoSftHeadings(source, target);
     AuthorityUtilityMapper.extractAuthorityDtoSaftHeadings(source, target);

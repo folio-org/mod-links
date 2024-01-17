@@ -16,13 +16,14 @@ import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.dto.AuthorityDtoIdentifier;
 import org.folio.entlinks.domain.dto.AuthorityDtoNote;
 import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.domain.entity.AuthorityArchive;
+import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.domain.entity.AuthorityIdentifier;
 import org.folio.entlinks.domain.entity.AuthorityNote;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 @UnitTest
@@ -82,6 +83,34 @@ class AuthorityMapperTest {
 
   @Test
   void testToAuthorityWithNullInput() {
+    AuthorityDto authorityDto = authorityMapper.toDto(null);
+
+    assertThat(authorityDto).isNull();
+  }
+
+  @Test
+  void testAuthorityArchiveToDtoWithValidData() {
+    var archive = createAuthorityArchive();
+
+    var dto = authorityMapper.toDto(archive);
+
+    assertThat(dto).isNotNull();
+    assertThat(archive.getId()).isEqualTo(dto.getId());
+    assertThat(archive.getVersion()).isEqualTo(dto.getVersion());
+    assertThat(archive.getSource()).isEqualTo(dto.getSource());
+    assertThat(archive.getNaturalId()).isEqualTo(dto.getNaturalId());
+    assertThat(archive.getAuthoritySourceFile().getId()).isEqualTo(dto.getSourceFileId());
+    AuthorityIdentifier identifier = archive.getIdentifiers().get(0);
+    assertThat(identifier.getIdentifierTypeId()).isEqualTo(dto.getIdentifiers().get(0).getIdentifierTypeId());
+    assertThat(identifier.getValue()).isEqualTo(dto.getIdentifiers().get(0).getValue());
+    assertThat(archive.getNotes().get(0).getNote()).isEqualTo(dto.getNotes().get(0).getNote());
+    assertThat(archive.getNotes().get(0).getStaffOnly()).isEqualTo(dto.getNotes().get(0).getStaffOnly());
+    assertThat(String.valueOf(archive.getSubjectHeadingCode())).isEqualTo(dto.getSubjectHeadings());
+    assertThat(fromTimestamp(archive.getUpdatedDate())).isEqualTo(dto.getMetadata().getUpdatedDate());
+  }
+
+  @Test
+  void testToAuthorityArchiveWithNullInput() {
     AuthorityDto authorityDto = authorityMapper.toDto(null);
 
     assertThat(authorityDto).isNull();
@@ -154,7 +183,7 @@ class AuthorityMapperTest {
 
   @Test
   void testToDtoListWithValidData() {
-    var authority = createAuthority();
+    AuthorityBase authority = createAuthority();
     var authorityList = new ArrayList<>(List.of(authority));
 
     List<AuthorityDto> dtoList = authorityMapper.toDtoList(authorityList);
@@ -203,10 +232,10 @@ class AuthorityMapperTest {
 
   @Test
    void testToAuthorityCollectionWithValidPage() {
-    Authority authority = createAuthority();
+    AuthorityBase authority = createAuthority();
 
     var authorityList = List.of(authority);
-    Page<Authority> authorityPage = new PageImpl<>(authorityList);
+    var authorityPage = new PageImpl<>(authorityList);
 
     AuthorityDtoCollection dtoCollection = authorityMapper.toAuthorityCollection(authorityPage);
 
@@ -220,20 +249,40 @@ class AuthorityMapperTest {
   private static Authority createAuthority() {
     var file = new AuthoritySourceFile();
     file.setId(TEST_ID);
-    var authority = new Authority()
-        .withId(TEST_ID)
-        .withVersion(TEST_VERSION)
-        .withSource(TEST_PROPERTY_VALUE)
-        .withNaturalId(TEST_PROPERTY_VALUE)
-        .withAuthoritySourceFile(file)
-        .withIdentifiers(List.of(new AuthorityIdentifier(TEST_PROPERTY_VALUE, TEST_ID)))
-        .withNotes(List.of(new AuthorityNote(TEST_ID, TEST_PROPERTY_VALUE, true)))
-        .withSubjectHeadingCode(TEST_PROPERTY_VALUE.charAt(0));
-    authority.setUpdatedDate(TEST_DATE);
-    authority.setUpdatedByUserId(TEST_ID);
-    authority.setCreatedDate(TEST_DATE);
-    authority.setCreatedByUserId(TEST_ID);
-    return authority;
+    return Authority.builder()
+        .id(TEST_ID)
+        .version(TEST_VERSION)
+        .source(TEST_PROPERTY_VALUE)
+        .naturalId(TEST_PROPERTY_VALUE)
+        .authoritySourceFile(file)
+        .identifiers(List.of(new AuthorityIdentifier(TEST_PROPERTY_VALUE, TEST_ID)))
+        .notes(List.of(new AuthorityNote(TEST_ID, TEST_PROPERTY_VALUE, true)))
+        .subjectHeadingCode(TEST_PROPERTY_VALUE.charAt(0))
+        .updatedDate(TEST_DATE)
+        .createdDate(TEST_DATE)
+        .updatedByUserId(TEST_ID)
+        .createdByUserId(TEST_ID)
+        .build();
+  }
+
+  @NotNull
+  private static AuthorityArchive createAuthorityArchive() {
+    var file = new AuthoritySourceFile();
+    file.setId(TEST_ID);
+    var archive = new AuthorityArchive();
+    archive.setId(TEST_ID);
+    archive.setVersion(TEST_VERSION);
+    archive.setSource(TEST_PROPERTY_VALUE);
+    archive.setNaturalId(TEST_PROPERTY_VALUE);
+    archive.setAuthoritySourceFile(file);
+    archive.setIdentifiers(List.of(new AuthorityIdentifier(TEST_PROPERTY_VALUE, TEST_ID)));
+    archive.setNotes(List.of(new AuthorityNote(TEST_ID, TEST_PROPERTY_VALUE, true)));
+    archive.setSubjectHeadingCode(TEST_PROPERTY_VALUE.charAt(0));
+    archive.setUpdatedDate(TEST_DATE);
+    archive.setCreatedDate(TEST_DATE);
+    archive.setUpdatedByUserId(TEST_ID);
+    archive.setCreatedByUserId(TEST_ID);
+    return archive;
   }
 
   @NotNull

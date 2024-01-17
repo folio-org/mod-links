@@ -1,7 +1,6 @@
 package org.folio.entlinks.controller.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum.FOLIO;
 import static org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto.SourceEnum.LOCAL;
 import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
 import static org.folio.support.base.TestConstants.SOURCE_FILE_CODE;
@@ -14,10 +13,14 @@ import java.util.Set;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
+import org.folio.spring.testing.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -32,17 +35,18 @@ class AuthoritySourceFileMapperTest {
 
   @Test
   void testToEntity() {
-    AuthoritySourceFileDto dto = createAuthoritySourceFileDto();
+    var dto = createAuthoritySourceFileDto();
 
-    AuthoritySourceFile entity = mapper.toEntity(dto);
+    var entity = mapper.toEntity(dto);
 
     assertThat(entity).isNotNull();
     assertThat(dto.getId()).isEqualTo(entity.getId());
     assertThat(dto.getName()).isEqualTo(entity.getName());
     assertThat(dto.getType()).isEqualTo(entity.getType());
     assertThat(dto.getBaseUrl()).isEqualTo(entity.getBaseUrl());
-    assertThat(dto.getSource().getValue()).isEqualTo(entity.getSource());
-    assertThat(dto.getCodes()).hasSize(entity.getAuthoritySourceFileCodes().size());
+    assertThat(entity.getSource().name()).isEqualTo("LOCAL");
+    assertThat(entity.getAuthoritySourceFileCodes()).hasSize(1);
+    assertThat(dto.getCode()).isEqualTo(entity.getAuthoritySourceFileCodes().iterator().next().getCode());
   }
 
   @Test
@@ -56,8 +60,16 @@ class AuthoritySourceFileMapperTest {
     assertThat(sourceFile.getName()).isEqualTo(dto.getName());
     assertThat(sourceFile.getType()).isEqualTo(dto.getType());
     assertThat(sourceFile.getBaseUrl()).isEqualTo(dto.getBaseUrl());
-    assertThat(sourceFile.getSource()).isEqualTo(dto.getSource().getValue());
+    assertThat(sourceFile.getSource().name()).isEqualTo(dto.getSource().name());
     assertThat(dto.getCodes()).hasSize(sourceFile.getAuthoritySourceFileCodes().size());
+  }
+
+  @EnumSource(AuthoritySourceFileSource.class)
+  @ParameterizedTest
+  void testToDtoSource(AuthoritySourceFileSource source) {
+    var dtoSource = mapper.toDtoSource(source);
+
+    assertThat(source.name()).isEqualTo(dtoSource.name());
   }
 
   @Test
@@ -124,19 +136,18 @@ class AuthoritySourceFileMapperTest {
     sourceFile.setType(SOURCE_FILE_TYPE);
     sourceFile.setBaseUrl(INPUT_BASE_URL);
     sourceFile.setAuthoritySourceFileCodes(Set.of());
-    sourceFile.setSource(FOLIO.getValue());
+    sourceFile.setSource(AuthoritySourceFileSource.FOLIO);
     return sourceFile;
   }
 
   @NotNull
-  private static AuthoritySourceFileDto createAuthoritySourceFileDto() {
-    var dto = new AuthoritySourceFileDto();
+  private static AuthoritySourceFilePostDto createAuthoritySourceFileDto() {
+    var dto = new AuthoritySourceFilePostDto();
     dto.setId(TEST_ID);
     dto.setName(SOURCE_FILE_NAME);
     dto.setType(SOURCE_FILE_TYPE);
     dto.setBaseUrl(INPUT_BASE_URL);
-    dto.setCodes(List.of(SOURCE_FILE_CODE));
-    dto.setSource(FOLIO);
+    dto.setCode(SOURCE_FILE_CODE);
     return dto;
   }
 }

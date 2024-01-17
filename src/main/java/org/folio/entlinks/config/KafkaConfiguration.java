@@ -10,10 +10,10 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
-import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEvent;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
 import org.folio.entlinks.integration.kafka.EventProducer;
-import org.folio.entlinks.service.reindex.event.DomainEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -177,14 +177,14 @@ public class KafkaConfiguration {
 
   private <T> ConsumerFactory<String, T> consumerFactoryForEvent(KafkaProperties kafkaProperties, Class<T> eventClass) {
     var deserializer = new JsonDeserializer<>(eventClass, objectMapper, false);
-    Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
+    Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties(null));
     config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     config.put(VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
     return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
   }
 
   private <T> ProducerFactory<String, T> getProducerConfigProps(KafkaProperties kafkaProperties) {
-    return new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties(),
+    return new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties(null),
         new StringSerializer(), new JsonSerializer<>(objectMapper));
   }
 }

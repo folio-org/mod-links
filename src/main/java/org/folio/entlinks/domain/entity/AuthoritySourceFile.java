@@ -3,6 +3,8 @@ package org.folio.entlinks.domain.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -24,6 +26,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.folio.entlinks.domain.entity.base.Identifiable;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.domain.Persistable;
 
 @Getter
@@ -51,8 +55,10 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @Column(name = "base_url", unique = true)
   private String baseUrl;
 
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "source", length = 100)
-  private String source;
+  private AuthoritySourceFileSource source;
 
   @ToString.Exclude
   @OneToMany(mappedBy = "authoritySourceFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -61,6 +67,15 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @ToString.Exclude
   @OneToMany(mappedBy = "authoritySourceFile", fetch = FetchType.LAZY)
   private Set<Authority> authorities = new LinkedHashSet<>();
+
+  @Column(name = "sequence_name", length = 50)
+  private String sequenceName;
+
+  @Column(name = "selectable")
+  private boolean selectable = false;
+
+  @Column(name = "hrid_start_number")
+  private Integer hridStartNumber;
 
   @Transient
   private boolean isNew = true;
@@ -80,6 +95,9 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
     this.authorities = Optional.ofNullable(other.authorities).orElse(Set.of()).stream()
         .map(Authority::new)
         .collect(Collectors.toSet());
+    this.sequenceName = other.sequenceName;
+    this.selectable = other.selectable;
+    this.hridStartNumber = other.hridStartNumber;
   }
 
   public void addCode(AuthoritySourceFileCode code) {
@@ -108,5 +126,13 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @PrePersist
   void markNotNew() {
     this.isNew = false;
+  }
+
+  public void markAsConsortiumShadowCopy() {
+    this.setSource(AuthoritySourceFileSource.CONSORTIUM);
+  }
+
+  public boolean isConsortiumShadowCopy() {
+    return AuthoritySourceFileSource.CONSORTIUM.equals(this.getSource());
   }
 }

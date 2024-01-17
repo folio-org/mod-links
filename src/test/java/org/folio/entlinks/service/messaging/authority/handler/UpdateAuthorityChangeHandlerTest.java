@@ -26,8 +26,9 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkStatus;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
-import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.AuthoritySourceRecord;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
@@ -35,9 +36,8 @@ import org.folio.entlinks.service.messaging.authority.AuthorityMappingRulesProce
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
-import org.folio.entlinks.service.reindex.event.DomainEventType;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.test.type.UnitTest;
+import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.marc4j.marc.impl.RecordImpl;
@@ -93,9 +93,10 @@ class UpdateAuthorityChangeHandlerTest {
     var changes = Map.of(
       PERSONAL_NAME, new AuthorityChange(PERSONAL_NAME, "new", "old")
     );
-    var event = new AuthorityChangeHolder(new AuthorityDomainEvent(id), changes, emptyMap(), 0);
-    event.setSourceRecord(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
-    handler.handle(List.of(event));
+    var event = new AuthorityDomainEvent(id, null, null, DomainEventType.UPDATE, null);
+    var changeHolder = new AuthorityChangeHolder(event, changes, emptyMap(), 1);
+    changeHolder.setSourceRecord(new AuthoritySourceRecord(id, UUID.randomUUID(), new RecordImpl()));
+    handler.handle(List.of(changeHolder));
 
     verify(linksUpdateKafkaTemplate).sendMessages(producerRecord.capture());
     assertThat(producerRecord.getValue().get(0))
@@ -107,10 +108,11 @@ class UpdateAuthorityChangeHandlerTest {
   void handle_positive_whenNaturalIdChanged() {
     var authorityId = UUID.randomUUID();
     var instanceId = UUID.randomUUID();
+    var authority = Authority.builder().id(authorityId).build();
 
     when(instanceAuthorityChangeProperties.getNumPartitions()).thenReturn(2);
     when(linkingService.getLinksByAuthorityId(eq(authorityId), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(
-      new InstanceAuthorityLink(1L, new Authority().withId(authorityId), instanceId,
+      new InstanceAuthorityLink(1L, authority, instanceId,
         new InstanceAuthorityLinkingRule(1, "100", "100", new char[] {'a'}, null, null, true),
         InstanceAuthorityLinkStatus.ACTUAL, null)
     )));

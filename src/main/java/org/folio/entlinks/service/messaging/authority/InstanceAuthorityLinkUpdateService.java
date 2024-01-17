@@ -14,7 +14,9 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.domain.entity.AuthorityDataStat;
-import org.folio.entlinks.integration.dto.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
+import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.integration.internal.AuthoritySourceRecordService;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
@@ -96,15 +98,7 @@ public class InstanceAuthorityLinkUpdateService {
 
   private void processEventsByChangeType(List<AuthorityChangeHolder> changeHolders) {
     var changesByType = changeHolders.stream()
-      .filter(changeHolder -> {
-        if (changeHolder.getNumberOfLinks() > 0) {
-          return true;
-        } else {
-          log.info("Skip message. Authority record [tenantId: {}, id: {}] doesn't have links",
-              folioExecutionContext.getTenantId(), changeHolder.getAuthorityId());
-          return false;
-        }
-      })
+      .filter(this::isProcessableChange)
       .collect(Collectors.groupingBy(AuthorityChangeHolder::getChangeType));
 
     for (var eventsByTypeEntry : changesByType.entrySet()) {
@@ -119,6 +113,21 @@ public class InstanceAuthorityLinkUpdateService {
         sendEvents(linksEvents, type);
       }
     }
+  }
+
+  private boolean isProcessableChange(AuthorityChangeHolder changeHolder) {
+    if (changeHolder.getEvent().getType() == DomainEventType.DELETE) {
+      return changeHolder.getEvent().getDeleteEventSubType() == AuthorityDeleteEventSubType.SOFT_DELETE;
+    }
+
+    if (changeHolder.getEvent().getType() == DomainEventType.UPDATE && changeHolder.getNumberOfLinks() > 0) {
+      return true;
+    }
+
+    log.info("Skip message for {} event. Authority record [tenantId: {}, id: {}] doesn't have links",
+        changeHolder.getEvent().getType(), folioExecutionContext.getTenantId(), changeHolder.getAuthorityId());
+    return false;
+
   }
 
   private void prepareAndSaveAuthorityDataStats(List<AuthorityChangeHolder> changeHolders) {

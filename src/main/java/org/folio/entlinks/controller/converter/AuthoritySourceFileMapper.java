@@ -8,8 +8,10 @@ import java.util.stream.Collectors;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.utils.DateUtils;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -27,10 +29,12 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "updatedByUserId", ignore = true)
   @Mapping(target = "createdDate", ignore = true)
   @Mapping(target = "createdByUserId", ignore = true)
+  @Mapping(target = "sequenceName", ignore = true)
+  @Mapping(target = "hridStartNumber", source = "hridManagement.startNumber")
   @Mapping(target = "authoritySourceFileCodes",
-           expression = "java(toEntityCodes(authoritySourceFileDto.getCodes()))")
-  @Mapping(target = "source", expression = "java(toSource(authoritySourceFileDto.getSource()))")
-  AuthoritySourceFile toEntity(AuthoritySourceFileDto authoritySourceFileDto);
+      expression = "java(toEntityCodes(List.of(authoritySourceFilePostDto.getCode())))")
+  @Mapping(target = "source", expression = "java(org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL)")
+  AuthoritySourceFile toEntity(AuthoritySourceFilePostDto authoritySourceFilePostDto);
 
   @Mapping(target = "codes",
            expression = "java(toDtoCodes(authoritySourceFile.getAuthoritySourceFileCodes()))")
@@ -39,6 +43,7 @@ public interface AuthoritySourceFileMapper {
   @Mapping(target = "metadata.updatedByUserId", source = "updatedByUserId")
   @Mapping(target = "metadata.createdDate", source = "createdDate")
   @Mapping(target = "metadata.createdByUserId", source = "createdByUserId")
+  @Mapping(target = "hridManagement.startNumber", source = "hridStartNumber")
   AuthoritySourceFileDto toDto(AuthoritySourceFile authoritySourceFile);
 
   @Mapping(target = "authoritySourceFileCodes",
@@ -50,24 +55,16 @@ public interface AuthoritySourceFileMapper {
 
   List<AuthoritySourceFileDto> toDtoList(Iterable<AuthoritySourceFile> authoritySourceFileIterable);
 
-  default AuthoritySourceFileDto.SourceEnum toDtoSource(String source) {
-    return AuthoritySourceFileDto.SourceEnum.fromValue(source);
+  default AuthoritySourceFileDto.SourceEnum toDtoSource(AuthoritySourceFileSource source) {
+    return AuthoritySourceFileDto.SourceEnum.valueOf(source.name());
   }
 
-  default String toSource(AuthoritySourceFileDto.SourceEnum dtoSource) {
+  default AuthoritySourceFileSource toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
     if (dtoSource == null) {
       return null;
     }
 
-    return dtoSource.getValue();
-  }
-
-  default String toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
-    if (dtoSource == null) {
-      return null;
-    }
-
-    return dtoSource.getValue();
+    return AuthoritySourceFileSource.valueOf(dtoSource.name());
   }
 
   default AuthoritySourceFileDtoCollection toAuthoritySourceFileCollection(
@@ -79,12 +76,14 @@ public interface AuthoritySourceFileMapper {
 
   default Set<AuthoritySourceFileCode> toEntityCodes(List<String> codes) {
     return codes.stream()
-      .map(code -> {
-        var authoritySourceFileCode = new AuthoritySourceFileCode();
-        authoritySourceFileCode.setCode(code);
-        return authoritySourceFileCode;
-      })
+      .map(this::toEntityCode)
       .collect(Collectors.toSet());
+  }
+
+  default AuthoritySourceFileCode toEntityCode(String code) {
+    var authoritySourceFileCode = new AuthoritySourceFileCode();
+    authoritySourceFileCode.setCode(code);
+    return authoritySourceFileCode;
   }
 
   default List<String> toDtoCodes(Set<AuthoritySourceFileCode> codes) {
