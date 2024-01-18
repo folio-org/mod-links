@@ -52,7 +52,7 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @Column(name = "type", length = 100)
   private String type;
 
-  @Column(name = "base_url_protocol", length = 10)
+  @Column(name = "base_url_protocol", length = 5)
   private String baseUrlProtocol;
 
   @Column(name = "base_url", unique = true)

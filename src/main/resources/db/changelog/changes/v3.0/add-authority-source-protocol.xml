@@ -17,7 +17,7 @@
     <comment>Add base_url_protocol column to authority_source_file table</comment>
 
     <addColumn tableName="authority_source_file">
-      <column name="base_url_protocol" type="VARCHAR(10)"/>
+      <column name="base_url_protocol" type="VARCHAR(5)"/>
     </addColumn>
   </changeSet>
 
