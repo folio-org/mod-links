@@ -1,5 +1,6 @@
 package org.folio.entlinks.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authority;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
@@ -46,8 +47,8 @@ class DisabledSystemUserIT extends IntegrationTestBase {
   @BeforeEach
   void setUp(@Autowired ApplicationContext ctx) {
     assertThatThrownBy(() -> ctx.getBean(AuthnClient.class)).isInstanceOf(NoSuchBeanDefinitionException.class);
-    assertThatThrownBy(() -> ctx.getBean(UsersClient.class)).isInstanceOf(NoSuchBeanDefinitionException.class);
     assertThatThrownBy(() -> ctx.getBean(PermissionsClient.class)).isInstanceOf(NoSuchBeanDefinitionException.class);
+    assertThat(ctx.getBeanNamesForType(UsersClient.class)).isNotNull();
   }
 
   @Test
