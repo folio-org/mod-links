@@ -115,7 +115,6 @@ class ApiErrorHandlerTest {
     // Assert
     assertErrorResponse(exception, VALIDATION_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, responseEntity,
         TEST_ERROR_MESSAGE);
-
   }
 
   @Test
@@ -218,7 +217,6 @@ class ApiErrorHandlerTest {
     // Assert
     assertErrorResponse(httpMessageNotReadableException, VALIDATION_ERROR, HttpStatus.BAD_REQUEST, responseEntity,
         TEST_ERROR_MESSAGE);
-
   }
 
   @ParameterizedTest
