@@ -78,28 +78,16 @@ public interface AuthoritySourceFileMapper {
 
   @AfterMapping
   default void processUrl(AuthoritySourceFilePatchDto source, @MappingTarget AuthoritySourceFile target) {
-    if (StringUtils.isBlank(source.getBaseUrl())) {
-      return;
-    }
-
     setUrlProperties(source.getBaseUrl(), target);
   }
 
   @AfterMapping
   default void processUrl(AuthoritySourceFilePostDto source, @MappingTarget AuthoritySourceFile target) {
-    if (StringUtils.isBlank(source.getBaseUrl())) {
-      return;
-    }
-
     setUrlProperties(source.getBaseUrl(), target);
   }
 
   @AfterMapping
   default void processUrl(AuthoritySourceFileDto source, @MappingTarget AuthoritySourceFile target) {
-    if (StringUtils.isBlank(source.getBaseUrl())) {
-      return;
-    }
-
     setUrlProperties(source.getBaseUrl(), target);
   }
 
@@ -110,14 +98,6 @@ public interface AuthoritySourceFileMapper {
     }
 
     target.setBaseUrl(source.getFullBaseUrl());
-  }
-
-  default AuthoritySourceFileSource toSource(AuthoritySourceFilePatchDto.SourceEnum dtoSource) {
-    if (dtoSource == null) {
-      return null;
-    }
-
-    return AuthoritySourceFileSource.valueOf(dtoSource.name());
   }
 
   default AuthoritySourceFileDtoCollection toAuthoritySourceFileCollection(
@@ -165,6 +145,10 @@ public interface AuthoritySourceFileMapper {
   }
 
   private static void setUrlProperties(String baseUrlDto, AuthoritySourceFile target) {
+    if (StringUtils.isBlank(baseUrlDto)) {
+      return;
+    }
+
     var url = getUrl(baseUrlDto);
     target.setBaseUrlProtocol(url.getProtocol());
     target.setBaseUrl(getHostPath(url));
