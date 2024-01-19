@@ -332,7 +332,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("PATCH: update of Authority Source File with old version")
   void updateWithOldVersion_negative_shouldReturnOptimisticLockingError() throws Exception {
-    var dto = new AuthoritySourceFilePostDto("name", "codee").type("type").baseUrl("url");
+    var dto = new AuthoritySourceFilePostDto("name", "codee").type("type").baseUrl("http://url");
     var created = doPostAndReturn(authoritySourceFilesEndpoint(), dto, AuthoritySourceFileDto.class);
 
     var patchDto = new AuthoritySourceFilePatchDto();
