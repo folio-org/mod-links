@@ -13,6 +13,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +53,9 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @Column(name = "type", length = 100)
   private String type;
 
+  @Column(name = "base_url_protocol", length = 5)
+  private String baseUrlProtocol;
+
   @Column(name = "base_url", unique = true)
   private String baseUrl;
 
@@ -79,6 +83,10 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
 
   @Transient
   private boolean isNew = true;
+
+  @Version
+  @Column(name = "_version", nullable = false)
+  private int version;
 
   public AuthoritySourceFile(AuthoritySourceFile other) {
     super(other);
@@ -134,5 +142,15 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
 
   public boolean isConsortiumShadowCopy() {
     return AuthoritySourceFileSource.CONSORTIUM.equals(this.getSource());
+  }
+
+  public String getFullBaseUrl() {
+    if (baseUrl == null) {
+      return null;
+    }
+    if (baseUrlProtocol == null) {
+      return baseUrl;
+    }
+    return baseUrlProtocol + "://" + baseUrl;
   }
 }
