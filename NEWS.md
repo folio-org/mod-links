@@ -1,9 +1,10 @@
 ## v3.0.0 in progress
 ### Breaking changes
 * Delete PUT endpoint from authority-source-files api([MODELINKS-161](https://issues.folio.org/browse/MODELINKS-161))
+* Update authority-source-files PATCH endpoint body, add validations and optimistic locking([MODELINKS-160](https://issues.folio.org/browse/MODELINKS-160))
 
 ### New APIs versions
-* Provides `API_NAME vX.Y`
+* Provides `authority-source-files v2.2`
 * Requires `API_NAME vX.Y`
 
 ### Features
@@ -17,6 +18,7 @@
 * Adjust /authority-storage/authorities endpoint to allow retrieving authorities archives and only IDs of records([MODELINKS-142](https://issues.folio.org/browse/MODELINKS-142))
 * Propagate authority source files to member tenants([MODELINKS-175](https://issues.folio.org/browse/MODELINKS-175))
 * Implement next hrid endpoint for authority source file([MODELINKS-122](https://issues.folio.org/browse/MODELINKS-122))
+* Add protocol to base url for authority source files([MODELINKS-191](https://issues.folio.org/browse/MODELINKS-191))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))

@@ -1,7 +1,6 @@
 package org.folio.entlinks.controller.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto.SourceEnum.LOCAL;
 import static org.folio.support.base.TestConstants.INPUT_BASE_URL;
 import static org.folio.support.base.TestConstants.SOURCE_FILE_CODE;
 import static org.folio.support.base.TestConstants.SOURCE_FILE_NAME;
@@ -10,11 +9,14 @@ import static org.folio.support.base.TestConstants.TEST_ID;
 
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDtoHridManagement;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.spring.testing.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +32,7 @@ class AuthoritySourceFileMapperTest {
   public static final String UPDATED_NAME = "Updated Name";
   public static final String UPDATED_TYPE = "Updated Type";
   public static final String UPDATED_CODE = "Updated Code";
-  public static final String UPDATED_BASE_URL = "Updated Base Url";
+  public static final String UPDATED_BASE_URL = "http://updated.base.url/";
   private final AuthoritySourceFileMapper mapper = new AuthoritySourceFileMapperImpl();
 
   @Test
@@ -40,13 +42,13 @@ class AuthoritySourceFileMapperTest {
     var entity = mapper.toEntity(dto);
 
     assertThat(entity).isNotNull();
-    assertThat(dto.getId()).isEqualTo(entity.getId());
-    assertThat(dto.getName()).isEqualTo(entity.getName());
-    assertThat(dto.getType()).isEqualTo(entity.getType());
-    assertThat(dto.getBaseUrl()).isEqualTo(entity.getBaseUrl());
-    assertThat(entity.getSource().name()).isEqualTo("LOCAL");
+    assertThat(entity.getId()).isEqualTo(dto.getId());
+    assertThat(entity.getName()).isEqualTo(dto.getName());
+    assertThat(entity.getType()).isEqualTo(dto.getType());
+    assertThat(entity.getFullBaseUrl()).isEqualTo(StringUtils.appendIfMissing(dto.getBaseUrl(), "/"));
+    assertThat(entity.getSource()).isEqualTo(AuthoritySourceFileSource.LOCAL);
     assertThat(entity.getAuthoritySourceFileCodes()).hasSize(1);
-    assertThat(dto.getCode()).isEqualTo(entity.getAuthoritySourceFileCodes().iterator().next().getCode());
+    assertThat(entity.getAuthoritySourceFileCodes().iterator().next().getCode()).isEqualTo(dto.getCode());
   }
 
   @Test
@@ -74,23 +76,47 @@ class AuthoritySourceFileMapperTest {
 
   @Test
   void testPartialUpdate() {
-    AuthoritySourceFile sourceFile = createAuthoritySourceFile();
-
-    AuthoritySourceFilePatchDto patchDto = new AuthoritySourceFilePatchDto();
-    patchDto.setId(TEST_ID);
+    var sourceFile = createAuthoritySourceFile();
+    var patchDto = new AuthoritySourceFilePatchDto();
     patchDto.setName(UPDATED_NAME);
     patchDto.setType(UPDATED_TYPE);
     patchDto.setCodes(List.of(UPDATED_CODE));
     patchDto.setBaseUrl(UPDATED_BASE_URL);
-    patchDto.setSource(LOCAL);
+    patchDto.selectable(true);
+    patchDto.hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(5));
 
-    AuthoritySourceFile updatedFile = mapper.partialUpdate(patchDto, sourceFile);
+    var updatedFile = mapper.partialUpdate(patchDto, sourceFile);
 
     assertThat(updatedFile).isNotNull();
-    assertThat(patchDto.getId()).isEqualTo(updatedFile.getId());
-    assertThat(patchDto.getName()).isEqualTo(updatedFile.getName());
-    assertThat(patchDto.getType()).isEqualTo(updatedFile.getType());
-    assertThat(patchDto.getBaseUrl()).isEqualTo(updatedFile.getBaseUrl());
+    assertThat(updatedFile.getName()).isEqualTo(patchDto.getName());
+    assertThat(updatedFile.getType()).isEqualTo(patchDto.getType());
+    assertThat(updatedFile.getAuthoritySourceFileCodes().stream().map(AuthoritySourceFileCode::getCode).toList())
+        .isEqualTo(patchDto.getCodes());
+    assertThat(updatedFile.getFullBaseUrl()).isEqualTo(patchDto.getBaseUrl());
+    assertThat(updatedFile.isSelectable()).isEqualTo(patchDto.getSelectable());
+    assertThat(updatedFile.getHridStartNumber()).isEqualTo(patchDto.getHridManagement().getStartNumber());
+    assertThat(updatedFile.getSource()).isEqualTo(sourceFile.getSource());
+    assertThat(updatedFile.getSequenceName()).isEqualTo(sourceFile.getSequenceName());
+  }
+
+  @Test
+  void testPartialUpdate_noCodesUpdate() {
+    var code = new AuthoritySourceFileCode();
+    code.setCode("a");
+    var codes = Set.of(code);
+    var sourceFile = createAuthoritySourceFile();
+    sourceFile.setAuthoritySourceFileCodes(codes);
+
+    var patchDto = new AuthoritySourceFilePatchDto();
+    patchDto.setName(UPDATED_NAME);
+    patchDto.setType(UPDATED_TYPE);
+
+    var updatedFile = mapper.partialUpdate(patchDto, sourceFile);
+
+    assertThat(updatedFile).isNotNull();
+    assertThat(updatedFile.getName()).isEqualTo(patchDto.getName());
+    assertThat(updatedFile.getType()).isEqualTo(patchDto.getType());
+    assertThat(updatedFile.getAuthoritySourceFileCodes()).isEqualTo(codes);
   }
 
   @Test
@@ -137,6 +163,8 @@ class AuthoritySourceFileMapperTest {
     sourceFile.setBaseUrl(INPUT_BASE_URL);
     sourceFile.setAuthoritySourceFileCodes(Set.of());
     sourceFile.setSource(AuthoritySourceFileSource.FOLIO);
+    sourceFile.setSelectable(false);
+    sourceFile.setHridStartNumber(1);
     return sourceFile;
   }
 
