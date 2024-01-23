@@ -19,6 +19,7 @@
 * Propagate authority source files to member tenants([MODELINKS-175](https://issues.folio.org/browse/MODELINKS-175))
 * Implement next hrid endpoint for authority source file([MODELINKS-122](https://issues.folio.org/browse/MODELINKS-122))
 * Add protocol to base url for authority source files([MODELINKS-191](https://issues.folio.org/browse/MODELINKS-191))
+* Make system user usage optional ([MODELINKS-150](https://issues.folio.org/browse/MODELINKS-150) and [MODROLESKC-24](https://issues.folio.org/browse/MODROLESKC-24))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
