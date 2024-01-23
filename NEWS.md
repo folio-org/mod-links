@@ -1,3 +1,9 @@
+## v2.0.5 2024-01-30
+## Features
+* Make system user usage optional ([MODELINKS-150](https://issues.folio.org/browse/MODELINKS-150) and [MODROLESKC-24](https://issues.folio.org/browse/MODROLESKC-24))
+
+---
+
 ## v2.0.4 2023-11-30
 ## Bug fixes
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))

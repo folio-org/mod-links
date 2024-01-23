@@ -109,6 +109,7 @@ docker run -t -i -p 8081:8081 mod-entities-links
 | KAFKA_INSTANCE_AUTHORITY_STATS_CONSUMER_CONCURRENCY     | 1                                     | Number of kafka concurrent threads for `links.instance-authority-stats` message consuming                                                                                                            |
 | KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS              | 100                                   | Number of instance-authority links `links.instance-authority` event contains while processing authority link source change.                                                                          |
 | INSTANCE_STORAGE_QUERY_BATCH_SIZE                       | 50                                    | Number of instances to retrieve from inventory storage per one request (Max 90 - based on maximum URI length).                                                                                       |
+| SYSTEM_USER_ENABLED                                     | true                                  | Defines if system user must be created at service tenant initialization or used for egress service requests                                                                                          |
 
 ### Configuring spring-boot
 
