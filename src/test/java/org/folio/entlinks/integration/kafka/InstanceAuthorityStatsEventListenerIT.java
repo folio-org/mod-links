@@ -143,7 +143,7 @@ class InstanceAuthorityStatsEventListenerIT extends IntegrationTestBase {
   @SneakyThrows
   private void assertLinksUpdated(String failCause) {
     var now = OffsetDateTime.now();
-    await().pollInterval(ONE_SECOND).atMost(Durations.ONE_MINUTE).untilAsserted(() ->
+    awaitUntilAsserted(() ->
         doGet(linksStatsInstanceEndpoint(LinkStatus.ERROR, now.minusDays(1), now))
             .andExpect(jsonPath("$.stats", hasSize(1)))
             .andExpect(jsonPath("$.stats[0].errorCause", is(failCause)))
