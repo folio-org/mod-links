@@ -1,0 +1,22 @@
+post:
+  operationId: createAuthorityBulk
+  tags:
+    - authority-storage
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/authority-storage/authorityBulkCreateRequest.yaml'
+  responses:
+    '201':
+      description: Record successfully created
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/authority-storage/authorityBulkCreateResponse.yaml'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/serverErrorResponse.yaml'

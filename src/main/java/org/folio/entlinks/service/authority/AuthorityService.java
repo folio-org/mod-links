@@ -131,6 +131,10 @@ public class AuthorityService {
     repository.deleteAllByIdInBatch(ids);
   }
 
+  public List<Authority> upsert(List<Authority> authorities) {
+    return repository.saveAll(authorities);
+  }
+
   private void copyModifiableFields(Authority existing, Authority modified) {
     existing.setHeading(modified.getHeading());
     existing.setHeadingType(modified.getHeadingType());

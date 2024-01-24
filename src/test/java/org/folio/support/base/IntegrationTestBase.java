@@ -84,6 +84,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+@EnableMinio
 @EnableKafka
 @EnablePostgres
 @SpringBootTest

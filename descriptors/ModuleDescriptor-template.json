@@ -201,6 +201,18 @@
         },
         {
           "methods": [
+            "POST"
+          ],
+          "pathPattern": "/authority-storage/authorities/bulk",
+          "permissionsRequired": [
+            "inventory-storage.authorities.bulk.post"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
+          ]
+        },
+        {
+          "methods": [
             "PUT"
           ],
           "pathPattern": "/authority-storage/authorities/{id}",
@@ -528,6 +540,11 @@
       "description": "create individual authority record in the storage"
     },
     {
+      "permissionName": "inventory-storage.authorities.bulk.post",
+      "displayName": "inventory storage - create authority records in bulk",
+      "description": "create authority records in bulk"
+    },
+    {
       "permissionName": "inventory-storage.authorities.item.put",
       "displayName": "inventory storage - modify authority record",
       "description": "modify authority record in the storage"
@@ -564,6 +581,7 @@
       "subPermissions": [
         "inventory-storage.authorities.item.get",
         "inventory-storage.authorities.item.post",
+        "inventory-storage.authorities.bulk.post",
         "inventory-storage.authorities.item.put",
         "inventory-storage.authorities.item.delete",
         "authority-storage.authority.reindex.post",
