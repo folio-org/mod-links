@@ -44,7 +44,8 @@ class LinksSuggestionsServiceTest {
 
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
   private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
-  private static final String NATURAL_ID = "e12345";
+  private static final String NATURAL_ID = "n12345";
+  private static final String NATURAL_ID_WITH_INVALID_PREFIX = "na12345";
   private static final String NATURAL_ID_SUBFIELD = "0";
   private static final String ID_SUBFIELD = "9";
   private static final String BASE_URL = "https://base/url/";
@@ -89,6 +90,34 @@ class LinksSuggestionsServiceTest {
     var bibSubfields = bibField.getSubfields();
     assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9").get(0));
     assertEquals(BASE_URL + NATURAL_ID, bibSubfields.get("0").get(0));
+    assertFalse(bibSubfields.containsKey("a"));
+    assertTrue(bibSubfields.containsKey("b"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
+  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_when_invalidPrefix(String linkingMatchSubfield) {
+    var rules = getMapRule("100", "100");
+    var bib = getBibParsedRecordContent("100", null);
+    var authority = getAuthorityParsedRecordContentWithInvalidPrefix(AUTHORITY_ID,
+        "100",
+        Map.of("a", List.of("test")));
+    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+
+    linksSuggestionService
+        .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
+
+    var bibField = bib.getFields().get(0);
+    var linkDetails = bibField.getLinkDetails();
+    assertEquals(LinkStatus.NEW, linkDetails.getStatus());
+    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
+    assertEquals(NATURAL_ID_WITH_INVALID_PREFIX, linkDetails.getAuthorityNaturalId());
+    assertEquals(1, linkDetails.getLinkingRuleId());
+    assertNull(linkDetails.getErrorCause());
+
+    var bibSubfields = bibField.getSubfields();
+    assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9").get(0));
+    assertEquals(NATURAL_ID_WITH_INVALID_PREFIX, bibSubfields.get("0").get(0));
     assertFalse(bibSubfields.containsKey("a"));
     assertTrue(bibSubfields.containsKey("b"));
   }
@@ -320,6 +349,13 @@ class LinksSuggestionsServiceTest {
                                                                  Map<String, List<String>> subfields) {
     var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
     return new AuthorityParsedContent(authorityId, NATURAL_ID, "", List.of(field));
+  }
+
+  private AuthorityParsedContent getAuthorityParsedRecordContentWithInvalidPrefix(UUID authorityId,
+                                                                                  String authorityField,
+                                                                                  Map<String, List<String>> subfields) {
+    var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
+    return new AuthorityParsedContent(authorityId, NATURAL_ID_WITH_INVALID_PREFIX, "", List.of(field));
   }
 
   private SourceParsedContent getBibParsedRecordContent(String bibField, LinkDetails linkDetails) {

@@ -51,7 +51,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
 
   private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
-  private static final String NATURAL_ID = "oneAuthority";
+  private static final String NATURAL_ID = "n12345";
 
   @BeforeAll
   static void prepare() {

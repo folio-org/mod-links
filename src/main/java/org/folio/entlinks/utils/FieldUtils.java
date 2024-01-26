@@ -33,10 +33,21 @@ public class FieldUtils {
    * @return subfield $0 value as {@link String}
    */
   public static String getSubfield0Value(String naturalId, AuthoritySourceFile sourceFile) {
-    var subfield0Value = "";
-    if (nonNull(naturalId) && nonNull(sourceFile) && nonNull(sourceFile.getBaseUrl())) {
-      subfield0Value = StringUtils.appendIfMissing(sourceFile.getFullBaseUrl(), "/");
+    if (nonNull(naturalId) && nonNull(sourceFile) && nonNull(sourceFile.getBaseUrl()) && isValidPrefix(naturalId)) {
+      return StringUtils.appendIfMissing(sourceFile.getFullBaseUrl(), "/") + naturalId;
+    } else {
+      return naturalId;
     }
-    return subfield0Value + naturalId;
   }
+
+  private boolean isValidPrefix(String naturalId) {
+    String prefix = naturalId.split("[0-9]")[0];
+    try {
+      SubfieldPrefix.valueOf(prefix.toUpperCase());
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
+
 }
