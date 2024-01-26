@@ -55,7 +55,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @IntegrationTest
-@DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
+@DatabaseCleanup(tables = {
+  DatabaseHelper.AUTHORITY_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE}
+)
 class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
@@ -335,8 +339,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("PATCH: partially update Authority Source File with reference in Authority")
   void updateAuthoritySourceFilePartially_positive_whenAuthorityReferenced() throws Exception {
-    var createDto = new AuthoritySourceFilePostDto("name", "code").type("type").baseUrl("http://url");
-    var hridStartNumber = 125;
+    var createDto = new AuthoritySourceFilePostDto("name", "codeXXX").type("type").baseUrl("http://url");
     var partiallyModified = new AuthoritySourceFilePatchDto()
         .version(1)
         .baseUrl("http://url.upd");
@@ -352,9 +355,8 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
     var content = doGet(authoritySourceFilesEndpoint(created.getId()))
       .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
-      .andExpect(jsonPath("codes", hasSize(2)))
+      .andExpect(jsonPath("codes", hasSize(1)))
       .andExpect(jsonPath("_version", is(1)))
-      .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
@@ -362,7 +364,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andReturn().getResponse().getContentAsString();
     var resultDto = objectMapper.readValue(content, AuthoritySourceFileDto.class);
 
-    assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(partiallyModified.getCodes())));
+    assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(created.getCodes())));
   }
 
   @Test

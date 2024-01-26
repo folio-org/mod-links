@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -100,12 +99,13 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
       .stream()
       .map(AuthoritySourceFileCode::new)
       .collect(java.util.stream.Collectors.toSet());
-    this.authorities = Optional.ofNullable(other.authorities).orElse(Set.of()).stream()
-        .map(Authority::new)
-        .collect(Collectors.toSet());
+    Optional.ofNullable(other.authorities).orElse(Set.of())
+        .forEach(authority -> authority.setAuthoritySourceFile(this));
     this.sequenceName = other.sequenceName;
     this.selectable = other.selectable;
     this.hridStartNumber = other.hridStartNumber;
+    this.version = other.version;
+    this.baseUrlProtocol = other.baseUrlProtocol;
   }
 
   public void addCode(AuthoritySourceFileCode code) {
