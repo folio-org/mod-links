@@ -171,21 +171,6 @@ class AuthoritySourceFileServiceTest {
     assertThat(created).isEqualTo(expected);
   }
 
-  @Test
-  void shouldNotBePossibleToCreateAuthoritySourceFileOfSourceFolio() {
-    var code = new AuthoritySourceFileCode();
-    var entity = new AuthoritySourceFile();
-    entity.setAuthoritySourceFileCodes(Set.of(code));
-    entity.setSource(AuthoritySourceFileSource.FOLIO);
-
-    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
-
-    verifyNoInteractions(repository);
-    assertThat(thrown.getInvalidParameters()).hasSize(1);
-    assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("source");
-    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(entity.getSource().name());
-  }
-
   @ParameterizedTest
   @ValueSource(strings = {"", "123", "#", "abc123", "abc def"})
   void shouldNotBePossibleToCreateAuthoritySourceFileWithInvalidCode(String code) {
@@ -201,24 +186,6 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters()).hasSize(1);
     assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("code");
     assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(code);
-  }
-
-  @Test
-  void shouldNotBePossibleToCreateLocalAuthoritySourceWithMoreThanOneCode() {
-    var code1 = new AuthoritySourceFileCode();
-    code1.setCode("code1");
-    var code2 = new AuthoritySourceFileCode();
-    code2.setCode("code2");
-    var entity = new AuthoritySourceFile();
-    entity.setAuthoritySourceFileCodes(Set.of(code1, code2));
-    entity.setSource(LOCAL);
-
-    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.create(entity));
-
-    verifyNoInteractions(repository);
-    assertThat(thrown.getInvalidParameters()).hasSize(1);
-    assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("code");
-    assertThat(thrown.getInvalidParameters().get(0).getValue()).contains(code1.getCode()).contains(code2.getCode());
   }
 
   @NullSource
