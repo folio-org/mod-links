@@ -99,7 +99,7 @@ class LinksSuggestionsServiceTest {
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_when_invalidPrefix(String linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContentWithInvalidPrefix(AUTHORITY_ID,
+    var authority = getAuthorityParsedRecordContentWithInvalidNaturalIdPrefix(AUTHORITY_ID,
         "100",
         Map.of("a", List.of("test")));
     when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
@@ -351,9 +351,10 @@ class LinksSuggestionsServiceTest {
     return new AuthorityParsedContent(authorityId, NATURAL_ID, "", List.of(field));
   }
 
-  private AuthorityParsedContent getAuthorityParsedRecordContentWithInvalidPrefix(UUID authorityId,
-                                                                                  String authorityField,
-                                                                                  Map<String, List<String>> subfields) {
+  private AuthorityParsedContent getAuthorityParsedRecordContentWithInvalidNaturalIdPrefix(UUID authorityId,
+                                                                                           String authorityField,
+                                                                                           Map<String,
+                                                                                           List<String>> subfields) {
     var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
     return new AuthorityParsedContent(authorityId, NATURAL_ID_WITH_INVALID_PREFIX, "", List.of(field));
   }
