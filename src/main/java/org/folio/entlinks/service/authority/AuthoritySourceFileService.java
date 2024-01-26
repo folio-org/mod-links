@@ -235,7 +235,7 @@ public class AuthoritySourceFileService {
   }
 
   private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
-    if (existing.getHridStartNumber().equals(modified.getHridStartNumber())) {
+    if (Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())) {
       return;
     }
 
