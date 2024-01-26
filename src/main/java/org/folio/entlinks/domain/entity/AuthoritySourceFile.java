@@ -99,8 +99,9 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
       .stream()
       .map(AuthoritySourceFileCode::new)
       .collect(java.util.stream.Collectors.toSet());
-    Optional.ofNullable(other.authorities).orElse(Set.of())
-        .forEach(authority -> authority.setAuthoritySourceFile(this));
+    this.authorities = Optional.ofNullable(other.authorities)
+        .map(LinkedHashSet::new)
+        .orElse(new LinkedHashSet<>());
     this.sequenceName = other.sequenceName;
     this.selectable = other.selectable;
     this.hridStartNumber = other.hridStartNumber;
