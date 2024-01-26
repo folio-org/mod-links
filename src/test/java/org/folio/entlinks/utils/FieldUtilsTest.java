@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class FieldUtilsTest {
 
   private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
-  private static final String NATURAL_ID = "12345";
+  private static final String NATURAL_ID = "n12345";
 
   @Test
   void shouldTrimSubfield0Value() {
