@@ -38,6 +38,7 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -199,9 +200,12 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters().get(0).getValue()).contains(code1.getCode()).contains(code2.getCode());
   }
 
-  @Test
-  void shouldUpdateAuthoritySourceFileModifiableFields() {
+  @NullSource
+  @ValueSource(ints = 0)
+  @ParameterizedTest
+  void shouldUpdateAuthoritySourceFileModifiableFields(Integer existingHridStartNumber) {
     var existing = authoritySourceFile(0);
+    existing.setHridStartNumber(existingHridStartNumber);
     var id = existing.getId();
     var modified = authoritySourceFile(1);
     modified.setId(id);
