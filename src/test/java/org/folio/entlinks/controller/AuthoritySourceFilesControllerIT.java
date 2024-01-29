@@ -2,8 +2,10 @@ package org.folio.entlinks.controller;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
+import static org.folio.support.TestDataUtils.AuthorityTestData.authorityDto;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
+import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.folio.support.base.TestConstants.authoritySourceFilesEndpoint;
 import static org.folio.support.base.TestConstants.authoritySourceFilesHridEndpoint;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -24,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
@@ -52,7 +55,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @IntegrationTest
-@DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
+@DatabaseCleanup(tables = {
+  DatabaseHelper.AUTHORITY_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE}
+)
 class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
@@ -327,6 +334,37 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     var resultDto = objectMapper.readValue(content, AuthoritySourceFileDto.class);
 
     assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(partiallyModified.getCodes())));
+  }
+
+  @Test
+  @DisplayName("PATCH: partially update Authority Source File with reference in Authority")
+  void updateAuthoritySourceFilePartially_positive_whenAuthorityReferenced() throws Exception {
+    var createDto = new AuthoritySourceFilePostDto("name", "codeXXX").type("type").baseUrl("http://url");
+    var partiallyModified = new AuthoritySourceFilePatchDto()
+        .version(1)
+        .baseUrl("http://url.upd");
+
+    var created = doPostAndReturn(authoritySourceFilesEndpoint(), createDto, AuthoritySourceFileDto.class);
+    var authorityPostDto = authorityDto(0, 0);
+    authorityPostDto.setSourceFileId(created.getId());
+    doPost(authorityEndpoint(), authorityPostDto, AuthorityDto.class)
+        .andExpect(status().isCreated());
+
+    doPatch(authoritySourceFilesEndpoint(created.getId()), partiallyModified)
+      .andExpect(status().isNoContent());
+
+    var content = doGet(authoritySourceFilesEndpoint(created.getId()))
+      .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
+      .andExpect(jsonPath("codes", hasSize(1)))
+      .andExpect(jsonPath("_version", is(1)))
+      .andExpect(jsonPath("metadata.createdDate", notNullValue()))
+      .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
+      .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
+      .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)))
+      .andReturn().getResponse().getContentAsString();
+    var resultDto = objectMapper.readValue(content, AuthoritySourceFileDto.class);
+
+    assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(created.getCodes())));
   }
 
   @Test
