@@ -233,7 +233,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       .contains(XOkapiHeaders.TENANT, XOkapiHeaders.URL, XOkapiHeaders.TOKEN);
 
     var value = received.value();
-    var expectedSubfieldChange = subfieldChange("0", updatedNaturalId);
+    var expectedSubfieldChange = subfieldChange("0", BASE_URL + updatedNaturalId);
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());
