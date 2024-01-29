@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -37,6 +38,8 @@ public class AuthorityBase extends MetadataEntity {
   public static final String IDENTIFIERS_COLUMN = "identifiers";
   public static final String NOTES_COLUMN = "notes";
   public static final String DELETED_COLUMN = "deleted";
+
+  private static final String CONSORTIUM_SOURCE_PREFIX = "CONSORTIUM-";
 
   @Id
   @Column(name = ID_COLUMN, nullable = false)
@@ -110,5 +113,13 @@ public class AuthorityBase extends MetadataEntity {
         .map(AuthorityNote::new)
         .toList();
     this.deleted = other.deleted;
+  }
+
+  public void makeAsConsortiumShadowCopy() {
+    this.setSource(StringUtils.prependIfMissing(this.getSource(), CONSORTIUM_SOURCE_PREFIX));
+  }
+
+  public boolean isConsortiumShadowCopy() {
+    return this.getSource() != null && this.getSource().startsWith(CONSORTIUM_SOURCE_PREFIX);
   }
 }
