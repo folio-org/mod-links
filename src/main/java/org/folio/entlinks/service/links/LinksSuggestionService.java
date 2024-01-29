@@ -186,7 +186,7 @@ public class LinksSuggestionService {
 
   private String getSubfieldZeroValue(AuthorityParsedContent authority) {
     var sourceFileId = authority.getSourceFileId();
-    if(isNull(sourceFileId)) {
+    if (isNull(sourceFileId)) {
       return authority.getNaturalId();
     }
 
