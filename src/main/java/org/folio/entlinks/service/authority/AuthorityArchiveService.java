@@ -76,7 +76,7 @@ public class AuthorityArchiveService implements AuthorityServiceI<AuthorityArchi
 
   @Override
   public Authority update(Authority modified, boolean forced) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -87,7 +87,7 @@ public class AuthorityArchiveService implements AuthorityServiceI<AuthorityArchi
 
   @Override
   public Authority update(Authority modified, boolean forced, BiConsumer<Authority, Authority> authorityConsumer) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -104,11 +104,16 @@ public class AuthorityArchiveService implements AuthorityServiceI<AuthorityArchi
 
   @Override
   public void deleteById(UUID id, boolean forced) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteById(UUID id, Consumer<AuthorityArchive> authorityCallback) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteById(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
     throw new UnsupportedOperationException();
   }
 

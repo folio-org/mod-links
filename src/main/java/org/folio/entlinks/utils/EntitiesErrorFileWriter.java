@@ -13,14 +13,12 @@ public class EntitiesErrorFileWriter implements AutoCloseable {
   private final BufferedWriter errorsFileWriter;
   private final ObjectMapper objectMapper;
 
-  public EntitiesErrorFileWriter(File errorEntitiesFileName, File errorsFileName, ObjectMapper objectMapper) {
-    try {
-      errorEntitiesFileWriter = new BufferedWriter(new FileWriter(errorEntitiesFileName));
-      errorsFileWriter = new BufferedWriter(new FileWriter(errorsFileName));
-      this.objectMapper = objectMapper;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public EntitiesErrorFileWriter(File errorEntitiesFileName, File errorsFileName, ObjectMapper objectMapper)
+    throws IOException {
+    errorEntitiesFileWriter = new BufferedWriter(new FileWriter(errorEntitiesFileName));
+    errorsFileWriter = new BufferedWriter(new FileWriter(errorsFileName));
+    this.objectMapper = objectMapper;
+
   }
 
   public <T> void write(T entity, Exception ex, Function<T, String> entityIdentifierGetter) throws IOException {

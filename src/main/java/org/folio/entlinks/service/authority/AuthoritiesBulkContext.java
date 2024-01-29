@@ -48,9 +48,9 @@ public class AuthoritiesBulkContext {
     return "temp/" + errorsFilePath;
   }
 
-  public void deleteLocalFiles() {
-    localErrorsFile.delete();
-    localFailedEntitiesFile.delete();
+  public void deleteLocalFiles() throws IOException {
+    Files.deleteIfExists(localErrorsFile.toPath());
+    Files.deleteIfExists(localFailedEntitiesFile.toPath());
   }
 
   private File initLocalFailedEntitiesFile() throws IOException {

@@ -8,7 +8,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.folio.entlinks.domain.entity.Authority;
 import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface AuthorityServiceI<T> {
@@ -25,25 +24,33 @@ public interface AuthorityServiceI<T> {
 
   T create(T entity, Consumer<T> authorityCallback);
 
+  @Transactional
   T update(T modified);
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   Authority update(Authority modified, boolean forced);
 
+  @Transactional
   T update(T modified, BiConsumer<T, T> authorityCallback);
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   Authority update(Authority modified, boolean forced,
                    BiConsumer<Authority, Authority> authorityConsumer);
 
+  @Transactional
   List<T> upsert(List<T> entities, Consumer<T> authorityCreateCallback, BiConsumer<T, T> authorityUpdateCallback);
 
+  @Transactional
   void deleteById(UUID id);
 
   @Transactional
   void deleteById(UUID id, boolean forced);
 
+  @Transactional
   void deleteById(UUID id, Consumer<T> authorityCallback);
+
+  @Transactional
+  void deleteById(UUID id, boolean forced, Consumer<Authority> authorityCallback);
 
   void deleteByIds(Collection<UUID> ids);
 }

@@ -25,7 +25,6 @@ import org.folio.spring.data.OffsetRequest;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Log4j2
@@ -73,63 +72,42 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
   }
 
   @Override
-  @Transactional
   public Authority create(Authority entity) {
-    return create(entity, null);
+    return createInner(entity, null);
+  }
+
+  @Override
+  public Authority create(Authority entity, Consumer<Authority> authorityCallback) {
+    return createInner(entity, authorityCallback);
   }
 
   @Override
   @Transactional
-  public Authority create(Authority entity, Consumer<Authority> authorityCallback) {
-    log.debug("create:: Attempting to create Authority [entity: {}]", entity);
-    initId(entity);
-    var saved = repository.save(entity);
-
-    if (authorityCallback != null) {
-      authorityCallback.accept(saved);
-    }
-    return saved;
-  }
-
-  @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public Authority update(Authority modified) {
-    return update(modified, false, null);
+    return updateInner(modified, false, null);
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public Authority update(Authority modified, boolean forced) {
-    return update(modified, forced, null);
+    return updateInner(modified, forced, null);
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public Authority update(Authority modified, BiConsumer<Authority, Authority> authorityConsumer) {
-    return update(modified, false, authorityConsumer);
+    return updateInner(modified, false, authorityConsumer);
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public Authority update(Authority modified, boolean forced,
                           BiConsumer<Authority, Authority> authorityConsumer) {
-    log.debug("update:: Attempting to update Authority [authority: {}]", modified);
-    var id = modified.getId();
-    var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
-    var detachedExisting = new Authority(existing);
-    olCheck(modified, existing, id);
-
-    copyModifiableFields(existing, modified);
-
-    var saved = repository.save(existing);
-    if (authorityConsumer != null) {
-      authorityConsumer.accept(saved, detachedExisting);
-    }
-    return saved;
+    return updateInner(modified, forced, authorityConsumer);
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public List<Authority> upsert(List<Authority> authorities, Consumer<Authority> authorityCreateCallback,
                                 BiConsumer<Authority, Authority> authorityUpdateCallback) {
     var existingRecordsMap = getAllByIds(authorities.stream().map(Authority::getId).toList());
@@ -156,18 +134,12 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     }
 
     if (authorityUpdateCallback != null) {
-      for (UUID uuid : existingRecordsMap.keySet()) {
-        authorityUpdateCallback.accept(existingRecordsMap.get(uuid), detachedExistingRecordsMap.get(uuid));
+      for (var entry : existingRecordsMap.entrySet()) {
+        authorityUpdateCallback.accept(entry.getValue(), detachedExistingRecordsMap.get(entry.getKey()));
       }
     }
 
     return result;
-  }
-
-  private static void olCheck(Authority modified, Authority existing, UUID id) {
-    if (modified.getVersion() < existing.getVersion()) {
-      throw OptimisticLockingException.optimisticLockingOnUpdate(id, existing.getVersion(), modified.getVersion());
-    }
   }
 
   /**
@@ -178,22 +150,67 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
   @Override
   @Transactional
   public void deleteById(UUID id) {
-    deleteById(id, false, null);
+    deleteByIdInner(id, false, null);
   }
 
   @Override
   @Transactional
   public void deleteById(UUID id, boolean forced) {
-    deleteById(id, forced, null);
+    deleteByIdInner(id, forced, null);
   }
 
   @Override
   @Transactional
   public void deleteById(UUID id, Consumer<Authority> authorityCallback) {
-    deleteById(id, false, authorityCallback);
+    deleteByIdInner(id, false, authorityCallback);
   }
 
+  @Override
+  @Transactional
   public void deleteById(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
+    deleteByIdInner(id, forced, authorityCallback);
+  }
+
+  /**
+   * Performs hard-delete of {@link Authority} records.
+   *
+   * @param ids collection of authority record ids of {@link UUID} type
+   */
+  @Override
+  @Transactional
+  public void deleteByIds(Collection<UUID> ids) {
+    repository.deleteAllByIdInBatch(ids);
+  }
+
+  protected Authority createInner(Authority entity, Consumer<Authority> authorityCallback) {
+    log.debug("create:: Attempting to create Authority [entity: {}]", entity);
+    initId(entity);
+    var saved = repository.save(entity);
+
+    if (authorityCallback != null) {
+      authorityCallback.accept(saved);
+    }
+    return saved;
+  }
+
+  protected Authority updateInner(Authority modified, boolean forced,
+                                  BiConsumer<Authority, Authority> authorityConsumer) {
+    log.debug("update:: Attempting to update Authority [authority: {}]", modified);
+    var id = modified.getId();
+    var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
+    var detachedExisting = new Authority(existing);
+    olCheck(modified, existing, id);
+
+    copyModifiableFields(existing, modified);
+
+    var saved = repository.save(existing);
+    if (authorityConsumer != null) {
+      authorityConsumer.accept(saved, detachedExisting);
+    }
+    return saved;
+  }
+
+  protected void deleteByIdInner(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
     log.debug("deleteById:: Attempt to delete Authority by [id: {}]", id);
 
     var existed = repository.findByIdAndDeletedFalse(id)
@@ -207,15 +224,10 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     repository.save(existed);
   }
 
-  /**
-   * Performs hard-delete of {@link Authority} records.
-   *
-   * @param ids collection of authority record ids of {@link UUID} type
-   */
-  @Override
-  @Transactional
-  public void deleteByIds(Collection<UUID> ids) {
-    repository.deleteAllByIdInBatch(ids);
+  private static void olCheck(Authority modified, Authority existing, UUID id) {
+    if (modified.getVersion() < existing.getVersion()) {
+      throw OptimisticLockingException.optimisticLockingOnUpdate(id, existing.getVersion(), modified.getVersion());
+    }
   }
 
   private void copyModifiableFields(Authority existing, Authority modified) {
@@ -238,5 +250,4 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
         existing.setAuthoritySourceFile(sourceFile);
       }, () -> existing.setAuthoritySourceFile(null));
   }
-
 }

@@ -15,7 +15,7 @@ public abstract class AuthorityBaseCqlRepositoryImpl<T extends AuthorityBase> im
   private final EntityManager em;
   private final Cql2JpaCriteria<T> cql2JpaCriteria;
 
-  public AuthorityBaseCqlRepositoryImpl(EntityManager em) {
+  protected AuthorityBaseCqlRepositoryImpl(EntityManager em) {
     this.em = em;
     this.cql2JpaCriteria = new Cql2JpaCriteria<>(getClassType(), em);
   }
