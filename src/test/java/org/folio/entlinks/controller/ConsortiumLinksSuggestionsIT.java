@@ -64,7 +64,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
     sourceFile.setBaseUrl(BASE_URL);
     var sourceFileCode1 = sourceFile.getAuthoritySourceFileCodes().iterator().next();
     var sourceFileCode2 = new AuthoritySourceFileCode();
-    sourceFileCode1.setCode(NATURAL_ID.substring(0, 3));
+    sourceFileCode1.setCode("n");
     sourceFileCode2.setAuthoritySourceFile(sourceFile);
     sourceFileCode2.setCode(NATURAL_ID.substring(0, 2));
     sourceFile.addCode(sourceFileCode2);

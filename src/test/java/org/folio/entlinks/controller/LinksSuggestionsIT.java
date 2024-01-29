@@ -58,7 +58,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var sourceFileCode2 = new AuthoritySourceFileCode();
     sourceFileCode1.setCode(NATURAL_ID.substring(0, 3));
     sourceFileCode2.setAuthoritySourceFile(sourceFile);
-    sourceFileCode2.setCode(NATURAL_ID.substring(0, 2));
+    sourceFileCode2.setCode("n");
     var sourceFileCode3 = new AuthoritySourceFileCode();
     sourceFileCode3.setAuthoritySourceFile(sourceFile);
     sourceFileCode3.setCode(NATURAL_ID_FOR_T_SUBFIELD.substring(0, 2));

@@ -59,8 +59,9 @@ public interface SourceContentMapper {
     var naturalId = extractNaturalId(authorities, authorityId);
     var leader = parsedRecord.getParsedRecord().getContent().getLeader();
     var fields = convertFieldsToOneMap(parsedRecord.getParsedRecord().getContent().getFields());
+    var sourceFileId = extractSourceFileId(authorities, authorityId);
 
-    return new AuthorityParsedContent(authorityId, naturalId, leader, fields);
+    return new AuthorityParsedContent(authorityId, naturalId, leader, fields, sourceFileId);
   }
 
   private List<Map<String, FieldContent>> convertFieldsToListOfMaps(List<FieldParsedContent> fields) {
@@ -120,4 +121,13 @@ public interface SourceContentMapper {
       .findAny()
       .orElse(null);
   }
+
+  private UUID extractSourceFileId(List<Authority> authorities, UUID authorityId) {
+    return authorities.stream()
+        .filter(authority -> authorityId.equals(authority.getId()))
+        .map(authority -> authority.getAuthoritySourceFile().getId())
+        .findAny()
+        .orElse(null);
+  }
+
 }
