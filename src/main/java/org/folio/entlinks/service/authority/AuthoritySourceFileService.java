@@ -14,8 +14,8 @@ import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
-import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
+import org.folio.entlinks.domain.repository.authority.AuthorityRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
@@ -86,9 +86,9 @@ public class AuthoritySourceFileService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Retryable(
-      retryFor = OptimisticLockingException.class,
-      maxAttempts = 2,
-      backoff = @Backoff(delay = 500))
+    retryFor = OptimisticLockingException.class,
+    maxAttempts = 2,
+    backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
     log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
 
@@ -100,7 +100,7 @@ public class AuthoritySourceFileService {
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (modified.getVersion() < existingEntity.getVersion()) {
       throw OptimisticLockingException.optimisticLockingOnUpdate(
-          id, existingEntity.getVersion(), modified.getVersion());
+        id, existingEntity.getVersion(), modified.getVersion());
     }
 
     updateSequenceStartNumber(existingEntity, modified);
@@ -152,7 +152,7 @@ public class AuthoritySourceFileService {
   private void validateOnCreate(AuthoritySourceFile entity) {
     if (AuthoritySourceFileSource.FOLIO.equals(entity.getSource())) {
       throw new RequestBodyValidationException("Authority Source File with source folio cannot be created",
-          List.of(new Parameter("source").value(entity.getSource().name())));
+        List.of(new Parameter("source").value(entity.getSource().name())));
     }
 
     if (entity.getAuthoritySourceFileCodes().size() != 1) {
@@ -215,7 +215,7 @@ public class AuthoritySourceFileService {
     var sequenceName = existing.getSequenceName();
     var startNumber = (int) modified.getHridStartNumber();
     var command = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
-        sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+      sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
     jdbcTemplate.execute(command);
   }
 

@@ -10,6 +10,7 @@ import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_
 import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_SEQUENCE;
 import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_URL;
 import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_NOTE_TYPE_NAME;
+import static org.folio.entlinks.config.constants.ErrorCode.NOT_EXISTED_AUTHORITY_SOURCE_FILE;
 import static org.folio.entlinks.config.constants.ErrorCode.VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_AND_SOURCE_FILE;
 import static org.folio.entlinks.exception.type.ErrorType.UNKNOWN_ERROR;
 import static org.folio.entlinks.exception.type.ErrorType.VALIDATION_ERROR;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.folio.entlinks.config.constants.ErrorCode;
+import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.OptimisticLockingException;
@@ -34,6 +36,7 @@ import org.folio.entlinks.exception.type.ErrorType;
 import org.folio.tenant.domain.dto.Error;
 import org.folio.tenant.domain.dto.Errors;
 import org.folio.tenant.domain.dto.Parameter;
+import org.hibernate.TransientPropertyValueException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -152,6 +155,16 @@ public class ApiErrorHandler {
       var constraintName = cve.getConstraintName();
       var errorCode = CONSTRAINS_I18N_MAP.get(constraintName);
       return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
+    } else if (cause instanceof IllegalStateException ise) {
+      var innerCause = ise.getCause();
+      if (innerCause instanceof TransientPropertyValueException tpve) {
+        var propertyName = tpve.getPropertyName();
+        var transientEntityName = tpve.getTransientEntityName();
+        if (AuthoritySourceFile.class.getName().equals(transientEntityName)
+            && "authoritySourceFile".equals(propertyName)) {
+          return buildResponseEntity(NOT_EXISTED_AUTHORITY_SOURCE_FILE, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
+        }
+      }
     }
     return buildResponseEntity(e, BAD_REQUEST, VALIDATION_ERROR);
   }

@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.controller.delegate.AuthorityArchiveServiceDelegate;
 import org.folio.entlinks.controller.delegate.AuthorityServiceDelegate;
-import org.folio.entlinks.domain.dto.AuthorityBulkCreateRequest;
-import org.folio.entlinks.domain.dto.AuthorityBulkCreateResponse;
+import org.folio.entlinks.domain.dto.AuthorityBulkRequest;
+import org.folio.entlinks.domain.dto.AuthorityBulkResponse;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
@@ -43,7 +43,7 @@ public class AuthorityController implements AuthorityStorageApi {
   }
 
   @Override
-  public ResponseEntity<AuthorityBulkCreateResponse> createAuthorityBulk(AuthorityBulkCreateRequest createRequest) {
+  public ResponseEntity<AuthorityBulkResponse> createAuthorityBulk(AuthorityBulkRequest createRequest) {
     return ResponseEntity.ok(delegate.createAuthorities(createRequest));
   }
 

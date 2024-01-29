@@ -10,9 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
-import org.folio.entlinks.domain.dto.AuthorityBulkCreateRequest;
+import org.folio.entlinks.domain.dto.AuthorityBulkRequest;
 import org.folio.s3.client.FolioS3Client;
+import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
+import org.folio.support.DatabaseHelper;
 import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 
 @IntegrationTest
+@DatabaseCleanup(tables = {
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
+  DatabaseHelper.AUTHORITY_DATA_STAT_TABLE,
+  DatabaseHelper.AUTHORITY_TABLE,
+  DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
 class AuthorityBulkIT extends IntegrationTestBase {
 
   private @Autowired FolioS3Client s3Client;
@@ -36,7 +43,7 @@ class AuthorityBulkIT extends IntegrationTestBase {
   void createAuthority_positive_entityCreatedWithProvidedId() throws Exception {
     var resource = loader.getResource("classpath:test-data/authorities/bulkAuthorities");
     var filename = s3Client.write("parentLocation/filePath/fileName", resource.getInputStream());
-    var dto = new AuthorityBulkCreateRequest(filename);
+    var dto = new AuthorityBulkRequest(filename);
 
     tryPost(authorityEndpoint() + "/bulk", dto)
       .andExpect(status().isOk())

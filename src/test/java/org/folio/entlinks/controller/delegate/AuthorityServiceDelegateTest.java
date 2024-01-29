@@ -6,26 +6,28 @@ import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropag
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import java.util.UUID;
-import org.assertj.core.api.Assertions;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.Authority;
-import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthorityService;
+import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.testing.type.UnitTest;
-import org.folio.tenant.domain.dto.Parameter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,8 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AuthorityServiceDelegateTest {
 
-  public static final String CONSORTIUM_SOURCE = "CONSORTIUM-MARC";
-
   private final ArgumentCaptor<AuthorityDto> captor = ArgumentCaptor.forClass(AuthorityDto.class);
   @Mock
   private AuthorityService service;
@@ -51,12 +51,15 @@ class AuthorityServiceDelegateTest {
   private FolioExecutionContext context;
   @Mock
   private ConsortiumAuthorityPropagationService propagationService;
+  @Mock
+  private UserTenantsService userTenantsService;
   @InjectMocks
   private AuthorityServiceDelegate delegate;
 
   @BeforeEach
   void setUp() {
     lenient().when(context.getTenantId()).thenReturn(TENANT_ID);
+    lenient().when(userTenantsService.getCentralTenant(any())).thenReturn(Optional.empty());
   }
 
   @Test
@@ -68,7 +71,13 @@ class AuthorityServiceDelegateTest {
     var expectedDto = new AuthorityDto().id(id);
     var dto = new AuthorityDto().id(id);
     when(mapper.toEntity(any(AuthorityDto.class))).thenReturn(entity);
-    when(service.create(entity)).thenReturn(entity);
+    when(service.create(eq(entity), any())).thenAnswer(invocation -> {
+      var authority = (Authority) invocation.getArgument(0);
+      @SuppressWarnings("unchecked")
+      var authorityConsumer = (Consumer<Authority>) invocation.getArgument(1);
+      authorityConsumer.accept(authority);
+      return authority;
+    });
     doNothing().when(propagationService).propagate(entity, CREATE, TENANT_ID);
     when(mapper.toDto(any(Authority.class))).thenReturn(expectedDto);
 
@@ -95,9 +104,14 @@ class AuthorityServiceDelegateTest {
     var newDto = new AuthorityDto().id(id);
 
     when(mapper.toEntity(modificationDto)).thenReturn(modifiedEntity);
-    when(service.getById(id)).thenReturn(existingEntity);
     when(mapper.toDto(any(Authority.class))).thenReturn(oldDto).thenReturn(newDto);
-    when(service.update(id, modifiedEntity)).thenReturn(modifiedEntity);
+    when(service.update(eq(modifiedEntity), any())).thenAnswer(invocation -> {
+      var authority = (Authority) invocation.getArgument(0);
+      @SuppressWarnings("unchecked")
+      var authorityConsumer = (BiConsumer<Authority, Authority>) invocation.getArgument(1);
+      authorityConsumer.accept(authority, authority);
+      return authority;
+    });
     doNothing().when(propagationService).propagate(modifiedEntity, UPDATE, TENANT_ID);
     var captor2 = ArgumentCaptor.forClass(AuthorityDto.class);
 
@@ -108,8 +122,7 @@ class AuthorityServiceDelegateTest {
     verify(eventPublisher).publishUpdateEvent(captor.capture(), captor2.capture());
     assertEquals(oldDto, captor.getValue());
     assertEquals(newDto, captor2.getValue());
-    verify(service).getById(id);
-    verify(service).update(any(UUID.class), any(Authority.class));
+    verify(service).update(any(Authority.class), any());
     verifyNoMoreInteractions(service);
     verify(mapper, times(2)).toDto(any(Authority.class));
     verify(mapper).toEntity(any(AuthorityDto.class));
@@ -124,9 +137,13 @@ class AuthorityServiceDelegateTest {
     var entity = new Authority();
     entity.setId(id);
     var dto = new AuthorityDto().id(id);
-    when(service.getById(id)).thenReturn(entity);
     when(mapper.toDto(entity)).thenReturn(dto);
-    doNothing().when(service).deleteById(id);
+    doAnswer(invocation -> {
+      @SuppressWarnings("unchecked")
+      var authorityConsumer = (Consumer<Authority>) invocation.getArgument(1);
+      authorityConsumer.accept(entity);
+      return null;
+    }).when(service).deleteById(eq(id), any());
     doNothing().when(propagationService).propagate(entity, DELETE, TENANT_ID);
 
     // when
@@ -135,55 +152,10 @@ class AuthorityServiceDelegateTest {
     // then
     verify(eventPublisher).publishSoftDeleteEvent(captor.capture());
     assertEquals(dto, captor.getValue());
-    verify(service).getById(id);
-    verify(service).deleteById(id);
+    verify(service).deleteById(eq(id), any());
     verifyNoMoreInteractions(service);
     verify(mapper).toDto(any(Authority.class));
     verify(propagationService).propagate(entity, DELETE, TENANT_ID);
   }
 
-  @Test
-  void shouldNotUpdateConsortiumShadowCopyAuthority() {
-    // given
-    var id = UUID.randomUUID();
-    var entity = new Authority();
-    entity.setId(id);
-    entity.setSource(CONSORTIUM_SOURCE);
-    var expectedParam = new Parameter("id").value(id.toString());
-    when(service.getById(id)).thenReturn(entity);
-
-    // then
-    Assertions.assertThatThrownBy(() -> delegate.updateAuthority(id, null))
-        .isInstanceOf(RequestBodyValidationException.class)
-        .hasMessage("UPDATE is not applicable to consortium shadow copy")
-        .extracting(ex -> (RequestBodyValidationException) ex)
-        .matches(ex -> ex.getInvalidParameters().get(0).equals(expectedParam));
-    verify(mapper, times(1)).toEntity(any());
-    verifyNoMoreInteractions(mapper);
-    verifyNoMoreInteractions(service);
-    verifyNoInteractions(eventPublisher);
-    verifyNoInteractions(propagationService);
-  }
-
-  @Test
-  void shouldNotDeleteConsortiumShadowCopyAuthority() {
-    // given
-    var id = UUID.randomUUID();
-    var entity = new Authority();
-    entity.setId(id);
-    entity.setSource(CONSORTIUM_SOURCE);
-    var expectedParam = new Parameter("id").value(id.toString());
-    when(service.getById(id)).thenReturn(entity);
-
-    // then
-    Assertions.assertThatThrownBy(() -> delegate.deleteAuthorityById(id))
-        .isInstanceOf(RequestBodyValidationException.class)
-        .hasMessage("DELETE is not applicable to consortium shadow copy")
-        .extracting(ex -> (RequestBodyValidationException) ex)
-        .matches(ex -> ex.getInvalidParameters().get(0).equals(expectedParam));
-    verifyNoInteractions(mapper);
-    verifyNoMoreInteractions(service);
-    verifyNoInteractions(eventPublisher);
-    verifyNoInteractions(propagationService);
-  }
 }

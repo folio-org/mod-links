@@ -12,8 +12,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthorityBase;
-import org.folio.entlinks.domain.entity.projection.AuthorityIdDto;
-import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
+import org.folio.entlinks.domain.repository.authority.AuthorityArchiveRepository;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
@@ -36,13 +35,13 @@ public class AuthorityArchiveServiceDelegate {
   public AuthorityDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
                                                           Boolean idOnly) {
     if (Boolean.TRUE.equals(idOnly)) {
-      var entities = authorityArchiveService.findAllIds(offset, limit, cqlQuery)
-          .map(AuthorityIdDto::id).map(id -> new AuthorityDto().id(id)).stream().toList();
+      var entities = authorityArchiveService.getAllIds(offset, limit, cqlQuery)
+        .map(id -> new AuthorityDto().id(id)).stream().toList();
       return new AuthorityDtoCollection(entities, entities.size());
     }
 
-    var entitiesPage = authorityArchiveService.findAll(offset, limit, cqlQuery)
-        .map(AuthorityBase.class::cast);
+    var entitiesPage = authorityArchiveService.getAll(offset, limit, cqlQuery)
+      .map(AuthorityBase.class::cast);
     return authorityMapper.toAuthorityCollection(entitiesPage);
   }
 
@@ -82,12 +81,12 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     return expireSetting
-        .map(SettingsClient.SettingEntry::value)
-        .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
-        .or(() -> {
-          log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
-              authorityArchiveProperties.getRetentionPeriodInDays());
-          return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
-        });
+      .map(SettingsClient.SettingEntry::value)
+      .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
+      .or(() -> {
+        log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
+          authorityArchiveProperties.getRetentionPeriodInDays());
+        return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
+      });
   }
 }
