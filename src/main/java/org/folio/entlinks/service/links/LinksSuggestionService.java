@@ -181,12 +181,6 @@ public class LinksSuggestionService {
         .map(AuthoritySourceFileCode::getAuthoritySourceFile)
         .map(sourceFile -> getSubfield0Value(authority.getNaturalId(), sourceFile))
         .orElse(authority.getNaturalId());
-
-    // 1. idOfSourceFile = authority.getSourceFileId()
-    // 2. sourceFile = repositorry.getById()
-    // 3. fetch all codes
-    // 4. codes.stream().filter(code.equals(prefix))
-
     bibSubfields.put("0", List.of(zeroValue));
     bibSubfields.put("9", List.of(authority.getId().toString()));
 
