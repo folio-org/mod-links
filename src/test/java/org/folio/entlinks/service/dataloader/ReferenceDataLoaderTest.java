@@ -9,14 +9,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthorityNoteType;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.repository.AuthorityNoteTypeRepository;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.service.authority.AuthorityNoteTypeService;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,29 +33,27 @@ class ReferenceDataLoaderTest {
 
   private final AuthorityNoteTypeService noteTypeService = mock(AuthorityNoteTypeService.class);
 
-  private final AuthorityNoteTypeRepository noteTypeRepository = mock(AuthorityNoteTypeRepository.class);
+  private final AuthoritySourceFileService sourceFileService = mock(AuthoritySourceFileService.class);
 
-  private final AuthoritySourceFileRepository sourceFileRepository = mock(AuthoritySourceFileRepository.class);
-
-  private final ReferenceDataLoader referenceDataLoader = new ReferenceDataLoader(noteTypeService,
-      noteTypeRepository, sourceFileRepository, sourceFileMapper, OBJECT_MAPPER);
+  private final ReferenceDataLoader referenceDataLoader =
+      new ReferenceDataLoader(noteTypeService, sourceFileService, sourceFileMapper, OBJECT_MAPPER);
 
   @Test
   void shouldLoadReferenceData() {
-    when(noteTypeRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+    when(noteTypeService.findById(any(UUID.class))).thenReturn(null);
     when(noteTypeService.create(any(AuthorityNoteType.class))).thenAnswer(i -> i.getArguments()[0]);
-    when(sourceFileRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
-    when(sourceFileRepository.save(any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[0]);
+    when(sourceFileService.findById(any(UUID.class))).thenReturn(null);
+    when(sourceFileService.create(any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[0]);
 
     referenceDataLoader.loadRefData();
 
-    verify(noteTypeRepository).findById(any(UUID.class));
-    verify(sourceFileRepository).findById(any(UUID.class));
+    verify(noteTypeService).findById(any(UUID.class));
+    verify(sourceFileService).findById(any(UUID.class));
 
     var noteTypeCaptor = ArgumentCaptor.forClass(AuthorityNoteType.class);
     var sourceFileCaptor = ArgumentCaptor.forClass(AuthoritySourceFile.class);
     verify(noteTypeService).create(noteTypeCaptor.capture());
-    verify(sourceFileRepository).save(sourceFileCaptor.capture());
+    verify(sourceFileService).create(sourceFileCaptor.capture());
 
     var loadedNoteType = noteTypeCaptor.getValue();
     assertNotNull(loadedNoteType.getId());
@@ -78,7 +74,7 @@ class ReferenceDataLoaderTest {
 
   @Test
   void shouldHandleExceptionInLoadRefData() {
-    when(noteTypeRepository.findById(any(UUID.class))).thenThrow(new RuntimeException("Unable to load reference data"));
+    when(noteTypeService.findById(any(UUID.class))).thenThrow(new RuntimeException("Unable to load reference data"));
 
     var exception = Assertions.assertThrows(IllegalStateException.class, referenceDataLoader::loadRefData);
 
