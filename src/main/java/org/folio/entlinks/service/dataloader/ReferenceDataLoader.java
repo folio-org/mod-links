@@ -3,15 +3,15 @@ package org.folio.entlinks.service.dataloader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.entity.AuthorityNoteType;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.repository.AuthorityNoteTypeRepository;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.service.authority.AuthorityNoteTypeService;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,7 @@ public class ReferenceDataLoader {
     new PathMatchingResourcePatternResolver(ReferenceDataLoader.class.getClassLoader());
 
   private final AuthorityNoteTypeService noteTypeService;
-  private final AuthorityNoteTypeRepository noteTypeRepository;
-  private final AuthoritySourceFileRepository sourceFileRepository;
+  private final AuthoritySourceFileService sourceFileService;
   private final AuthoritySourceFileMapper sourceFileMapper;
   private final ObjectMapper mapper;
 
@@ -72,14 +71,14 @@ public class ReferenceDataLoader {
     }
   }
 
-  private void createAuthoritySourceFile(AuthoritySourceFile entity) {
-    log.debug("create:: Attempting to create AuthoritySourceFile [entity: {}]", entity);
+  private void createAuthoritySourceFile(AuthoritySourceFile sourceFile) {
+    log.debug("create:: Attempting to create AuthoritySourceFile [entity: {}]", sourceFile);
 
-    for (var code : entity.getAuthoritySourceFileCodes()) {
-      code.setAuthoritySourceFile(entity);
+    for (var code : sourceFile.getAuthoritySourceFileCodes()) {
+      code.setAuthoritySourceFile(sourceFile);
     }
 
-    sourceFileRepository.save(entity);
+    sourceFileService.create(sourceFile);
   }
 
   private <T> T deserializeRecord(Class<T> resourceType, Resource res) {
@@ -106,12 +105,9 @@ public class ReferenceDataLoader {
       return null;
     }
 
-    var id = noteType.getId();
-    if (id != null) {
-      return noteTypeRepository.findById(id).orElse(null);
-    }
-
-    return noteTypeRepository.findByName(noteType.getName()).orElse(null);
+    return Optional.ofNullable(noteType.getId())
+        .map(noteTypeService::findById)
+        .orElseGet(() -> noteTypeService.findByName(noteType.getName()));
   }
 
   private AuthoritySourceFile getExistingSourceFile(AuthoritySourceFile sourceFile) {
@@ -119,11 +115,8 @@ public class ReferenceDataLoader {
       return null;
     }
 
-    var id = sourceFile.getId();
-    if (id != null) {
-      return sourceFileRepository.findById(id).orElse(null);
-    }
-
-    return sourceFileRepository.findByName(sourceFile.getName()).orElse(null);
+    return Optional.ofNullable(sourceFile.getId())
+        .map(sourceFileService::findById)
+        .orElseGet(() -> sourceFileService.findByName(sourceFile.getName()));
   }
 }

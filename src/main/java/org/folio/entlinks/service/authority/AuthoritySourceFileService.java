@@ -1,19 +1,17 @@
 package org.folio.entlinks.service.authority;
 
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
+import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
@@ -57,14 +55,45 @@ public class AuthoritySourceFileService {
     return repository.findByCql(cql, new OffsetRequest(offset, limit));
   }
 
+  /**
+   * Retrieves {@link AuthoritySourceFile} by the given id.
+   *
+   * @param id {@link UUID} ID of the authority source file being retrieved
+   * @return retrieved {@link AuthoritySourceFile}
+   *
+   *   Note: This method assumes the authority source file exists for the given ID and thus throws exception in case
+   *   no authority source file is found
+   */
   public AuthoritySourceFile getById(UUID id) {
     log.debug("getById:: Loading AuthoritySourceFile by ID [id: {}]", id);
 
     return repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
   }
 
-  public AuthoritySourceFile getByName(String name) {
-    log.debug("getById:: Loading AuthoritySourceFile by Name [name: {}]", name);
+  /**
+   * Searches for the Authority Source File for the given ID.
+   *
+   * @param id {@link UUID} ID of the authority source file being searched
+   * @return found {@link AuthoritySourceFile} instance or null if it is not found
+   */
+  public AuthoritySourceFile findById(UUID id) {
+    log.debug("findById:: Querying for AuthoritySourceFile by ID [id: {}]", id);
+
+    if (id == null) {
+      return null;
+    }
+
+    return repository.findById(id).orElse(null);
+  }
+
+  /**
+   * Searches for the Authority Source File for the given name.
+   *
+   * @param name Name of the authority source file being searched
+   * @return found {@link AuthoritySourceFile} instance or null if it is not found
+   */
+  public AuthoritySourceFile findByName(String name) {
+    log.debug("findById:: Querying for AuthoritySourceFile by name [name: {}]", name);
 
     if (StringUtils.isBlank(name)) {
       return null;
@@ -150,36 +179,34 @@ public class AuthoritySourceFileService {
   }
 
   private void validateOnCreate(AuthoritySourceFile entity) {
-    if (AuthoritySourceFileSource.FOLIO.equals(entity.getSource())) {
-      throw new RequestBodyValidationException("Authority Source File with source folio cannot be created",
-          List.of(new Parameter("source").value(entity.getSource().name())));
-    }
-
-    if (entity.getAuthoritySourceFileCodes().size() != 1) {
-      var codes = entity.getAuthoritySourceFileCodes().stream()
-        .map(AuthoritySourceFileCode::getCode)
-        .collect(Collectors.joining(","));
-      throw new RequestBodyValidationException("Authority Source File with source Local should have only one prefix",
-        List.of(new Parameter("code").value(codes)));
-    }
-
-    var code = entity.getAuthoritySourceFileCodes().iterator().next().getCode();
-    if (StringUtils.isBlank(code) || !StringUtils.isAlpha(code)) {
-      throw new RequestBodyValidationException("Authority Source File prefix should be non-empty sequence of letters",
-        List.of(new Parameter("code").value(code)));
+    for (var sourceFileCode : entity.getAuthoritySourceFileCodes()) {
+      var code = sourceFileCode.getCode();
+      if (StringUtils.isBlank(code) || !StringUtils.isAlpha(code)) {
+        throw new RequestBodyValidationException("Authority Source File prefix should be non-empty sequence of letters",
+            List.of(new Parameter("code").value(code)));
+      }
     }
   }
 
-  private void initOnCreate(AuthoritySourceFile entity) {
-    initId(entity);
+  private void initOnCreate(AuthoritySourceFile sourceFile) {
+    initId(sourceFile);
 
-    var sourceFileCode = entity.getAuthoritySourceFileCodes().iterator().next();
-    sourceFileCode.setAuthoritySourceFile(entity);
+    for (var code : sourceFile.getAuthoritySourceFileCodes()) {
+      code.setAuthoritySourceFile(sourceFile);
+    }
+
+    if (sourceFile.getSource() == LOCAL) {
+      initSourceFileSequenceFields(sourceFile);
+    }
+  }
+
+  private void initSourceFileSequenceFields(AuthoritySourceFile sourceFile) {
+    var sourceFileCode = sourceFile.getAuthoritySourceFileCodes().iterator().next();
     var sequenceName = String.format(AUTHORITY_SEQUENCE_NAME_TEMPLATE, sourceFileCode.getCode());
-    entity.setSequenceName(sequenceName);
+    sourceFile.setSequenceName(sequenceName);
 
-    if (entity.getHridStartNumber() == null) {
-      entity.setHridStartNumber(1);
+    if (sourceFile.getHridStartNumber() == null) {
+      sourceFile.setHridStartNumber(1);
     }
   }
 
