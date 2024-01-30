@@ -37,14 +37,45 @@ public class AuthorityNoteTypeService {
     return repository.findByCql(cql, new OffsetRequest(offset, limit));
   }
 
+  /**
+   * Retrieves {@link AuthorityNoteType} by the given id.
+   *
+   * @param id {@link UUID} of the authority note type being retrieved
+   * @return retrieved {@link AuthorityNoteType}
+   *
+   *   Note: This method assumes the authority note type exists for the given ID and thus throws exception in case
+   *   no authority note is found
+   */
   public AuthorityNoteType getById(UUID id) {
     log.debug("getById:: Loading Authority Note Type by ID [id: {}]", id);
 
     return repository.findById(id).orElseThrow(() -> new AuthorityNoteTypeNotFoundException(id));
   }
 
-  public AuthorityNoteType getByName(String name) {
-    log.debug("getById:: Loading Authority Note Type by Name [name: {}]", name);
+  /**
+   * Searches for the Authority Note Type for the given ID.
+   *
+   * @param id {@link UUID} ID of the authority note type being searched
+   * @return found {@link AuthorityNoteType} instance or null if it is not found
+   */
+  public AuthorityNoteType findById(UUID id) {
+    log.debug("getById:: Querying Authority Note Type by ID [id: {}]", id);
+
+    if (id == null) {
+      return null;
+    }
+
+    return repository.findById(id).orElse(null);
+  }
+
+  /**
+   * Searches for the Authority Note Type for the given name.
+   *
+   * @param name Name of the authority note type being searched
+   * @return found {@link AuthorityNoteType} instance or null if it is not found
+   */
+  public AuthorityNoteType findByName(String name) {
+    log.debug("getById:: Querying Authority Note Type by Name [name: {}]", name);
 
     if (StringUtils.isBlank(name)) {
       return null;
