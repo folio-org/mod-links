@@ -14,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.base.Identifiable;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Persistable;
@@ -27,8 +26,6 @@ import org.springframework.data.domain.Persistable;
 @ToString
 @Table(name = "authority")
 public class Authority extends AuthorityBase implements Persistable<UUID>, Identifiable<UUID> {
-
-  private static final String CONSORTIUM_SOURCE_PREFIX = "CONSORTIUM-";
 
   @Transient
   private boolean isNew = true;
@@ -58,14 +55,6 @@ public class Authority extends AuthorityBase implements Persistable<UUID>, Ident
   @PrePersist
   void markNotNew() {
     this.isNew = false;
-  }
-
-  public void makeAsConsortiumShadowCopy() {
-    this.setSource(StringUtils.prependIfMissing(this.getSource(), CONSORTIUM_SOURCE_PREFIX));
-  }
-
-  public boolean isConsortiumShadowCopy() {
-    return this.getSource() != null && this.getSource().startsWith(CONSORTIUM_SOURCE_PREFIX);
   }
 
   public static AuthorityBuilder builder() {
