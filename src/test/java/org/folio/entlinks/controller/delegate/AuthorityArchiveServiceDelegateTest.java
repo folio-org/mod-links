@@ -24,6 +24,9 @@ import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
+import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityArchivePropagationService;
+import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
+import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +54,13 @@ class AuthorityArchiveServiceDelegateTest {
   private AuthorityDomainEventPublisher eventPublisher;
 
   @Mock
+  private ConsortiumAuthorityArchivePropagationService propagationService;
+
+  @Mock
   private AuthorityMapper authorityMapper;
+
+  @Mock
+  private FolioExecutionContext context;
 
   @InjectMocks
   private AuthorityArchiveServiceDelegate delegate;
@@ -77,11 +86,14 @@ class AuthorityArchiveServiceDelegateTest {
     when(settingsService.getAuthorityExpireSetting()).thenReturn(Optional.empty());
     when(authorityArchiveProperties.getRetentionPeriodInDays()).thenReturn(7);
     when(authorityArchiveRepository.streamByUpdatedTillDate(any(LocalDateTime.class))).thenReturn(Stream.of(archive));
+    when(context.getTenantId()).thenReturn("tenantId");
 
     delegate.expire();
 
     verify(authorityArchiveService).delete(archive);
     verify(eventPublisher).publishHardDeleteEvent(dto);
+    verify(propagationService)
+        .propagate(archive, ConsortiumPropagationService.PropagationType.DELETE, "tenantId");
   }
 
   @Test
@@ -94,10 +106,13 @@ class AuthorityArchiveServiceDelegateTest {
     when(authorityMapper.toDto(archive)).thenReturn(dto);
     when(settingsService.getAuthorityExpireSetting()).thenReturn(Optional.of(setting));
     when(authorityArchiveRepository.streamByUpdatedTillDate(any(LocalDateTime.class))).thenReturn(Stream.of(archive));
+    when(context.getTenantId()).thenReturn("tenantId");
 
     delegate.expire();
 
     verify(authorityArchiveService).delete(archive);
     verify(eventPublisher).publishHardDeleteEvent(dto);
+    verify(propagationService)
+        .propagate(archive, ConsortiumPropagationService.PropagationType.DELETE, "tenantId");
   }
 }
