@@ -43,7 +43,6 @@ class LinksSuggestionsServiceTest {
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
   private static final UUID SOURCE_FILE_ID = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
   private static final String NATURAL_ID = "n12345";
-  private static final String NATURAL_ID_WITH_INVALID_PREFIX = "na12345";
   private static final String NATURAL_ID_SUBFIELD = "0";
   private static final String ID_SUBFIELD = "9";
   private static final String BASE_URL = "https://base/url/";
