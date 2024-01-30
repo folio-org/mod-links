@@ -21,11 +21,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.domain.dto.LinkDetails;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.utils.FieldUtils;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LinksSuggestionService {
 
+  public static final String ALPHABETIC_PATTERN = "^[a-zA-Z]+.*";
+  public static final String PREFIX_REGEX = "[0-9]";
   private final AuthorityRuleValidationService authorityRuleValidationService;
-  private final AuthoritySourceFileRepository authoritySourceFileRepository;
+  private final AuthoritySourceFileService authoritySourceFileService;
 
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
@@ -190,19 +193,24 @@ public class LinksSuggestionService {
       return authority.getNaturalId();
     }
 
-    var authoritySourceFile = authoritySourceFileRepository.findById(sourceFileId);
+    var authoritySourceFile = authoritySourceFileService.getById(sourceFileId);
     var naturalIdPrefix = extractNaturalIdPrefix(authority.getNaturalId());
 
-    return authoritySourceFile.flatMap(file ->
-        file.getAuthoritySourceFileCodes().stream()
-            .filter(code -> code.getCode().equals(naturalIdPrefix))
-            .findFirst()
-            .map(code -> getSubfield0Value(authority.getNaturalId(), file))
-    ).orElse(authority.getNaturalId());
+    return authoritySourceFile.getAuthoritySourceFileCodes()
+        .stream()
+        .map(AuthoritySourceFileCode::getCode)
+        .filter(naturalIdPrefix::equals)
+        .findFirst()
+        .map(code -> getSubfield0Value(authority.getNaturalId(), authoritySourceFile))
+        .orElse(authority.getNaturalId());
   }
 
   private String extractNaturalIdPrefix(String naturalId) {
-    return naturalId.split("[0-9]")[0];
+    if (naturalId.matches(ALPHABETIC_PATTERN)) {
+      return naturalId.split(PREFIX_REGEX)[0];
+    } else {
+      return "";
+    }
   }
 
   private void modifySubfields(Map<String, List<String>> authoritySubfieldsMap, Map<String, List<String>> bibSubfields,

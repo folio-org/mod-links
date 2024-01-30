@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.mapping;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.folio.entlinks.domain.dto.FieldContent;
@@ -125,7 +126,11 @@ public interface SourceContentMapper {
   private UUID extractSourceFileId(List<Authority> authorities, UUID authorityId) {
     return authorities.stream()
         .filter(authority -> authorityId.equals(authority.getId()))
-        .map(authority -> authority.getAuthoritySourceFile().getId())
+        .map(authority -> {
+          var authoritySourceFile = authority.getAuthoritySourceFile();
+          return (authoritySourceFile != null) ? authoritySourceFile.getId() : null;
+        })
+        .filter(Objects::nonNull)
         .findAny()
         .orElse(null);
   }

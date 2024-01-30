@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.LinkStatus;
@@ -22,10 +21,10 @@ import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +50,7 @@ class LinksSuggestionsServiceTest {
   private static final String SOURCE_FILE_NAME = "sourceFileName";
 
   private @Spy AuthorityRuleValidationService authorityRuleValidationService;
-  private @Mock AuthoritySourceFileRepository authoritySourceFileRepository;
+  private @Mock AuthoritySourceFileService authoritySourceFileService;
   private @InjectMocks LinksSuggestionService linksSuggestionService;
 
   private AuthoritySourceFile authoritySourceFile;
@@ -75,7 +74,7 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
     var authority = getAuthorityParsedRecordContent("100");
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -103,7 +102,7 @@ class LinksSuggestionsServiceTest {
     var authority = getAuthorityParsedRecordContentWithInvalidNaturalIdPrefix(AUTHORITY_ID,
         "100",
         Map.of("a", List.of("test")));
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
         .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -133,7 +132,7 @@ class LinksSuggestionsServiceTest {
     var authority = getAuthorityParsedRecordContent(UUID.randomUUID(), "130", Map.of("a", List.of("test")));
     var secondAuthority = getAuthorityParsedRecordContent(authorityId, "110", Map.of("a", List.of("test")));
     var thirdAuthority = getAuthorityParsedRecordContent(UUID.randomUUID(), "111", Map.of("a", List.of("test")));
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
         .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority, secondAuthority, thirdAuthority),
@@ -162,7 +161,7 @@ class LinksSuggestionsServiceTest {
     initialBibSubfields.put("c", List.of("c value"));
     var bib = getBibParsedRecordContent("100", initialBibSubfields, null);
     var authority = getAuthorityParsedRecordContent("100");
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -188,7 +187,7 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
     var authority = getAuthorityParsedRecordContent("100");
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -287,7 +286,7 @@ class LinksSuggestionsServiceTest {
     disableAutoLinkingFeature(rules.get("100"));
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
     var authority = getAuthorityParsedRecordContent("100");
-    when(authoritySourceFileRepository.findById(SOURCE_FILE_ID)).thenReturn(Optional.of(authoritySourceFile));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, true);
