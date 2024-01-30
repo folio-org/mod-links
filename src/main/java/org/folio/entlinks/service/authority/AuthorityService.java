@@ -18,7 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.domain.repository.authority.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.data.OffsetRequest;

@@ -1,4 +1,4 @@
-package org.folio.entlinks.domain.repository.authority;
+package org.folio.entlinks.domain.repository;
 
 import java.util.Collection;
 import java.util.List;

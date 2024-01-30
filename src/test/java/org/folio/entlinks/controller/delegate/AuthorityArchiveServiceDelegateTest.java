@@ -20,7 +20,7 @@ import org.folio.entlinks.config.properties.AuthorityArchiveProperties;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
-import org.folio.entlinks.domain.repository.authority.AuthorityArchiveRepository;
+import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;

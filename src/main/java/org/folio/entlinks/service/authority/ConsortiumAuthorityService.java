@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.folio.entlinks.domain.entity.Authority;
-import org.folio.entlinks.domain.repository.authority.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.exception.ConsortiumIllegalActionException;
 import org.springframework.stereotype.Service;
 

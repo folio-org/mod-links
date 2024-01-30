@@ -18,7 +18,7 @@ import org.folio.entlinks.domain.entity.AuthorityIdentifier;
 import org.folio.entlinks.domain.entity.AuthorityNote;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.HeadingRef;
-import org.folio.entlinks.domain.repository.authority.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.testing.type.UnitTest;

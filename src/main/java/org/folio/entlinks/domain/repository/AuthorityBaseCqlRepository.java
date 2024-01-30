@@ -1,4 +1,4 @@
-package org.folio.entlinks.domain.repository.authority;
+package org.folio.entlinks.domain.repository;
 
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.AuthorityBase;

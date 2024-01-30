@@ -11,7 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
-import org.folio.entlinks.domain.repository.authority.AuthorityArchiveRepository;
+import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.spring.data.OffsetRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

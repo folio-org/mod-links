@@ -1,4 +1,4 @@
-package org.folio.entlinks.domain.repository.authority;
+package org.folio.entlinks.domain.repository;
 
 import org.folio.entlinks.domain.entity.Authority;
 

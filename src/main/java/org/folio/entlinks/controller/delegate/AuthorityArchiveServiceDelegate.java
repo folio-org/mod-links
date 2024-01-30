@@ -12,7 +12,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthorityBase;
-import org.folio.entlinks.domain.repository.authority.AuthorityArchiveRepository;
+import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
