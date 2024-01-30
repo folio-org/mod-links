@@ -81,12 +81,33 @@ class AuthorityNoteTypeServiceTest {
   }
 
   @Test
-  void shouldGetAuthorityNoteTypeByName() {
+  void shouldFindAuthorityNoteTypeById() {
+    var entity = new AuthorityNoteType();
+    var id = UUID.randomUUID();
+    when(repository.findById(id)).thenReturn(Optional.of(entity));
+
+    var found = service.findById(id);
+
+    assertEquals(entity, found);
+    verify(repository).findById(id);
+    verifyNoMoreInteractions(repository);
+  }
+
+  @Test
+  void shouldNotFindAuthorityNoteTypeForNullId() {
+    var notFound = service.findById(null);
+
+    assertNull(notFound);
+    verifyNoInteractions(repository);
+  }
+
+  @Test
+  void shouldFindAuthorityNoteTypeByName() {
     var entity = new AuthorityNoteType();
     var typeName = "type_name";
     when(repository.findByName(typeName)).thenReturn(Optional.of(entity));
 
-    var found = service.getByName(typeName);
+    var found = service.findByName(typeName);
 
     assertEquals(entity, found);
     verify(repository).findByName(typeName);
@@ -94,8 +115,8 @@ class AuthorityNoteTypeServiceTest {
   }
 
   @Test
-  void shouldNotGetAuthorityNoteTypeForNullName() {
-    var notFound = service.getByName(null);
+  void shouldNotFindAuthorityNoteTypeForNullName() {
+    var notFound = service.findByName(null);
 
     assertNull(notFound);
     verifyNoInteractions(repository);

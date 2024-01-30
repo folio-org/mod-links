@@ -1,5 +1,9 @@
 package org.folio.entlinks.service.consortium;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.service.consortium.ConsortiumAuthorityPropagationServiceIT.COLLEGE_TENANT_ID;
 import static org.folio.entlinks.service.consortium.ConsortiumAuthorityPropagationServiceIT.UNIVERSITY_TENANT_ID;
@@ -11,12 +15,17 @@ import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
 import static org.folio.support.base.TestConstants.CENTRAL_TENANT_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
+import static org.folio.support.base.TestConstants.authorityExpireEndpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -144,6 +153,75 @@ class ConsortiumAuthorityPropagationServiceIT extends IntegrationTestBase {
       .containsExactly(dto.getId(), CONSORTIUM_SOURCE_PREFIX + dto.getSource(), dto.getNaturalId(),
           dto.getPersonalName());
 
+  }
+
+  @Test
+  @SneakyThrows
+  void testAuthorityArchivePropagation() {
+    mockSuccessfulSettingsRequest();
+    var dto = new AuthorityDto()
+        .id(AUTHORITY_ID)
+        .version(0)
+        .source("MARC")
+        .naturalId("ns12345")
+        .personalName("Nikola Tesla");
+    doPost(authorityEndpoint(), dto, tenantHeaders(CENTRAL_TENANT_ID));
+    assertThat(requestAuthority(CENTRAL_TENANT_ID)).isNotNull();
+
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, CENTRAL_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, COLLEGE_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, UNIVERSITY_TENANT_ID)));
+
+    doDelete(authorityEndpoint(AUTHORITY_ID), tenantHeaders(CENTRAL_TENANT_ID));
+    tryGet(authorityEndpoint(AUTHORITY_ID), tenantHeaders(CENTRAL_TENANT_ID)).andExpect(status().isNotFound());
+
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, CENTRAL_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, COLLEGE_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, UNIVERSITY_TENANT_ID)));
+
+    var dateInPast = Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS));
+    databaseHelper.updateAuthorityArchiveUpdateDate(CENTRAL_TENANT_ID, AUTHORITY_ID, dateInPast);
+    databaseHelper.updateAuthorityArchiveUpdateDate(COLLEGE_TENANT_ID, AUTHORITY_ID, dateInPast);
+    databaseHelper.updateAuthorityArchiveUpdateDate(UNIVERSITY_TENANT_ID, AUTHORITY_ID, dateInPast);
+
+    doPost(authorityExpireEndpoint(), null, tenantHeaders(CENTRAL_TENANT_ID));
+
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, CENTRAL_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, COLLEGE_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, UNIVERSITY_TENANT_ID)));
+  }
+
+  private void mockSuccessfulSettingsRequest() {
+    okapi.wireMockServer().stubFor(get(urlPathEqualTo("/settings/entries"))
+        .withQueryParam("query", equalTo("(scope=authority-storage AND key=authority-archives-expiration)"))
+        .withQueryParam("limit", equalTo("10000"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+            .withBody("""
+          {
+              "items": [
+                  {
+                      "id": "1e01066d-4bee-4cf7-926c-ba2c9c6c0001",
+                      "scope": "authority-storage",
+                      "key": "authority-archives-expiration",
+                      "value": {
+                          "expirationEnabled":true,
+                          "retentionInDays":1
+                      }
+                  }
+              ]
+          }
+          """)));
   }
 
   private AuthorityDto requestAuthority(String tenantId)
