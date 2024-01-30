@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.domain.dto.LinkDetails;
-import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
@@ -35,8 +34,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LinksSuggestionService {
 
-  public static final String ALPHABETIC_PATTERN = "^[a-zA-Z]+.*";
-  public static final String PREFIX_REGEX = "[0-9]";
   private final AuthorityRuleValidationService authorityRuleValidationService;
   private final AuthoritySourceFileService authoritySourceFileService;
 
@@ -194,23 +191,7 @@ public class LinksSuggestionService {
     }
 
     var authoritySourceFile = authoritySourceFileService.getById(sourceFileId);
-    var naturalIdPrefix = extractNaturalIdPrefix(authority.getNaturalId());
-
-    return authoritySourceFile.getAuthoritySourceFileCodes()
-        .stream()
-        .map(AuthoritySourceFileCode::getCode)
-        .filter(naturalIdPrefix::equals)
-        .findFirst()
-        .map(code -> getSubfield0Value(authority.getNaturalId(), authoritySourceFile))
-        .orElse(authority.getNaturalId());
-  }
-
-  private String extractNaturalIdPrefix(String naturalId) {
-    if (naturalId.matches(ALPHABETIC_PATTERN)) {
-      return naturalId.split(PREFIX_REGEX)[0];
-    } else {
-      return "";
-    }
+    return  getSubfield0Value(authority.getNaturalId(), authoritySourceFile);
   }
 
   private void modifySubfields(Map<String, List<String>> authoritySubfieldsMap, Map<String, List<String>> bibSubfields,

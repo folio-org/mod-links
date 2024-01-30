@@ -96,34 +96,6 @@ class LinksSuggestionsServiceTest {
 
   @ParameterizedTest
   @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
-  void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_when_invalidPrefix(String linkingMatchSubfield) {
-    var rules = getMapRule("100", "100");
-    var bib = getBibParsedRecordContent("100", null);
-    var authority = getAuthorityParsedRecordContentWithInvalidNaturalIdPrefix(AUTHORITY_ID,
-        "100",
-        Map.of("a", List.of("test")));
-    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
-
-    linksSuggestionService
-        .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
-
-    var bibField = bib.getFields().get(0);
-    var linkDetails = bibField.getLinkDetails();
-    assertEquals(LinkStatus.NEW, linkDetails.getStatus());
-    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
-    assertEquals(NATURAL_ID_WITH_INVALID_PREFIX, linkDetails.getAuthorityNaturalId());
-    assertEquals(1, linkDetails.getLinkingRuleId());
-    assertNull(linkDetails.getErrorCause());
-
-    var bibSubfields = bibField.getSubfields();
-    assertEquals(AUTHORITY_ID.toString(), bibSubfields.get("9").get(0));
-    assertEquals(NATURAL_ID_WITH_INVALID_PREFIX, bibSubfields.get("0").get(0));
-    assertFalse(bibSubfields.containsKey("a"));
-    assertTrue(bibSubfields.containsKey("b"));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {NATURAL_ID_SUBFIELD, ID_SUBFIELD})
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withMultipleRulesForFieldAndOnlyOneSuitable(
       String linkingMatchSubfield) {
     var rules = getMapRule("240", List.of("100", "110", "111"));
@@ -350,18 +322,6 @@ class LinksSuggestionsServiceTest {
     var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
     return new AuthorityParsedContent(authorityId,
         NATURAL_ID,
-        "",
-        List.of(field),
-        SOURCE_FILE_ID);
-  }
-
-  private AuthorityParsedContent getAuthorityParsedRecordContentWithInvalidNaturalIdPrefix(UUID authorityId,
-                                                                                           String authorityField,
-                                                                                           Map<String,
-                                                                                           List<String>> subfields) {
-    var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
-    return new AuthorityParsedContent(authorityId,
-        NATURAL_ID_WITH_INVALID_PREFIX,
         "",
         List.of(field),
         SOURCE_FILE_ID);
