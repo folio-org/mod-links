@@ -25,10 +25,8 @@
       src/main/java/org/folio/entlinks/model/**
     </sonar.exclusions>
 
-    <!-- bump kafka.version to fix snappy-java vulnerabilities;
-         remove <kafka.version> when using spring-boot-starter-parent >= 3.2 -->
-    <kafka.version>3.5.1</kafka.version>
     <folio-spring-base.version>7.2.2</folio-spring-base.version>
+    <folio-system-user.version>8.0.0</folio-system-user.version>
     <hypersistence-utils-hibernate.version>3.6.0</hypersistence-utils-hibernate.version>
     <folio-service-tools.version>3.1.0</folio-service-tools.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -66,7 +64,7 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-spring-system-user</artifactId>
-      <version>${folio-spring-base.version}</version>
+      <version>${folio-system-user.version}</version>
     </dependency>
 
     <dependency>
