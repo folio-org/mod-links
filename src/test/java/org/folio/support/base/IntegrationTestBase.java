@@ -48,6 +48,7 @@ import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.EnableKafka;
+import org.folio.spring.testing.extension.EnableMinio;
 import org.folio.spring.testing.extension.EnablePostgres;
 import org.folio.spring.testing.extension.impl.OkapiConfiguration;
 import org.folio.spring.testing.extension.impl.OkapiExtension;
@@ -358,7 +359,7 @@ public class IntegrationTestBase {
     @Bean
     @Primary
     public ProducerFactory<String, String> producerStringFactory(KafkaProperties kafkaProperties) {
-      Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties());
+      Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties(null));
       configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
       configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
       return new DefaultKafkaProducerFactory<>(configProps);
