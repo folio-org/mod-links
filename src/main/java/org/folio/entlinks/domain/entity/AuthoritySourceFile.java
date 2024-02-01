@@ -67,10 +67,6 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
   @OneToMany(mappedBy = "authoritySourceFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private Set<AuthoritySourceFileCode> authoritySourceFileCodes = new LinkedHashSet<>();
 
-  @ToString.Exclude
-  @OneToMany(mappedBy = "authoritySourceFile", fetch = FetchType.LAZY)
-  private Set<Authority> authorities = new LinkedHashSet<>();
-
   @Column(name = "sequence_name", length = 50)
   private String sequenceName;
 
@@ -99,9 +95,6 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
       .stream()
       .map(AuthoritySourceFileCode::new)
       .collect(java.util.stream.Collectors.toSet());
-    this.authorities = Optional.ofNullable(other.authorities)
-        .map(LinkedHashSet::new)
-        .orElse(new LinkedHashSet<>());
     this.sequenceName = other.sequenceName;
     this.selectable = other.selectable;
     this.hridStartNumber = other.hridStartNumber;
