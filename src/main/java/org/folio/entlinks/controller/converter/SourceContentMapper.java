@@ -58,7 +58,7 @@ public interface SourceContentMapper {
                                                                  List<Authority> authorities) {
     var authorityId = parsedRecord.getExternalIdsHolder().getAuthorityId();
     var authority = extractAuthority(authorities, authorityId);
-    var naturalId = extractNaturalId(authority);
+    var naturalId = authority.getNaturalId();
     var leader = parsedRecord.getParsedRecord().getContent().getLeader();
     var fields = convertFieldsToOneMap(parsedRecord.getParsedRecord().getContent().getFields());
     var sourceFileId = extractSourceFileId(authority);
@@ -121,10 +121,6 @@ public interface SourceContentMapper {
         .filter(authority -> authorityId.equals(authority.getId()))
         .findAny()
         .orElseThrow(() -> new AuthorityNotFoundException(authorityId));
-  }
-
-  private String extractNaturalId(Authority authority) {
-    return authority.getNaturalId();
   }
 
   private UUID extractSourceFileId(Authority authority) {
