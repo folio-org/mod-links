@@ -850,6 +850,36 @@
         "name": "AUTHORITY_ARCHIVES_EXPIRATION_PERIOD",
         "value": "7",
         "description": "The retention period in days for keeping the deleted authorities in authority_archive DB table"
+      },
+      {
+        "name": "S3_URL",
+        "value": "http://localhost:9000/",
+        "description": "S3 compatible service url"
+      },
+      {
+        "name": "S3_REGION",
+        "value": "",
+        "description": "S3 compatible service region"
+      },
+      {
+        "name": "S3_BUCKET",
+        "value": "marc-migrations",
+        "description": "S3 compatible service bucket"
+      },
+      {
+        "name": "S3_ACCESS_KEY_ID",
+        "value": "",
+        "description": "S3 compatible service access key"
+      },
+      {
+        "name": "S3_SECRET_ACCESS_KEY",
+        "value": "",
+        "description": "S3 compatible service secret key"
+      },
+      {
+        "name": "S3_IS_AWS",
+        "value": "true",
+        "description": "Specify if AWS S3 is used as files storage"
       }
     ]
   }
