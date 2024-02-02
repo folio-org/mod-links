@@ -15,8 +15,8 @@ public class EntitiesErrorFileWriter implements AutoCloseable {
 
   public EntitiesErrorFileWriter(File errorEntitiesFileName, File errorsFileName, ObjectMapper objectMapper)
     throws IOException {
-    errorEntitiesFileWriter = new BufferedWriter(new FileWriter(errorEntitiesFileName));
-    errorsFileWriter = new BufferedWriter(new FileWriter(errorsFileName));
+    this.errorEntitiesFileWriter = new BufferedWriter(new FileWriter(errorEntitiesFileName));
+    this.errorsFileWriter = new BufferedWriter(new FileWriter(errorsFileName));
     this.objectMapper = objectMapper;
 
   }
