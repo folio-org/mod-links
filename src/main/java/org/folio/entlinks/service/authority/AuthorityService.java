@@ -134,8 +134,8 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     }
 
     if (authorityUpdateCallback != null) {
-      for (var entry : existingRecordsMap.entrySet()) {
-        authorityUpdateCallback.accept(entry.getValue(), detachedExistingRecordsMap.get(entry.getKey()));
+      for (var modifiedRecord : modifiedRecords) {
+        authorityUpdateCallback.accept(modifiedRecord, detachedExistingRecordsMap.get(modifiedRecord.getId()));
       }
     }
 
