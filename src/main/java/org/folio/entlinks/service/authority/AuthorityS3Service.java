@@ -78,7 +78,7 @@ public class AuthorityS3Service {
       bulkConsumer.accept(List.of(authority));
     } catch (Exception ex) {
       errorCounter.incrementAndGet();
-      writer.write(authority, ex, a -> a.getId().toString());
+      writer.write(mapper.toDto(authority), ex, a -> a.getId().toString());
     }
   }
 

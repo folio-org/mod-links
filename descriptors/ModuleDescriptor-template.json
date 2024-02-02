@@ -176,6 +176,9 @@
           "pathPattern": "/authority-storage/authorities",
           "permissionsRequired": [
             "inventory-storage.authorities.collection.get"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
           ]
         },
         {
@@ -185,6 +188,9 @@
           "pathPattern": "/authority-storage/authorities/{id}",
           "permissionsRequired": [
             "inventory-storage.authorities.item.get"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
           ]
         },
         {
@@ -579,6 +585,7 @@
       "displayName": "inventory storage module - all authorities permissions",
       "description": "Entire set of permissions needed to use authorities in the inventory storage module",
       "subPermissions": [
+        "inventory-storage.authorities.collection.get",
         "inventory-storage.authorities.item.get",
         "inventory-storage.authorities.item.post",
         "inventory-storage.authorities.bulk.post",

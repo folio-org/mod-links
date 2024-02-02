@@ -1,15 +1,17 @@
 package org.folio.entlinks.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import org.folio.entlinks.domain.dto.AuthorityBulkRequest;
 import org.folio.s3.client.FolioS3Client;
 import org.folio.spring.testing.extension.DatabaseCleanup;
@@ -51,7 +53,17 @@ class AuthorityBulkIT extends IntegrationTestBase {
 
     assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 1);
     var list = s3Client.list("parentLocation/filePath/");
-    assertEquals(3, list.size());
+    assertThat(list)
+      .hasSize(3)
+      .containsExactly("parentLocation/filePath/fileName",
+        "parentLocation/filePath/fileName_errors",
+        "parentLocation/filePath/fileName_failedEntities");
+    var errors = new BufferedReader(new InputStreamReader(s3Client.read("parentLocation/filePath/fileName_errors")))
+        .lines()
+        .toList();
+    assertThat(errors)
+      .hasSize(1)
+      .allMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"));
   }
 
 }

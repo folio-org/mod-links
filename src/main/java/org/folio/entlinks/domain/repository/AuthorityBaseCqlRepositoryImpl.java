@@ -23,8 +23,8 @@ public abstract class AuthorityBaseCqlRepositoryImpl<T extends AuthorityBase> im
   @Override
   public Page<T> findByCql(String cqlQuery, Pageable pageable) {
 
-    var collectBy = collectByQueryAndDeletedFalse(cqlQuery);
-    var countBy = countByQueryAndDeletedFalse(cqlQuery);
+    var collectBy = collectByQuery(cqlQuery);
+    var countBy = countByQuery(cqlQuery);
     var criteria = cql2JpaCriteria.toCollectCriteria(collectBy);
 
     List<T> resultList = em
@@ -37,8 +37,8 @@ public abstract class AuthorityBaseCqlRepositoryImpl<T extends AuthorityBase> im
 
   @Override
   public Page<UUID> findIdsByCql(String cqlQuery, Pageable pageable) {
-    var collectBy = collectByQueryAndDeletedFalse(cqlQuery);
-    var countBy = countByQueryAndDeletedFalse(cqlQuery);
+    var collectBy = collectByQuery(cqlQuery);
+    var countBy = countByQuery(cqlQuery);
 
     var cb = em.getCriteriaBuilder();
     var query = cb.createQuery(UUID.class);
@@ -64,11 +64,11 @@ public abstract class AuthorityBaseCqlRepositoryImpl<T extends AuthorityBase> im
     return em.createQuery(criteria).getSingleResult();
   }
 
-  private Specification<T> collectByQueryAndDeletedFalse(String cqlQuery) {
+  private Specification<T> collectByQuery(String cqlQuery) {
     return deletedIs(deleted()).and(cql2JpaCriteria.createCollectSpecification(cqlQuery));
   }
 
-  private Specification<T> countByQueryAndDeletedFalse(String cqlQuery) {
+  private Specification<T> countByQuery(String cqlQuery) {
     return deletedIs(deleted()).and(cql2JpaCriteria.createCountSpecification(cqlQuery));
   }
 
