@@ -21,12 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.domain.dto.LinkDetails;
-import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileCodeRepository;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.utils.FieldUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +34,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LinksSuggestionService {
 
-  private final AuthoritySourceFileCodeRepository sourceFileCodeRepository;
   private final AuthorityRuleValidationService authorityRuleValidationService;
+  private final AuthoritySourceFileService authoritySourceFileService;
 
   /**
    * Validate bib-authority fields by linking rules and fill bib fields with suggested links.
@@ -177,14 +176,22 @@ public class LinksSuggestionService {
       return;
     }
 
-    var zeroValue = sourceFileCodeRepository.findByCodeAsPrefixFor(authority.getNaturalId())
-        .map(AuthoritySourceFileCode::getAuthoritySourceFile)
-        .map(sourceFile -> getSubfield0Value(authority.getNaturalId(), sourceFile))
-        .orElse(authority.getNaturalId());
+    var zeroValue = getSubfieldZeroValue(authority);
+
     bibSubfields.put("0", List.of(zeroValue));
     bibSubfields.put("9", List.of(authority.getId().toString()));
 
     modifySubfields(optionalField.get().getSubfields(), bibSubfields, rule);
+  }
+
+  private String getSubfieldZeroValue(AuthorityParsedContent authority) {
+    var sourceFileId = authority.getSourceFileId();
+    if (isNull(sourceFileId)) {
+      return authority.getNaturalId();
+    }
+
+    var authoritySourceFile = authoritySourceFileService.getById(sourceFileId);
+    return  getSubfield0Value(authority.getNaturalId(), authoritySourceFile);
   }
 
   private void modifySubfields(Map<String, List<String>> authoritySubfieldsMap, Map<String, List<String>> bibSubfields,

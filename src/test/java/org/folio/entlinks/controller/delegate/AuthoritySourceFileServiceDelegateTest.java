@@ -156,8 +156,6 @@ class AuthoritySourceFileServiceDelegateTest {
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     existing.setBaseUrl(INPUT_BASE_URL);
     existing.setSource(AuthoritySourceFileSource.FOLIO);
-    var authority = TestDataUtils.AuthorityTestData.authority(0, 0);
-    existing.getAuthorities().add(authority);
     var expected = new AuthoritySourceFile(existing);
     expected.setBaseUrl(SANITIZED_BASE_URL);
 

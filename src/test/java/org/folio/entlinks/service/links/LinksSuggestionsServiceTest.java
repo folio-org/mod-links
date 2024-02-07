@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.LinkStatus;
@@ -23,10 +21,10 @@ import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileCodeRepository;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
+import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,28 +41,30 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class LinksSuggestionsServiceTest {
 
   private static final UUID AUTHORITY_ID = UUID.randomUUID();
-  private static final UUID SOURCE_FILE_ID = UUID.randomUUID();
-  private static final String NATURAL_ID = "e12345";
+  private static final UUID SOURCE_FILE_ID = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
+  private static final String NATURAL_ID = "n12345";
   private static final String NATURAL_ID_SUBFIELD = "0";
   private static final String ID_SUBFIELD = "9";
   private static final String BASE_URL = "https://base/url/";
   private static final String SOURCE_FILE_NAME = "sourceFileName";
 
   private @Spy AuthorityRuleValidationService authorityRuleValidationService;
-  private @Mock AuthoritySourceFileCodeRepository sourceFileCodeRepository;
+  private @Mock AuthoritySourceFileService authoritySourceFileService;
   private @InjectMocks LinksSuggestionService linksSuggestionService;
 
-  private AuthoritySourceFileCode sourceFileCode;
+  private AuthoritySourceFile authoritySourceFile;
 
   @BeforeEach
   void setup() {
-    var sourceFile = new AuthoritySourceFile();
-    sourceFile.setId(SOURCE_FILE_ID);
-    sourceFile.setBaseUrl(BASE_URL);
-    sourceFile.setName(SOURCE_FILE_NAME);
-    sourceFileCode = new AuthoritySourceFileCode();
-    sourceFileCode.setCode("e1");
-    sourceFile.addCode(sourceFileCode);
+    authoritySourceFile = new AuthoritySourceFile();
+    authoritySourceFile.setId(SOURCE_FILE_ID);
+    authoritySourceFile.setBaseUrl(BASE_URL);
+    authoritySourceFile.setName(SOURCE_FILE_NAME);
+
+    var sourceFileCode = new AuthoritySourceFileCode();
+    sourceFileCode.setAuthoritySourceFile(authoritySourceFile);
+    sourceFileCode.setCode("n");
+    authoritySourceFile.addCode(sourceFileCode);
   }
 
   @ParameterizedTest
@@ -73,7 +73,7 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", null);
     var authority = getAuthorityParsedRecordContent("100");
-    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -103,7 +103,7 @@ class LinksSuggestionsServiceTest {
     var authority = getAuthorityParsedRecordContent(UUID.randomUUID(), "130", Map.of("a", List.of("test")));
     var secondAuthority = getAuthorityParsedRecordContent(authorityId, "110", Map.of("a", List.of("test")));
     var thirdAuthority = getAuthorityParsedRecordContent(UUID.randomUUID(), "111", Map.of("a", List.of("test")));
-    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
         .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority, secondAuthority, thirdAuthority),
@@ -132,7 +132,7 @@ class LinksSuggestionsServiceTest {
     initialBibSubfields.put("c", List.of("c value"));
     var bib = getBibParsedRecordContent("100", initialBibSubfields, null);
     var authority = getAuthorityParsedRecordContent("100");
-    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -158,7 +158,7 @@ class LinksSuggestionsServiceTest {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
     var authority = getAuthorityParsedRecordContent("100");
-    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
@@ -257,7 +257,7 @@ class LinksSuggestionsServiceTest {
     disableAutoLinkingFeature(rules.get("100"));
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
     var authority = getAuthorityParsedRecordContent("100");
-    when(sourceFileCodeRepository.findByCodeAsPrefixFor(anyString())).thenReturn(Optional.of(sourceFileCode));
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
 
     linksSuggestionService
       .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, true);
@@ -319,7 +319,11 @@ class LinksSuggestionsServiceTest {
   private AuthorityParsedContent getAuthorityParsedRecordContent(UUID authorityId, String authorityField,
                                                                  Map<String, List<String>> subfields) {
     var field = new FieldParsedContent(authorityField, "//", "//", subfields, null);
-    return new AuthorityParsedContent(authorityId, NATURAL_ID, "", List.of(field));
+    return new AuthorityParsedContent(authorityId,
+        NATURAL_ID,
+        "",
+        List.of(field),
+        SOURCE_FILE_ID);
   }
 
   private SourceParsedContent getBibParsedRecordContent(String bibField, LinkDetails linkDetails) {
