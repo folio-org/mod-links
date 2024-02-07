@@ -14,6 +14,7 @@ import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
@@ -56,11 +57,13 @@ public interface SourceContentMapper {
   default AuthorityParsedContent convertToAuthorityParsedContent(StrippedParsedRecord parsedRecord,
                                                                  List<Authority> authorities) {
     var authorityId = parsedRecord.getExternalIdsHolder().getAuthorityId();
-    var naturalId = extractNaturalId(authorities, authorityId);
+    var authority = extractAuthority(authorities, authorityId);
+    var naturalId = authority.getNaturalId();
     var leader = parsedRecord.getParsedRecord().getContent().getLeader();
     var fields = convertFieldsToOneMap(parsedRecord.getParsedRecord().getContent().getFields());
+    var sourceFileId = extractSourceFileId(authority);
 
-    return new AuthorityParsedContent(authorityId, naturalId, leader, fields);
+    return new AuthorityParsedContent(authorityId, naturalId, leader, fields, sourceFileId);
   }
 
   private List<Map<String, FieldContent>> convertFieldsToListOfMaps(List<FieldParsedContent> fields) {
@@ -113,11 +116,16 @@ public interface SourceContentMapper {
     return Map.of(field.getTag(), fieldContent);
   }
 
-  private String extractNaturalId(List<Authority> authorities, UUID authorityId) {
+  private Authority extractAuthority(List<Authority> authorities, UUID authorityId) {
     return authorities.stream()
-      .filter(authority -> authorityId.equals(authority.getId()))
-      .map(Authority::getNaturalId)
-      .findAny()
-      .orElse(null);
+        .filter(authority -> authorityId.equals(authority.getId()))
+        .findAny()
+        .orElseThrow(() -> new AuthorityNotFoundException(authorityId));
   }
+
+  private UUID extractSourceFileId(Authority authority) {
+    var authoritySourceFile = authority.getAuthoritySourceFile();
+    return (authoritySourceFile != null) ? authoritySourceFile.getId() : null;
+  }
+
 }

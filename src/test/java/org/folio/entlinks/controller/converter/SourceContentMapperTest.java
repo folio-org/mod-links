@@ -6,6 +6,7 @@ import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.folio.entlinks.domain.dto.ExternalIdsHolder;
 import org.folio.entlinks.domain.dto.FieldContent;
 import org.folio.entlinks.domain.dto.LinkDetails;
@@ -15,6 +16,7 @@ import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
 import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
@@ -63,8 +65,14 @@ class SourceContentMapperTest {
     var recordCollection = new StrippedParsedRecordCollection();
     StrippedParsedRecord strippedParsedRecord = createStrippedParsedRecord();
     recordCollection.getRecords().add(strippedParsedRecord);
-
-    var authority = Authority.builder().id(TEST_ID).source(TEST_PROPERTY_VALUE).naturalId(TEST_ID.toString()).build();
+    var authoritySourceFile = new AuthoritySourceFile();
+    authoritySourceFile.setId(UUID.randomUUID());
+    var authority = Authority.builder()
+        .id(TEST_ID)
+        .source(TEST_PROPERTY_VALUE)
+        .naturalId(TEST_ID.toString())
+        .authoritySourceFile(authoritySourceFile)
+        .build();
     var authorities = List.of(authority);
 
     List<AuthorityParsedContent> resultList = mapper.convertToAuthorityParsedContent(recordCollection, authorities);
