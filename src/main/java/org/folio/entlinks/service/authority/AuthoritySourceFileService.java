@@ -212,6 +212,7 @@ public class AuthoritySourceFileService {
 
   private void copyModifiableFields(AuthoritySourceFile existingEntity, AuthoritySourceFile modifiedEntity) {
     existingEntity.setName(modifiedEntity.getName());
+    existingEntity.setBaseUrlProtocol(modifiedEntity.getBaseUrlProtocol());
     existingEntity.setBaseUrl(modifiedEntity.getBaseUrl());
     existingEntity.setSelectable(modifiedEntity.isSelectable());
     existingEntity.setType(modifiedEntity.getType());
