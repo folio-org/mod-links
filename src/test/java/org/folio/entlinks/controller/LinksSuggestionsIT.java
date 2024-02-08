@@ -39,7 +39,8 @@ import org.junit.jupiter.api.Test;
   DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
 class LinksSuggestionsIT extends IntegrationTestBase {
 
-  private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
+  private static final String BASE_URL = "id.loc.gov/authorities/names/";
+  private static final String FULL_BASE_URL = "http://" + BASE_URL;
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
   private static final String LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID = "cb398c08-736e-4d6b-aa94-5fa1bfcf9b10";
   private static final String NATURAL_ID = "n12345";
@@ -53,6 +54,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   @BeforeEach
   public void setup() {
     var sourceFile = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    sourceFile.setBaseUrlProtocol("http");
     sourceFile.setBaseUrl(BASE_URL);
     var sourceFileCode1 = sourceFile.getAuthoritySourceFileCodes().iterator().next();
     var sourceFileCode2 = new AuthoritySourceFileCode();
@@ -81,12 +83,12 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   @Test
   @SneakyThrows
   void getAuthDataStat_shouldActualizeLinkAndSubfields() {
-    var givenSubfields = Map.of("a", "old $a value", "0", BASE_URL + NATURAL_ID);
+    var givenSubfields = Map.of("a", "old $a value", "0", FULL_BASE_URL + NATURAL_ID);
     var givenLinkDetails = getLinkDetails(ACTUAL, NATURAL_ID);
     var givenRecord = getRecord("100", givenLinkDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(ACTUAL, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -103,7 +105,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -120,7 +122,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -175,7 +177,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var expectedErrorRecord = getRecord("600", expectedErrorDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord, disabledAutoLinkingRecord));
@@ -218,7 +220,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var givenRecord = getRecord("600", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID, 8);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("600", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));

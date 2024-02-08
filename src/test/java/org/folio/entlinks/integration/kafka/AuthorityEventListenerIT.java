@@ -64,7 +64,8 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
 
   private static final UUID AUTHORITY_ID = UUID.fromString("a501dcc2-23ce-4a4a-adb4-ff683b6f325e");
   private static final UUID SOURCE_FILE_ID = UUID.fromString("af045f2f-e851-4613-984c-4bc13430454a");
-  private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
+  private static final String BASE_URL = "id.loc.gov/authorities/names/";
+  private static final String FULL_BASE_URL = "http://" + BASE_URL;
 
   private KafkaMessageListenerContainer<String, LinksChangeEvent> container;
   private BlockingQueue<ConsumerRecord<String, LinksChangeEvent>> consumerRecords;
@@ -84,6 +85,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
     var sourceFile2 = new AuthoritySourceFile(sourceFile1);
     sourceFile2.setId(SOURCE_FILE_ID);
     sourceFile2.setName("LC Name Authority file (LCNAF)");
+    sourceFile2.setBaseUrlProtocol("http");
     sourceFile2.setBaseUrl(BASE_URL);
     databaseHelper.saveAuthoritySourceFile(TENANT_ID, sourceFile1);
     databaseHelper.saveAuthoritySourceFile(TENANT_ID, sourceFile2);
@@ -233,7 +235,7 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
       .contains(XOkapiHeaders.TENANT, XOkapiHeaders.URL, XOkapiHeaders.TOKEN);
 
     var value = received.value();
-    var expectedSubfieldChange = subfieldChange("0", BASE_URL + updatedNaturalId);
+    var expectedSubfieldChange = subfieldChange("0", FULL_BASE_URL + updatedNaturalId);
     assertions.then(value.getTenant()).as("Tenant").isEqualTo(TENANT_ID);
     assertions.then(value.getType()).as("Type").isEqualTo(LinksChangeEvent.TypeEnum.UPDATE);
     assertions.then(value.getAuthorityId()).as("Authority ID").isEqualTo(link1.authorityId());

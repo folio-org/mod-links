@@ -226,6 +226,7 @@ class AuthoritySourceFileServiceTest {
     var captured = fileSaveCaptor.getValue();
     Assertions.assertThat(captured.getName()).isEqualTo(expected.getName());
     Assertions.assertThat(captured.getType()).isEqualTo(expected.getType());
+    Assertions.assertThat(captured.getBaseUrlProtocol()).isEqualTo(expected.getBaseUrlProtocol());
     Assertions.assertThat(captured.getBaseUrl()).isEqualTo(expected.getBaseUrl());
     Assertions.assertThat(captured.getAuthoritySourceFileCodes()).isEqualTo(expected.getAuthoritySourceFileCodes());
     Assertions.assertThat(captured.isSelectable()).isEqualTo(expected.isSelectable());
