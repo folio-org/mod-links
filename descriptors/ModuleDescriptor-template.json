@@ -167,7 +167,7 @@
     },
     {
       "id": "authority-storage",
-      "version": "2.0",
+      "version": "2.1",
       "handlers": [
         {
           "methods": [
@@ -176,6 +176,9 @@
           "pathPattern": "/authority-storage/authorities",
           "permissionsRequired": [
             "inventory-storage.authorities.collection.get"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
           ]
         },
         {
@@ -185,6 +188,9 @@
           "pathPattern": "/authority-storage/authorities/{id}",
           "permissionsRequired": [
             "inventory-storage.authorities.item.get"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
           ]
         },
         {
@@ -194,6 +200,18 @@
           "pathPattern": "/authority-storage/authorities",
           "permissionsRequired": [
             "inventory-storage.authorities.item.post"
+          ],
+          "modulePermissions": [
+            "user-tenants.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/authority-storage/authorities/bulk",
+          "permissionsRequired": [
+            "inventory-storage.authorities.bulk.post"
           ],
           "modulePermissions": [
             "user-tenants.collection.get"
@@ -529,6 +547,11 @@
       "description": "create individual authority record in the storage"
     },
     {
+      "permissionName": "inventory-storage.authorities.bulk.post",
+      "displayName": "inventory storage - create authority records in bulk",
+      "description": "create authority records in bulk"
+    },
+    {
       "permissionName": "inventory-storage.authorities.item.put",
       "displayName": "inventory storage - modify authority record",
       "description": "modify authority record in the storage"
@@ -563,8 +586,10 @@
       "displayName": "inventory storage module - all authorities permissions",
       "description": "Entire set of permissions needed to use authorities in the inventory storage module",
       "subPermissions": [
+        "inventory-storage.authorities.collection.get",
         "inventory-storage.authorities.item.get",
         "inventory-storage.authorities.item.post",
+        "inventory-storage.authorities.bulk.post",
         "inventory-storage.authorities.item.put",
         "inventory-storage.authorities.item.delete",
         "authority-storage.authority.reindex.post",
@@ -826,6 +851,36 @@
         "name": "AUTHORITY_ARCHIVES_EXPIRATION_PERIOD",
         "value": "7",
         "description": "The retention period in days for keeping the deleted authorities in authority_archive DB table"
+      },
+      {
+        "name": "S3_URL",
+        "value": "http://localhost:9000/",
+        "description": "S3 compatible service url"
+      },
+      {
+        "name": "S3_REGION",
+        "value": "",
+        "description": "S3 compatible service region"
+      },
+      {
+        "name": "S3_BUCKET",
+        "value": "marc-migrations",
+        "description": "S3 compatible service bucket"
+      },
+      {
+        "name": "S3_ACCESS_KEY_ID",
+        "value": "",
+        "description": "S3 compatible service access key"
+      },
+      {
+        "name": "S3_SECRET_ACCESS_KEY",
+        "value": "",
+        "description": "S3 compatible service secret key"
+      },
+      {
+        "name": "S3_IS_AWS",
+        "value": "true",
+        "description": "Specify if AWS S3 is used as files storage"
       }
     ]
   }

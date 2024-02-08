@@ -59,7 +59,6 @@ import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
-import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
@@ -438,9 +437,9 @@ class AuthorityControllerIT extends IntegrationTestBase {
     dto.setSourceFileId(sourceFileId);
 
     tryPost(authorityEndpoint(), dto)
-      .andExpect(status().isNotFound())
-      .andExpect(errorMessageMatch(is("Authority Source File with ID [" + sourceFileId + "] was not found")))
-      .andExpect(exceptionMatch(AuthoritySourceFileNotFoundException.class));
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(errorMessageMatch(is("Authority Source File with the given 'id' does not exists.")))
+      .andExpect(exceptionMatch(InvalidDataAccessApiUsageException.class));
   }
 
   @Test
@@ -552,9 +551,9 @@ class AuthorityControllerIT extends IntegrationTestBase {
     expected.setSourceFileId(sourceFileId);
 
     tryPut(authorityEndpoint(expected.getId()), expected)
-      .andExpect(status().isNotFound())
-      .andExpect(errorMessageMatch(is("Authority Source File with ID [" + sourceFileId + "] was not found")))
-      .andExpect(exceptionMatch(AuthoritySourceFileNotFoundException.class));
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(errorMessageMatch(is("Authority Source File with the given 'id' does not exists.")))
+      .andExpect(exceptionMatch(InvalidDataAccessApiUsageException.class));
   }
 
   @Test
