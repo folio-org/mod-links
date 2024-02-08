@@ -40,7 +40,7 @@ public class KafkaTestUtils {
     Class<T> eventClass) {
     var deserializer = new JsonDeserializer<>(eventClass, false);
     properties.getConsumer().setGroupId("test-group");
-    Map<String, Object> config = new HashMap<>(properties.buildConsumerProperties());
+    Map<String, Object> config = new HashMap<>(properties.buildConsumerProperties(null));
     config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     config.put(VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
 

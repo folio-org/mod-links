@@ -96,7 +96,7 @@ class DeleteAuthorityChangeHandlerTest {
         tuple(events.get(0).getAuthorityId(), TypeEnum.DELETE, List.of(changeTarget(instanceId2, link2))),
         tuple(events.get(1).getAuthorityId(), TypeEnum.DELETE, List.of(changeTarget(instanceId3, link3)))
       );
-    verify(authorityService).batchDeleteByIds(anyCollection());
+    verify(authorityService).deleteByIds(anyCollection());
   }
 
   @Test

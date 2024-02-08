@@ -1,10 +1,7 @@
 package org.folio.entlinks.domain.repository;
 
-import org.folio.entlinks.domain.entity.projection.AuthorityIdDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.folio.entlinks.domain.entity.AuthorityArchive;
 
-public interface AuthorityArchiveCqlRepository {
+public interface AuthorityArchiveCqlRepository extends AuthorityBaseCqlRepository<AuthorityArchive> {
 
-  Page<AuthorityIdDto> findIdsByCql(String cql, Pageable pageable);
 }

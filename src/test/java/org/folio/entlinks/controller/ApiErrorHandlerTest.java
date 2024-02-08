@@ -31,6 +31,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -221,7 +222,7 @@ class ApiErrorHandlerTest {
 
   @ParameterizedTest
   @MethodSource("violationExceptionsProvider")
-  void handleViolationException(Exception exception) {
+  void handleViolationException(NonTransientDataAccessException exception) {
     // Act
     ResponseEntity<Errors> responseEntity = apiErrorHandler.conflict(exception);
 

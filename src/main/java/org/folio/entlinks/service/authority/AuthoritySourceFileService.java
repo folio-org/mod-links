@@ -115,9 +115,9 @@ public class AuthoritySourceFileService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Retryable(
-      retryFor = OptimisticLockingException.class,
-      maxAttempts = 2,
-      backoff = @Backoff(delay = 500))
+    retryFor = OptimisticLockingException.class,
+    maxAttempts = 2,
+    backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
     log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
 
@@ -129,7 +129,7 @@ public class AuthoritySourceFileService {
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (modified.getVersion() < existingEntity.getVersion()) {
       throw OptimisticLockingException.optimisticLockingOnUpdate(
-          id, existingEntity.getVersion(), modified.getVersion());
+        id, existingEntity.getVersion(), modified.getVersion());
     }
 
     updateSequenceStartNumber(existingEntity, modified);
@@ -242,7 +242,7 @@ public class AuthoritySourceFileService {
     var sequenceName = existing.getSequenceName();
     var startNumber = (int) modified.getHridStartNumber();
     var command = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
-        sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+      sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
     jdbcTemplate.execute(command);
   }
 
