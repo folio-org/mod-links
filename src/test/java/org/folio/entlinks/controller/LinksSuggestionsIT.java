@@ -42,7 +42,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
   private static final String LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID = "cb398c08-736e-4d6b-aa94-5fa1bfcf9b10";
-  private static final String NATURAL_ID = "oneAuthority";
+  private static final String NATURAL_ID = "n12345";
   private static final String NATURAL_ID_FOR_T_SUBFIELD = "tSubfieldAuthority";
 
   @BeforeAll
@@ -58,7 +58,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var sourceFileCode2 = new AuthoritySourceFileCode();
     sourceFileCode1.setCode(NATURAL_ID.substring(0, 3));
     sourceFileCode2.setAuthoritySourceFile(sourceFile);
-    sourceFileCode2.setCode(NATURAL_ID.substring(0, 2));
+    sourceFileCode2.setCode("n");
     var sourceFileCode3 = new AuthoritySourceFileCode();
     sourceFileCode3.setAuthoritySourceFile(sourceFile);
     sourceFileCode3.setCode(NATURAL_ID_FOR_T_SUBFIELD.substring(0, 2));

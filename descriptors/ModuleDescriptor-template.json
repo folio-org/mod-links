@@ -452,7 +452,8 @@
           "delay": "1",
           "modulePermissions": [
             "mod-settings.entries.collection.get",
-            "mod-settings.global.read.authority-storage"
+            "mod-settings.global.read.authority-storage",
+            "user-tenants.collection.get"
           ]
         }
       ]
