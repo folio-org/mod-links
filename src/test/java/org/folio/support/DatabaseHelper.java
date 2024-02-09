@@ -21,7 +21,7 @@ public class DatabaseHelper {
   public static final String INSTANCE_AUTHORITY_LINK_TABLE = "instance_authority_link";
   public static final String AUTHORITY_NOTE_TYPE_TABLE = "authority_note_type";
   public static final String AUTHORITY_SOURCE_FILE_TABLE = "authority_source_file";
-  public static final String AUTHORITY_SOURCE_FILE_SOURCE_TYPE = "AuthoritySourceType";
+  public static final String AUTHORITY_SOURCE_FILE_SOURCE_TYPE = "authority_source_file_source";
   public static final String AUTHORITY_SOURCE_FILE_CODE_TABLE = "authority_source_file_code";
   public static final String AUTHORITY_TABLE = "authority";
   public static final String AUTHORITY_ARCHIVE_TABLE = "authority_archive";

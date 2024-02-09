@@ -30,4 +30,33 @@
       ALTER COLUMN source TYPE AuthoritySourceType using UPPER(source)::AuthoritySourceType;</sql>
   </changeSet>
 
+  <changeSet id="MODELINKS-170@@create-authority_source_file_source-type" author="Pavlo_Smahin">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">
+        SELECT COUNT(*)
+        FROM pg_type t
+        JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+        WHERE t.typname = 'authority_source_file_source' AND n.nspname = '${database.defaultSchemaName}';
+      </sqlCheck>
+    </preConditions>
+
+    <comment>Create authority_source_file_source enum</comment>
+
+    <sql>CREATE TYPE authority_source_file_source AS ENUM ('FOLIO', 'LOCAL')</sql>
+  </changeSet>
+
+  <changeSet id="MODELINKS-184@@migrate-authority-source-file-source-type-to-authority_source_file_source" author="Viacheslav_Kolesnyk">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="authority_source_file"/>
+    </preConditions>
+
+    <comment>Change 'source' column type from AuthoritySourceType to authority_source_file_source for authority_source_file</comment>
+    <sql>UPDATE authority_source_file SET source = 'LOCAL' WHERE source = 'CONSORTIUM';</sql>
+    <sql>ALTER TABLE authority_source_file
+      ALTER COLUMN source TYPE authority_source_file_source
+      USING (source::text)::authority_source_file_source;</sql>
+    <sql>DROP TYPE IF EXISTS AuthoritySourceType</sql>
+  </changeSet>
+
+
 </databaseChangeLog>
