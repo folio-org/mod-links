@@ -57,7 +57,7 @@ class ConsortiumAuthorityPropagationServiceTest {
     assertThat(authority.getSource()).isEqualTo(AUTHORITY_CONSORTIUM_SOURCE);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
-    verify(authorityService, times(3)).update(authority.getId(), authority);
+    verify(authorityService, times(3)).update(authority, true);
   }
 
   @Test
@@ -70,7 +70,7 @@ class ConsortiumAuthorityPropagationServiceTest {
     assertThat(authority.getSource()).isEqualTo(AUTHORITY_CONSORTIUM_SOURCE);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
-    verify(authorityService, times(3)).deleteById(authority.getId());
+    verify(authorityService, times(3)).deleteById(authority.getId(), true);
   }
 
   @Test

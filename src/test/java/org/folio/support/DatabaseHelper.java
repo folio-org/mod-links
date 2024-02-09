@@ -66,9 +66,9 @@ public class DatabaseHelper {
       + " (id, name, source, type, base_url_protocol, base_url, hrid_start_number, created_date, updated_date,"
       + "created_by_user_id, updated_by_user_id) VALUES " + sqlValues;
     jdbcTemplate.update(sql, entity.getId(), entity.getName(),
-        entity.getSource().name(), entity.getType(), substringBefore(entity.getBaseUrl(), "://"),
-        StringUtils.substringAfter(entity.getBaseUrl(), "://"), entity.getHridStartNumber(),
-        entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(), entity.getUpdatedByUserId());
+      entity.getSource().name(), entity.getType(), entity.getBaseUrlProtocol(), entity.getBaseUrl(),
+      entity.getHridStartNumber(), entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(),
+      entity.getUpdatedByUserId());
   }
 
   public static String substringBefore(String string, String subString) {

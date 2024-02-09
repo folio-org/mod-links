@@ -111,7 +111,7 @@ public class AuthoritySourceFileServiceDelegate {
     var centralTenantId = tenantsService.getCentralTenant(tenantId);
     if (centralTenantId.isPresent() && !tenantId.equals(centralTenantId.get())) {
       throw new RequestBodyValidationException("Action '%s' is not supported for consortium member tenant"
-          .formatted(action), List.of(new Parameter("tenantId").value(tenantId)));
+        .formatted(action), List.of(new Parameter("tenantId").value(tenantId)));
     }
   }
 
@@ -123,18 +123,22 @@ public class AuthoritySourceFileServiceDelegate {
       return;
     }
 
+    if (existing.getSource().equals(FOLIO) && patchDto.getName() != null) {
+      errorParameters.add(new Parameter("name")
+        .value(String.join(",", patchDto.getName())));
+    }
     if (patchDto.getCodes() != null) {
       errorParameters.add(new Parameter("codes")
-          .value(String.join(",", patchDto.getCodes())));
+        .value(String.join(",", patchDto.getCodes())));
     }
-    if (patchDto.getHridManagement() != null) {
+    if (patchDto.getHridManagement() != null && patchDto.getHridManagement().getStartNumber() != null) {
       errorParameters.add(new Parameter("hridManagement.startNumber")
-          .value(patchDto.getHridManagement().getStartNumber().toString()));
+        .value(patchDto.getHridManagement().getStartNumber().toString()));
     }
 
     if (!errorParameters.isEmpty()) {
       throw new RequestBodyValidationException(
-          "Unable to patch. Authority source file source is FOLIO or it has authority references", errorParameters);
+        "Unable to patch. Authority source file source is FOLIO or it has authority references", errorParameters);
     }
   }
 }

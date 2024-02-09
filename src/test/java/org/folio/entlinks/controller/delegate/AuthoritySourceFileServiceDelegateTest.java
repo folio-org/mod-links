@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDtoCollection;
@@ -41,6 +42,9 @@ import org.folio.support.TestDataUtils;
 import org.folio.tenant.domain.dto.Parameter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -77,7 +81,7 @@ class AuthoritySourceFileServiceDelegateTest {
   void shouldGetSourceFileCollectionByQuery() {
     var expectedCollection = new AuthoritySourceFileDtoCollection();
     when(service.getAll(any(Integer.class), any(Integer.class), any(String.class)))
-        .thenReturn(new PageImpl<>(List.of()));
+      .thenReturn(new PageImpl<>(List.of()));
     when(mapper.toAuthoritySourceFileCollection(any())).thenReturn(expectedCollection);
 
     var sourceFiles = delegate.getAuthoritySourceFiles(0, 100, "cql.allRecords=1");
@@ -101,7 +105,7 @@ class AuthoritySourceFileServiceDelegateTest {
   @Test
   void shouldNormalizeBaseUrlForSourceFileCreate() {
     var dto = new AuthoritySourceFilePostDto().baseUrl(INPUT_BASE_URL)
-        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
+      .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
     var expected = new AuthoritySourceFile();
     expected.setBaseUrl(INPUT_BASE_URL);
     expected.setSequenceName("sequence_name");
@@ -126,7 +130,7 @@ class AuthoritySourceFileServiceDelegateTest {
   @Test
   void shouldNormalizeBaseUrlForSourceFileCreateOnConsortiumCentralTenant() {
     var dto = new AuthoritySourceFilePostDto().baseUrl(INPUT_BASE_URL)
-        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
+      .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(10));
     var expected = new AuthoritySourceFile();
     expected.setBaseUrl(INPUT_BASE_URL);
     expected.setSequenceName("sequence_name");
@@ -160,7 +164,7 @@ class AuthoritySourceFileServiceDelegateTest {
     when(service.getById(existing.getId())).thenReturn(existing);
     when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
     when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
-        .thenAnswer(i -> i.getArguments()[1]);
+      .thenAnswer(i -> i.getArguments()[1]);
     when(service.update(any(UUID.class), any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[1]);
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
 
@@ -176,23 +180,56 @@ class AuthoritySourceFileServiceDelegateTest {
     verifyNoMoreInteractions(mapper, service);
   }
 
-  @Test
-  void shouldNotPatchAuthoritySourceFile_whenSourceFolioOrAuthoritiesReferenced() {
+  @ParameterizedTest
+  @MethodSource("patchValidationFailureData")
+  void shouldNotPatchAuthoritySourceFile_whenSourceFolioOrAuthoritiesReferenced(AuthoritySourceFileSource source,
+                                                                                Boolean authoritiesReferenced,
+                                                                                List<Parameter> errors) {
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
-    existing.setSource(AuthoritySourceFileSource.FOLIO);
+    existing.setSource(source);
+    existing.setSelectable(false);
     var dto = new AuthoritySourceFilePatchDto()
-        .codes(List.of("a", "b"))
-        .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(1));
+      .name("name")
+      .type("type")
+      .selectable(true)
+      .version(1)
+      .baseUrl("baseUrl")
+      .codes(List.of("a", "b"))
+      .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(1));
     var expected = new RequestBodyValidationException(
-        "Unable to patch. Authority source file source is FOLIO or it has authority references",
-        List.of(new Parameter("codes").value("a,b"), new Parameter("hridManagement.startNumber").value("1")));
+      "Unable to patch. Authority source file source is FOLIO or it has authority references", errors);
 
     var id = existing.getId();
     when(service.getById(id)).thenReturn(existing);
-    when(service.authoritiesExistForSourceFile(id)).thenReturn(true);
+    when(service.authoritiesExistForSourceFile(id)).thenReturn(authoritiesReferenced);
 
     var ex = assertThrows(RequestBodyValidationException.class,
-        () -> delegate.patchAuthoritySourceFile(id, dto));
+      () -> delegate.patchAuthoritySourceFile(id, dto));
+
+    assertThat(ex.getMessage()).isEqualTo(expected.getMessage());
+    assertThat(ex.getInvalidParameters()).isEqualTo(expected.getInvalidParameters());
+    verifyNoInteractions(mapper, propagationService);
+    verifyNoMoreInteractions(service);
+  }
+
+  @Test
+  void shouldNotPatchAuthoritySourceFile_doNotAddHridToErrors() {
+    var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
+    existing.setSelectable(false);
+    var dto = new AuthoritySourceFilePatchDto()
+      .name("name")
+      .hridManagement(new AuthoritySourceFilePatchDtoHridManagement());
+    var expected = new RequestBodyValidationException(
+      "Unable to patch. Authority source file source is FOLIO or it has authority references",
+      List.of(new Parameter("name").value("name")));
+
+    var id = existing.getId();
+    when(service.getById(id)).thenReturn(existing);
+    when(service.authoritiesExistForSourceFile(id)).thenReturn(false);
+
+    var ex = assertThrows(RequestBodyValidationException.class,
+      () -> delegate.patchAuthoritySourceFile(id, dto));
 
     assertThat(ex.getMessage()).isEqualTo(expected.getMessage());
     assertThat(ex.getInvalidParameters()).isEqualTo(expected.getInvalidParameters());
@@ -224,7 +261,7 @@ class AuthoritySourceFileServiceDelegateTest {
     assertThat(exc.getMessage()).isEqualTo("Action 'CREATE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
-        .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
+      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
     verifyNoInteractions(mapper);
     verifyNoInteractions(service);
   }
@@ -276,12 +313,12 @@ class AuthoritySourceFileServiceDelegateTest {
     when(service.getById(existing.getId())).thenReturn(existing);
 
     var exc = assertThrows(RequestBodyValidationException.class,
-        () -> delegate.patchAuthoritySourceFile(id, dto));
+      () -> delegate.patchAuthoritySourceFile(id, dto));
 
     assertThat(exc.getMessage()).isEqualTo("Action 'UPDATE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
-        .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
+      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
     verifyNoInteractions(mapper);
     verifyNoMoreInteractions(service);
     verifyNoInteractions(propagationService);
@@ -297,14 +334,23 @@ class AuthoritySourceFileServiceDelegateTest {
     when(service.getById(existing.getId())).thenReturn(existing);
 
     var exc = assertThrows(RequestBodyValidationException.class,
-        () -> delegate.deleteAuthoritySourceFileById(id));
+      () -> delegate.deleteAuthoritySourceFileById(id));
 
     assertThat(exc.getMessage()).isEqualTo("Action 'DELETE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
-        .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
+      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
     verifyNoMoreInteractions(service);
     verifyNoInteractions(propagationService);
+  }
+
+  static Stream<Arguments> patchValidationFailureData() {
+    return Stream.of(
+      Arguments.of(AuthoritySourceFileSource.FOLIO, false, List.of(new Parameter("name").value("name"),
+        new Parameter("codes").value("a,b"),
+        new Parameter("hridManagement.startNumber").value("1"))),
+      Arguments.of(AuthoritySourceFileSource.LOCAL, true, List.of(new Parameter("codes").value("a,b"),
+        new Parameter("hridManagement.startNumber").value("1"))));
   }
 
   private void mockAsNonConsortiumTenant() {
