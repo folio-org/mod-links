@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
@@ -35,6 +36,7 @@ import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.spring.testing.type.UnitTest;
 import org.folio.support.TestDataUtils;
 import org.folio.tenant.domain.dto.Parameter;
@@ -48,13 +50,11 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class AuthoritySourceFileServiceDelegateTest {
-
 
   private static final String SANITIZED_BASE_URL = "id.loc.gov/authorities/test-source/";
 
@@ -68,6 +68,8 @@ class AuthoritySourceFileServiceDelegateTest {
   private ConsortiumAuthoritySourceFilePropagationService propagationService;
   @Mock
   private FolioExecutionContext context;
+  @Mock
+  private SystemUserScopedExecutionService executionService;
 
   @InjectMocks
   private AuthoritySourceFileServiceDelegate delegate;
@@ -80,7 +82,7 @@ class AuthoritySourceFileServiceDelegateTest {
     var expectedCollection = new AuthoritySourceFileDtoCollection();
     when(service.getAll(any(Integer.class), any(Integer.class), any(String.class)))
       .thenReturn(new PageImpl<>(List.of()));
-    when(mapper.toAuthoritySourceFileCollection(any(Page.class))).thenReturn(expectedCollection);
+    when(mapper.toAuthoritySourceFileCollection(any())).thenReturn(expectedCollection);
 
     var sourceFiles = delegate.getAuthoritySourceFiles(0, 100, "cql.allRecords=1");
 
@@ -134,8 +136,7 @@ class AuthoritySourceFileServiceDelegateTest {
     expected.setSequenceName("sequence_name");
     expected.setHridStartNumber(dto.getHridManagement().getStartNumber());
 
-    when(context.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
-    when(tenantsService.getCentralTenant(CENTRAL_TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
+    mockAsConsortiumCentralTenant();
     when(mapper.toEntity(dto)).thenReturn(expected);
     when(service.create(expected)).thenReturn(expected);
     when(mapper.toDto(expected)).thenReturn(new AuthoritySourceFileDto());
@@ -159,12 +160,12 @@ class AuthoritySourceFileServiceDelegateTest {
     var expected = new AuthoritySourceFile(existing);
     expected.setBaseUrl(SANITIZED_BASE_URL);
 
+    mockAsNonConsortiumTenant();
     when(service.getById(existing.getId())).thenReturn(existing);
     when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
     when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
       .thenAnswer(i -> i.getArguments()[1]);
     when(service.update(any(UUID.class), any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[1]);
-    when(context.getTenantId()).thenReturn(TENANT_ID);
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
@@ -253,12 +254,11 @@ class AuthoritySourceFileServiceDelegateTest {
   void shouldNotCreateForConsortiumMemberTenant() {
     var dto = new AuthoritySourceFilePostDto();
 
-    when(context.getTenantId()).thenReturn(TENANT_ID);
-    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
+    mockAsConsortiumMemberTenant();
 
     var exc = assertThrows(RequestBodyValidationException.class, () -> delegate.createAuthoritySourceFile(dto));
 
-    assertThat(exc.getMessage()).isEqualTo("Action 'create' is not supported for consortium member tenant");
+    assertThat(exc.getMessage()).isEqualTo("Action 'CREATE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
       .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
@@ -270,9 +270,11 @@ class AuthoritySourceFileServiceDelegateTest {
   void shouldGetNextHrid() {
     var id = UUID.randomUUID();
     var code = "CODE10";
-    when(context.getTenantId()).thenReturn(TENANT_ID);
-    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.empty());
+
+    mockAsNonConsortiumTenant();
     when(service.nextHrid(id)).thenReturn(code);
+    when(executionService.executeSystemUserScoped(eq(TENANT_ID), any()))
+      .thenAnswer(invocation -> ((Callable<?>) invocation.getArgument(1)).call());
 
     var hridDto = delegate.getAuthoritySourceFileNextHrid(id);
 
@@ -283,36 +285,40 @@ class AuthoritySourceFileServiceDelegateTest {
   }
 
   @Test
-  void shouldNotNextHridForConsortiumMemberTenant() {
-    when(context.getTenantId()).thenReturn(TENANT_ID);
-    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
-
+  void shouldGetNextHridForConsortiumMemberTenant_withSwitchToCentralTenant() {
     var id = UUID.randomUUID();
-    var exc = assertThrows(RequestBodyValidationException.class, () -> delegate.getAuthoritySourceFileNextHrid(id));
+    var code = "CODE10";
 
-    assertThat(exc.getMessage()).isEqualTo("Action 'next HRID' is not supported for consortium member tenant");
-    assertThat(exc.getInvalidParameters()).hasSize(1);
-    assertThat(exc.getInvalidParameters().get(0))
-      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
-    verifyNoInteractions(service);
+    mockAsConsortiumMemberTenant();
+    when(service.nextHrid(id)).thenReturn(code);
+    when(executionService.executeSystemUserScoped(eq(CENTRAL_TENANT_ID), any()))
+      .thenAnswer(invocation -> ((Callable<?>) invocation.getArgument(1)).call());
+
+    var hridDto = delegate.getAuthoritySourceFileNextHrid(id);
+
+    assertThat(hridDto)
+      .extracting(AuthoritySourceFileHridDto::getId, AuthoritySourceFileHridDto::getHrid)
+      .containsExactly(id, code);
+    verify(service).nextHrid(id);
   }
 
   @Test
   void shouldNotUpdateConsortiumShadowCopy() {
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
-    existing.setSource(AuthoritySourceFileSource.CONSORTIUM);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
     var id = existing.getId();
     var dto = new AuthoritySourceFilePatchDto();
 
+    mockAsConsortiumMemberTenant();
     when(service.getById(existing.getId())).thenReturn(existing);
 
     var exc = assertThrows(RequestBodyValidationException.class,
       () -> delegate.patchAuthoritySourceFile(id, dto));
 
-    assertThat(exc.getMessage()).isEqualTo("UPDATE is not applicable to consortium shadow copy");
+    assertThat(exc.getMessage()).isEqualTo("Action 'UPDATE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
-      .matches(param -> param.getKey().equals("id") && param.getValue().equals(String.valueOf(id)));
+      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
     verifyNoInteractions(mapper);
     verifyNoMoreInteractions(service);
     verifyNoInteractions(propagationService);
@@ -321,18 +327,19 @@ class AuthoritySourceFileServiceDelegateTest {
   @Test
   void shouldNotDeleteConsortiumShadowCopy() {
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
-    existing.setSource(AuthoritySourceFileSource.CONSORTIUM);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
     var id = existing.getId();
 
+    mockAsConsortiumMemberTenant();
     when(service.getById(existing.getId())).thenReturn(existing);
 
     var exc = assertThrows(RequestBodyValidationException.class,
       () -> delegate.deleteAuthoritySourceFileById(id));
 
-    assertThat(exc.getMessage()).isEqualTo("DELETE is not applicable to consortium shadow copy");
+    assertThat(exc.getMessage()).isEqualTo("Action 'DELETE' is not supported for consortium member tenant");
     assertThat(exc.getInvalidParameters()).hasSize(1);
     assertThat(exc.getInvalidParameters().get(0))
-      .matches(param -> param.getKey().equals("id") && param.getValue().equals(String.valueOf(id)));
+      .matches(param -> param.getKey().equals("tenantId") && param.getValue().equals(TENANT_ID));
     verifyNoMoreInteractions(service);
     verifyNoInteractions(propagationService);
   }
@@ -344,5 +351,20 @@ class AuthoritySourceFileServiceDelegateTest {
         new Parameter("hridManagement.startNumber").value("1"))),
       Arguments.of(AuthoritySourceFileSource.LOCAL, true, List.of(new Parameter("codes").value("a,b"),
         new Parameter("hridManagement.startNumber").value("1"))));
+  }
+
+  private void mockAsNonConsortiumTenant() {
+    when(context.getTenantId()).thenReturn(TENANT_ID);
+    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.empty());
+  }
+
+  private void mockAsConsortiumCentralTenant() {
+    when(context.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
+    when(tenantsService.getCentralTenant(CENTRAL_TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
+  }
+
+  private void mockAsConsortiumMemberTenant() {
+    when(context.getTenantId()).thenReturn(TENANT_ID);
+    when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
   }
 }

@@ -2,7 +2,6 @@ package org.folio.entlinks.service.authority;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.CONSORTIUM;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -155,7 +154,7 @@ class AuthoritySourceFileServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"LOCAL", "CONSORTIUM"})
+  @ValueSource(strings = {"LOCAL", "FOLIO"})
   void shouldCreateAuthoritySourceFile(String source) {
     var code = new AuthoritySourceFileCode();
     code.setCode("code");
@@ -197,7 +196,7 @@ class AuthoritySourceFileServiceTest {
     var id = existing.getId();
     var modified = authoritySourceFile(1);
     modified.setId(id);
-    modified.setSource(CONSORTIUM);
+    modified.setSource(LOCAL);
 
     var expected = new AuthoritySourceFile(modified);
     expected.setSource(existing.getSource());
