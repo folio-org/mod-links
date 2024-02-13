@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -17,10 +18,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.assertj.core.api.Assertions;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
@@ -39,7 +40,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -211,28 +212,15 @@ class AuthoritySourceFileServiceTest {
     when(repository.save(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
-    var fileSaveCaptor = ArgumentCaptor.forClass(AuthoritySourceFile.class);
 
     var actual = service.update(id, modified);
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(fileSaveCaptor.capture());
+    verify(repository).save(argThat(new AuthoritySourceFileMatcher(expected)));
     verify(jdbcTemplate).execute(
         "ALTER SEQUENCE %s RESTART WITH %d OWNED BY test.authority_source_file.sequence_name;"
             .formatted(existing.getSequenceName(), modified.getHridStartNumber()));
-
-    var captured = fileSaveCaptor.getValue();
-    Assertions.assertThat(captured.getName()).isEqualTo(expected.getName());
-    Assertions.assertThat(captured.getType()).isEqualTo(expected.getType());
-    Assertions.assertThat(captured.getBaseUrlProtocol()).isEqualTo(expected.getBaseUrlProtocol());
-    Assertions.assertThat(captured.getBaseUrl()).isEqualTo(expected.getBaseUrl());
-    Assertions.assertThat(captured.getAuthoritySourceFileCodes()).isEqualTo(expected.getAuthoritySourceFileCodes());
-    Assertions.assertThat(captured.isSelectable()).isEqualTo(expected.isSelectable());
-    Assertions.assertThat(captured.getHridStartNumber()).isEqualTo(expected.getHridStartNumber());
-
-    Assertions.assertThat(captured.getSource()).isEqualTo(existing.getSource());
-    Assertions.assertThat(captured.getSequenceName()).isEqualTo(existing.getSequenceName());
   }
 
   @Test
@@ -411,5 +399,26 @@ class AuthoritySourceFileServiceTest {
         .isEqualTo("Cannot update record " + id + " because it has been changed (optimistic locking): "
             + "Stored _version is 1, _version of request is 0");
     verifyNoMoreInteractions(repository);
+  }
+
+  static class AuthoritySourceFileMatcher implements ArgumentMatcher<AuthoritySourceFile> {
+    private final AuthoritySourceFile expected;
+
+    AuthoritySourceFileMatcher(AuthoritySourceFile expected) {
+      this.expected = expected;
+    }
+
+    @Override
+    public boolean matches(AuthoritySourceFile actual) {
+      return actual.getName().equals(expected.getName())
+          && actual.getType().equals(expected.getType())
+          && actual.getBaseUrlProtocol().equals(expected.getBaseUrlProtocol())
+          && actual.getBaseUrl().equals(expected.getBaseUrl())
+          && actual.getAuthoritySourceFileCodes().equals(expected.getAuthoritySourceFileCodes())
+          && actual.isSelectable() == expected.isSelectable()
+          && Objects.equals(actual.getHridStartNumber(), expected.getHridStartNumber())
+          && actual.getSource().equals(expected.getSource())
+          && actual.getSequenceName().equals(expected.getSequenceName());
+    }
   }
 }
