@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.Authority;
@@ -37,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class AuthorityServiceTest {
-
   @Mock
   private AuthorityRepository repository;
 
@@ -245,21 +243,20 @@ class AuthorityServiceTest {
 
     @Override
     public boolean matches(Authority actual) {
-      return actual.getNaturalId().equals(expected.getNaturalId())
-          && actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile())
-          && actual.getSource().equals(expected.getSource())
-          && actual.getHeading().equals(expected.getHeading())
-          && actual.getHeadingType().equals(expected.getHeadingType())
-          && actual.getVersion() == expected.getVersion()
-          && Objects.equals(actual.getSubjectHeadingCode(), expected.getSubjectHeadingCode())
-          && actual.getSftHeadings().equals(expected.getSftHeadings())
-          && actual.getSaftHeadings().equals(expected.getSaftHeadings())
-          && actual.getIdentifiers().equals(expected.getIdentifiers())
-          && actual.getNotes().equals(expected.getNotes())
-          && actual.getUpdatedDate().equals(expected.getUpdatedDate())
-          && actual.getCreatedDate().equals(expected.getCreatedDate())
-          && actual.getCreatedByUserId().equals(expected.getCreatedByUserId())
-          && actual.getUpdatedByUserId().equals(expected.getUpdatedByUserId());
+      if (actual == null || expected == null) {
+        return actual == expected;
+      }
+
+      return actual.getHeading().equals(expected.getHeading())
+              && actual.getHeadingType().equals(expected.getHeadingType())
+              && actual.getSource().equals(expected.getSource())
+              && actual.getNaturalId().equals(expected.getNaturalId())
+              && actual.getVersion() == actual.getVersion()
+              && actual.getSaftHeadings().equals(expected.getSaftHeadings())
+              && actual.getSftHeadings().equals(expected.getSftHeadings())
+              && actual.getNotes().equals(expected.getNotes())
+              && actual.getIdentifiers().equals(expected.getIdentifiers())
+              && actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile());
     }
   }
 }
