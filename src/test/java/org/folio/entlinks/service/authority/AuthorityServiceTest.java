@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.MatchersUtil.authorityMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
@@ -26,7 +27,6 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -155,8 +155,7 @@ class AuthorityServiceTest {
 
     assertThat(updated).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(repository).save(argThat(new AuthorityMatcher(modified)));
-    verifyNoMoreInteractions(repository);
+    verify(repository).save(argThat(authorityMatch(modified)));
   }
 
   @Test
@@ -232,31 +231,5 @@ class AuthorityServiceTest {
     service.deleteByIds(List.of(UUID.randomUUID()));
 
     verify(repository).deleteAllByIdInBatch(anyIterable());
-  }
-
-  static class AuthorityMatcher implements ArgumentMatcher<Authority> {
-    private final Authority expected;
-
-    AuthorityMatcher(Authority expected) {
-      this.expected = expected;
-    }
-
-    @Override
-    public boolean matches(Authority actual) {
-      if (actual == null || expected == null) {
-        return actual == expected;
-      }
-
-      return actual.getHeading().equals(expected.getHeading())
-              && actual.getHeadingType().equals(expected.getHeadingType())
-              && actual.getSource().equals(expected.getSource())
-              && actual.getNaturalId().equals(expected.getNaturalId())
-              && actual.getVersion() == actual.getVersion()
-              && actual.getSaftHeadings().equals(expected.getSaftHeadings())
-              && actual.getSftHeadings().equals(expected.getSftHeadings())
-              && actual.getNotes().equals(expected.getNotes())
-              && actual.getIdentifiers().equals(expected.getIdentifiers())
-              && actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile());
-    }
   }
 }

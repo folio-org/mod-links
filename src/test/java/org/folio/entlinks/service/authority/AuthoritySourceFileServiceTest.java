@@ -3,6 +3,7 @@ package org.folio.entlinks.service.authority;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
+import static org.folio.support.MatchersUtil.authoritySourceFileMatch;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,7 +19,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -40,7 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -217,7 +216,7 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(argThat(new AuthoritySourceFileMatcher(expected)));
+    verify(repository).save(argThat(authoritySourceFileMatch(expected)));
     verify(jdbcTemplate).execute(
         "ALTER SEQUENCE %s RESTART WITH %d OWNED BY test.authority_source_file.sequence_name;"
             .formatted(existing.getSequenceName(), modified.getHridStartNumber()));
@@ -399,30 +398,5 @@ class AuthoritySourceFileServiceTest {
         .isEqualTo("Cannot update record " + id + " because it has been changed (optimistic locking): "
             + "Stored _version is 1, _version of request is 0");
     verifyNoMoreInteractions(repository);
-  }
-
-  static class AuthoritySourceFileMatcher implements ArgumentMatcher<AuthoritySourceFile> {
-    private final AuthoritySourceFile expected;
-
-    AuthoritySourceFileMatcher(AuthoritySourceFile expected) {
-      this.expected = expected;
-    }
-
-    @Override
-    public boolean matches(AuthoritySourceFile actual) {
-      if (actual == null || expected == null) {
-        return actual == expected;
-      }
-
-      return actual.getName().equals(expected.getName())
-          && actual.getType().equals(expected.getType())
-          && actual.getBaseUrlProtocol().equals(expected.getBaseUrlProtocol())
-          && actual.getBaseUrl().equals(expected.getBaseUrl())
-          && actual.getAuthoritySourceFileCodes().equals(expected.getAuthoritySourceFileCodes())
-          && actual.isSelectable() == expected.isSelectable()
-          && Objects.equals(actual.getHridStartNumber(), expected.getHridStartNumber())
-          && actual.getSource().equals(expected.getSource())
-          && actual.getSequenceName().equals(expected.getSequenceName());
-    }
   }
 }
