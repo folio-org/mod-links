@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.Authority;
@@ -24,7 +26,7 @@ import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -105,13 +107,11 @@ class AuthorityServiceTest {
     newEntity.setAuthoritySourceFile(sourceFile);
 
     when(repository.save(any(Authority.class))).thenReturn(expected);
-    var argumentCaptor = ArgumentCaptor.forClass(Authority.class);
 
     var created = service.create(newEntity);
 
     assertThat(created).isEqualTo(expected);
-    verify(repository).save(argumentCaptor.capture());
-    assertThat(argumentCaptor.getValue().getId()).isNotNull();
+    verify(repository).save(argThat(new AuthorityMatcher(created)));
   }
 
   @Test
@@ -150,18 +150,11 @@ class AuthorityServiceTest {
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
     when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
     var updated = service.update(modified);
 
-    assertThat(updated)
-      .extracting(Authority::getId, Authority::getHeading, Authority::getHeadingType, Authority::getSource,
-        Authority::getNaturalId, Authority::getAuthoritySourceFile, Authority::getVersion, Authority::getSftHeadings,
-        Authority::getSaftHeadings, Authority::getNotes, Authority::getIdentifiers)
-      .containsExactly(modified.getId(), modified.getHeading(), modified.getHeadingType(), modified.getSource(),
-        modified.getNaturalId(), modified.getAuthoritySourceFile(), 1, modified.getSftHeadings(),
-        modified.getSaftHeadings(), modified.getNotes(), modified.getIdentifiers());
+    assertThat(updated).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(repository).save(existed);
+    verify(repository).save(argThat(new AuthorityMatcher(modified)));
     verifyNoMoreInteractions(repository);
   }
 
@@ -238,5 +231,31 @@ class AuthorityServiceTest {
     service.deleteByIds(List.of(UUID.randomUUID()));
 
     verify(repository).deleteAllByIdInBatch(anyIterable());
+  }
+
+  static class AuthorityMatcher implements ArgumentMatcher<Authority> {
+    private final Authority expected;
+
+    AuthorityMatcher(Authority expected) {
+      this.expected = expected;
+    }
+
+    @Override
+    public boolean matches(Authority actual) {
+      return actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile())
+          && actual.getSource().equals(expected.getSource())
+          && actual.getHeading().equals(expected.getHeading())
+          && actual.getHeadingType().equals(expected.getHeadingType())
+          && actual.getVersion() == expected.getVersion()
+          && Objects.equals(actual.getSubjectHeadingCode(), expected.getSubjectHeadingCode())
+          && actual.getSftHeadings().equals(expected.getSftHeadings())
+          && actual.getSaftHeadings().equals(expected.getSaftHeadings())
+          && actual.getIdentifiers().equals(expected.getIdentifiers())
+          && actual.getNotes().equals(expected.getNotes())
+          && actual.getUpdatedDate().equals(expected.getUpdatedDate())
+          && actual.getCreatedDate().equals(expected.getCreatedDate())
+          && actual.getCreatedByUserId().equals(expected.getCreatedByUserId())
+          && actual.getUpdatedByUserId().equals(expected.getUpdatedByUserId());
+    }
   }
 }
