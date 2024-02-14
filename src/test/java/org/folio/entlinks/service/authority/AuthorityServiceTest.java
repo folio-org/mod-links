@@ -26,6 +26,7 @@ import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -107,11 +108,13 @@ class AuthorityServiceTest {
     newEntity.setAuthoritySourceFile(sourceFile);
 
     when(repository.save(any(Authority.class))).thenReturn(expected);
+    var argumentCaptor = ArgumentCaptor.forClass(Authority.class);
 
     var created = service.create(newEntity);
 
     assertThat(created).isEqualTo(expected);
-    verify(repository).save(argThat(new AuthorityMatcher(created)));
+    verify(repository).save(argumentCaptor.capture());
+    assertThat(argumentCaptor.getValue().getId()).isNotNull();
   }
 
   @Test
@@ -242,7 +245,8 @@ class AuthorityServiceTest {
 
     @Override
     public boolean matches(Authority actual) {
-      return actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile())
+      return actual.getNaturalId().equals(expected.getNaturalId())
+          && actual.getAuthoritySourceFile().equals(expected.getAuthoritySourceFile())
           && actual.getSource().equals(expected.getSource())
           && actual.getHeading().equals(expected.getHeading())
           && actual.getHeadingType().equals(expected.getHeadingType())
