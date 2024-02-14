@@ -411,7 +411,7 @@ class AuthoritySourceFileServiceTest {
     @Override
     public boolean matches(AuthoritySourceFile actual) {
       if (actual == null || expected == null) {
-         return actual == expected;
+        return actual == expected;
       }
 
       return actual.getName().equals(expected.getName())
