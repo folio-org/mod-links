@@ -11,9 +11,12 @@ import java.util.Objects;
 import lombok.experimental.UtilityClass;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
+import org.folio.entlinks.domain.entity.Authority;
+import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.mockito.ArgumentMatcher;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 @UtilityClass
@@ -49,6 +52,42 @@ public class MatchUtils {
       .map(MatchUtils.StatsMatcher::statsMatch)
       .toArray(Matcher[]::new);
     return jsonPath("$.stats", contains(statsMatchers));
+  }
+
+  public static ArgumentMatcher<Authority> authorityMatch(Authority expected) {
+    return actual -> {
+      if (actual == null || expected == null) {
+        return actual == expected;
+      }
+      return Objects.equals(actual.getId(), expected.getId())
+          && Objects.equals(actual.getHeading(), expected.getHeading())
+          && Objects.equals(actual.getHeadingType(), expected.getHeadingType())
+          && Objects.equals(actual.getSource(), expected.getSource())
+          && Objects.equals(actual.getNaturalId(), expected.getNaturalId())
+          && actual.getVersion() == expected.getVersion()
+          && Objects.equals(actual.getSaftHeadings(), expected.getSaftHeadings())
+          && Objects.equals(actual.getSftHeadings(), expected.getSftHeadings())
+          && Objects.equals(actual.getNotes(), expected.getNotes())
+          && Objects.equals(actual.getIdentifiers(), expected.getIdentifiers())
+          && Objects.equals(actual.getAuthoritySourceFile(), expected.getAuthoritySourceFile());
+    };
+  }
+
+  public static ArgumentMatcher<AuthoritySourceFile> authoritySourceFileMatch(AuthoritySourceFile expected) {
+    return actual -> {
+      if (actual == null || expected == null) {
+        return actual == expected;
+      }
+      return Objects.equals(actual.getName(), expected.getName())
+          && Objects.equals(actual.getType(), expected.getType())
+          && Objects.equals(actual.getBaseUrlProtocol(), expected.getBaseUrlProtocol())
+          && Objects.equals(actual.getBaseUrl(), expected.getBaseUrl())
+          && Objects.equals(actual.getAuthoritySourceFileCodes(), expected.getAuthoritySourceFileCodes())
+          && actual.isSelectable() == expected.isSelectable()
+          && Objects.equals(actual.getHridStartNumber(), expected.getHridStartNumber())
+          && Objects.equals(actual.getSource(), expected.getSource())
+          && Objects.equals(actual.getSequenceName(), expected.getSequenceName());
+    };
   }
 
   private static final class StatsMatcher extends BaseMatcher<BibStatsDto> {
