@@ -3,7 +3,7 @@ package org.folio.entlinks.service.authority;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
-import static org.folio.support.MatchersUtil.authoritySourceFileMatch;
+import static org.folio.support.MatchUtils.authoritySourceFileMatch;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

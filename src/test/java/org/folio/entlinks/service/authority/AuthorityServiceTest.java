@@ -1,7 +1,7 @@
 package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.support.MatchersUtil.authorityMatch;
+import static org.folio.support.MatchUtils.authorityMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
@@ -140,7 +140,7 @@ class AuthorityServiceTest {
     modified.setHeadingType("personalNameNew");
     modified.setSource("MARCNEW");
     modified.setNaturalId("naturalNew");
-    modified.setVersion(0);
+    modified.setVersion(1);
     modified.setSaftHeadings(List.of(new HeadingRef("personalNameNew", "saftNew")));
     modified.setSftHeadings(List.of(new HeadingRef("personalNameNew", "sftNew")));
     modified.setNotes(List.of(new AuthorityNote(UUID.randomUUID(), "noteNew", true)));
