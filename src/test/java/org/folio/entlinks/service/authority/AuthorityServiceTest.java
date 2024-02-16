@@ -1,10 +1,12 @@
 package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.MatchUtils.authorityMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -34,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class AuthorityServiceTest {
-
   @Mock
   private AuthorityRepository repository;
 
@@ -139,7 +140,7 @@ class AuthorityServiceTest {
     modified.setHeadingType("personalNameNew");
     modified.setSource("MARCNEW");
     modified.setNaturalId("naturalNew");
-    modified.setVersion(0);
+    modified.setVersion(1);
     modified.setSaftHeadings(List.of(new HeadingRef("personalNameNew", "saftNew")));
     modified.setSftHeadings(List.of(new HeadingRef("personalNameNew", "sftNew")));
     modified.setNotes(List.of(new AuthorityNote(UUID.randomUUID(), "noteNew", true)));
@@ -150,19 +151,11 @@ class AuthorityServiceTest {
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
     when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
     var updated = service.update(modified);
 
-    assertThat(updated)
-      .extracting(Authority::getId, Authority::getHeading, Authority::getHeadingType, Authority::getSource,
-        Authority::getNaturalId, Authority::getAuthoritySourceFile, Authority::getVersion, Authority::getSftHeadings,
-        Authority::getSaftHeadings, Authority::getNotes, Authority::getIdentifiers)
-      .containsExactly(modified.getId(), modified.getHeading(), modified.getHeadingType(), modified.getSource(),
-        modified.getNaturalId(), modified.getAuthoritySourceFile(), 1, modified.getSftHeadings(),
-        modified.getSaftHeadings(), modified.getNotes(), modified.getIdentifiers());
+    assertThat(updated).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(repository).save(existed);
-    verifyNoMoreInteractions(repository);
+    verify(repository).save(argThat(authorityMatch(modified)));
   }
 
   @Test
