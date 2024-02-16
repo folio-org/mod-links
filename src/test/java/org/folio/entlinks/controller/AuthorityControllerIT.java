@@ -364,7 +364,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
       .andExpect(jsonPath("source", is(dto.getSource())))
       .andExpect(jsonPath("naturalId", is(dto.getNaturalId())))
       .andExpect(jsonPath("personalName", is(dto.getPersonalName())))
-      //.andExpect(jsonPath("sourceFileId", is(dto.getSourceFileId().toString())))
+      .andExpect(jsonPath("sourceFileId", is(dto.getSourceFileId().toString())))
       .andExpect(jsonPath("_version", is(0)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
