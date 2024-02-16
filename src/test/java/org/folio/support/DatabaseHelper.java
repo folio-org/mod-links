@@ -21,7 +21,7 @@ public class DatabaseHelper {
   public static final String INSTANCE_AUTHORITY_LINK_TABLE = "instance_authority_link";
   public static final String AUTHORITY_NOTE_TYPE_TABLE = "authority_note_type";
   public static final String AUTHORITY_SOURCE_FILE_TABLE = "authority_source_file";
-  public static final String AUTHORITY_SOURCE_FILE_SOURCE_TYPE = "AuthoritySourceType";
+  public static final String AUTHORITY_SOURCE_FILE_SOURCE_TYPE = "authority_source_file_source";
   public static final String AUTHORITY_SOURCE_FILE_CODE_TABLE = "authority_source_file_code";
   public static final String AUTHORITY_TABLE = "authority";
   public static final String AUTHORITY_ARCHIVE_TABLE = "authority_archive";
@@ -66,9 +66,9 @@ public class DatabaseHelper {
       + " (id, name, source, type, base_url_protocol, base_url, hrid_start_number, created_date, updated_date,"
       + "created_by_user_id, updated_by_user_id) VALUES " + sqlValues;
     jdbcTemplate.update(sql, entity.getId(), entity.getName(),
-        entity.getSource().name(), entity.getType(), substringBefore(entity.getBaseUrl(), "://"),
-        StringUtils.substringAfter(entity.getBaseUrl(), "://"), entity.getHridStartNumber(),
-        entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(), entity.getUpdatedByUserId());
+      entity.getSource().name(), entity.getType(), entity.getBaseUrlProtocol(), entity.getBaseUrl(),
+      entity.getHridStartNumber(), entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(),
+      entity.getUpdatedByUserId());
   }
 
   public static String substringBefore(String string, String subString) {

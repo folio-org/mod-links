@@ -20,7 +20,9 @@
 * Implement next hrid endpoint for authority source file([MODELINKS-122](https://issues.folio.org/browse/MODELINKS-122))
 * Add protocol to base url for authority source files([MODELINKS-191](https://issues.folio.org/browse/MODELINKS-191))
 * Make system user usage optional ([MODELINKS-150](https://issues.folio.org/browse/MODELINKS-150) and [MODROLESKC-24](https://issues.folio.org/browse/MODROLESKC-24))
-* Propagate authority archives deletion to member tenants([MODELINKS-195](https://issues.folio.org/browse/MODELINKS-195))
+* Propagate authority archives deletion to member tenants ([MODELINKS-195](https://issues.folio.org/browse/MODELINKS-195))
+* Implement endpoint for bulk authorities upsert from external file ([MODELINKS-173](https://issues.folio.org/browse/MODELINKS-173))
+* Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
@@ -28,6 +30,7 @@
 * Failed to send update event if sourceFile is null ([MODELINKS-144](https://issues.folio.org/browse/MODELINKS-144))
 * Remove foreign key for authority_data_stat ([MODELINKS-155](https://issues.folio.org/browse/MODELINKS-155))
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
+* Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
 
 ### Tech Dept
 * Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))

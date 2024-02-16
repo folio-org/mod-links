@@ -25,15 +25,16 @@
       src/main/java/org/folio/entlinks/model/**
     </sonar.exclusions>
 
-    <folio-spring-base.version>8.0.0</folio-spring-base.version>
+    <folio-spring-support.version>8.1.0-SNAPSHOT</folio-spring-support.version>
     <folio-service-tools.version>4.0.0-SNAPSHOT</folio-service-tools.version>
+    <folio-s3-client.version>2.1.0-SNAPSHOT</folio-s3-client.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
     <lombok.mapstruct-binding.version>0.2.0</lombok.mapstruct-binding.version>
     <marc4j.version>2.9.5</marc4j.version>
 
     <awaitility.version>4.2.0</awaitility.version>
 
-    <maven-openapi-generator-plugin.version>7.2.0</maven-openapi-generator-plugin.version>
+    <maven-openapi-generator-plugin.version>7.3.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
     <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
@@ -43,36 +44,36 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-spring-base</artifactId>
-      <version>${folio-spring-base.version}</version>
+      <version>${folio-spring-support.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-spring-cql</artifactId>
-      <version>${folio-spring-base.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.retry</groupId>
-      <artifactId>spring-retry</artifactId>
+      <version>${folio-spring-support.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-spring-system-user</artifactId>
-      <version>${folio-spring-base.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-spring-testing</artifactId>
-      <version>${folio-spring-base.version}</version>
-      <scope>test</scope>
+      <version>${folio-spring-support.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-service-tools-spring-dev</artifactId>
       <version>${folio-service-tools.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-s3-client</artifactId>
+      <version>${folio-s3-client.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.retry</groupId>
+      <artifactId>spring-retry</artifactId>
     </dependency>
 
     <dependency>
@@ -135,6 +136,18 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Hibernate 6.4.1.Final has issue with saving or persisting JsonType fields and this was observed for authorities
+    when they are persisted hibernate increased version property twice (one for insert and one for update).
+    There is similar to this one issue in their issue tracker: https://hibernate.atlassian.net/browse/HHH-17660, we can
+    track its status and once it fixed we can try to upgrade version of hibernate which is enough to remove this dependency
+    and use the one from parent spring-boot -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>6.3.1.Final</version>
+    </dependency>
+
+
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
@@ -155,6 +168,13 @@
           <artifactId>spring-boot-starter-logging</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-spring-testing</artifactId>
+      <version>${folio-spring-support.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -373,7 +393,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.12.7</version>
+            <version>10.13.0</version>
           </dependency>
         </dependencies>
         <executions>

@@ -130,14 +130,6 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
     this.isNew = false;
   }
 
-  public void markAsConsortiumShadowCopy() {
-    this.setSource(AuthoritySourceFileSource.CONSORTIUM);
-  }
-
-  public boolean isConsortiumShadowCopy() {
-    return AuthoritySourceFileSource.CONSORTIUM.equals(this.getSource());
-  }
-
   public String getFullBaseUrl() {
     if (baseUrl == null) {
       return null;

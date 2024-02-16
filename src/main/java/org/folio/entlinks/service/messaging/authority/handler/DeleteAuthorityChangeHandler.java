@@ -46,7 +46,7 @@ public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler
     // delete the links
     linkingService.deleteByAuthorityIdIn(authorityIds);
     // hard delete the authorities
-    authorityService.batchDeleteByIds(softDeleteAuthorityIds);
+    authorityService.deleteByIds(softDeleteAuthorityIds);
     return linksEvents;
   }
 

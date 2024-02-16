@@ -49,9 +49,10 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
   public static final String COLLEGE_TENANT_ID = "college";
   public static final String UNIVERSITY_TENANT_ID = "university";
 
-  private static final String BASE_URL = "http://id.loc.gov/authorities/names/";
+  private static final String BASE_URL = "id.loc.gov/authorities/names/";
+  private static final String FULL_BASE_URL = "http://" + BASE_URL;
   private static final String LINKABLE_AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
-  private static final String NATURAL_ID = "oneAuthority";
+  private static final String NATURAL_ID = "n12345";
 
   @BeforeAll
   static void prepare() {
@@ -62,9 +63,10 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
   public void setup() {
     var sourceFile = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     sourceFile.setBaseUrl(BASE_URL);
+    sourceFile.setBaseUrlProtocol("http");
     var sourceFileCode1 = sourceFile.getAuthoritySourceFileCodes().iterator().next();
     var sourceFileCode2 = new AuthoritySourceFileCode();
-    sourceFileCode1.setCode(NATURAL_ID.substring(0, 3));
+    sourceFileCode1.setCode("n");
     sourceFileCode2.setAuthoritySourceFile(sourceFile);
     sourceFileCode2.setCode(NATURAL_ID.substring(0, 2));
     sourceFile.addCode(sourceFileCode2);
@@ -96,12 +98,12 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
   @Test
   @SneakyThrows
   void getAuthDataStat_shouldActualizeLinkAndSubfieldsForMemberTenant() {
-    var givenSubfields = Map.of("a", "old $a value", "0", BASE_URL + NATURAL_ID);
+    var givenSubfields = Map.of("a", "old $a value", "0", FULL_BASE_URL + NATURAL_ID);
     var givenLinkDetails = getLinkDetails(ACTUAL);
     var givenRecord = getRecord("100", givenLinkDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(ACTUAL);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -118,7 +120,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -135,7 +137,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW);
-    var expectedSubfields = Map.of("a", "new $a value", "0", BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));

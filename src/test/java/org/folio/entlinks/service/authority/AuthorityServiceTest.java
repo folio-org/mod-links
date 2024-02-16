@@ -1,12 +1,13 @@
 package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.MatchUtils.authorityMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -20,11 +21,8 @@ import org.folio.entlinks.domain.entity.AuthorityNote;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
-import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
-import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
-import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,12 +36,8 @@ import org.springframework.data.domain.Pageable;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class AuthorityServiceTest {
-
   @Mock
   private AuthorityRepository repository;
-
-  @Mock
-  private AuthoritySourceFileRepository sourceFileRepository;
 
   @InjectMocks
   private AuthorityService service;
@@ -62,12 +56,12 @@ class AuthorityServiceTest {
   @Test
   void shouldGetAllAuthoritiesByCqlQuery() {
     var expected = new PageImpl<>(List.of(new Authority()));
-    when(repository.findByCqlAndDeletedFalse(any(String.class), any(Pageable.class))).thenReturn(expected);
+    when(repository.findByCql(any(String.class), any(Pageable.class))).thenReturn(expected);
 
     var result = service.getAll(0, 10, "some_query_string");
 
     assertThat(result).isEqualTo(expected);
-    verify(repository).findByCqlAndDeletedFalse(any(String.class), any(Pageable.class));
+    verify(repository).findByCql(any(String.class), any(Pageable.class));
   }
 
   @Test
@@ -112,29 +106,13 @@ class AuthorityServiceTest {
     newEntity.setAuthoritySourceFile(sourceFile);
 
     when(repository.save(any(Authority.class))).thenReturn(expected);
-    when(sourceFileRepository.existsById(any(UUID.class))).thenReturn(true);
     var argumentCaptor = ArgumentCaptor.forClass(Authority.class);
 
     var created = service.create(newEntity);
 
     assertThat(created).isEqualTo(expected);
-    verify(sourceFileRepository).existsById(any(UUID.class));
     verify(repository).save(argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getId()).isNotNull();
-  }
-
-  @Test
-  void shouldThrowExceptionIfSourceFileDoesNotExist() {
-    var sourceFile = new AuthoritySourceFile();
-    sourceFile.setId(UUID.randomUUID());
-    var newEntity = new Authority();
-    newEntity.setAuthoritySourceFile(sourceFile);
-    when(sourceFileRepository.existsById(any(UUID.class))).thenReturn(false);
-
-    assertThrows(AuthoritySourceFileNotFoundException.class, () -> service.create(newEntity));
-
-    verify(sourceFileRepository).existsById(any(UUID.class));
-    verifyNoInteractions(repository);
   }
 
   @Test
@@ -162,7 +140,7 @@ class AuthorityServiceTest {
     modified.setHeadingType("personalNameNew");
     modified.setSource("MARCNEW");
     modified.setNaturalId("naturalNew");
-    modified.setVersion(0);
+    modified.setVersion(1);
     modified.setSaftHeadings(List.of(new HeadingRef("personalNameNew", "saftNew")));
     modified.setSftHeadings(List.of(new HeadingRef("personalNameNew", "sftNew")));
     modified.setNotes(List.of(new AuthorityNote(UUID.randomUUID(), "noteNew", true)));
@@ -172,23 +150,12 @@ class AuthorityServiceTest {
     modified.setAuthoritySourceFile(sourceFileNew);
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
-    when(sourceFileRepository.existsById(any(UUID.class))).thenReturn(true);
     when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    var updated = service.update(modified);
 
-    var updated = service.update(id, modified);
-
-    assertThat(updated)
-      .extracting(Authority::getId, Authority::getHeading, Authority::getHeadingType, Authority::getSource,
-        Authority::getNaturalId, Authority::getAuthoritySourceFile, Authority::getVersion, Authority::getSftHeadings,
-        Authority::getSaftHeadings, Authority::getNotes, Authority::getIdentifiers)
-      .containsExactly(modified.getId(), modified.getHeading(), modified.getHeadingType(), modified.getSource(),
-        modified.getNaturalId(), modified.getAuthoritySourceFile(), 1, modified.getSftHeadings(),
-        modified.getSaftHeadings(), modified.getNotes(), modified.getIdentifiers());
+    assertThat(updated).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(sourceFileRepository).existsById(any(UUID.class));
-    verify(repository).save(existed);
-    verifyNoMoreInteractions(repository);
-    verifyNoMoreInteractions(sourceFileRepository);
+    verify(repository).save(argThat(authorityMatch(modified)));
   }
 
   @Test
@@ -208,13 +175,12 @@ class AuthorityServiceTest {
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
     when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    var updated = service.update(id, modified);
+    var updated = service.update(modified);
 
     assertThat(updated.getAuthoritySourceFile()).isNull();
     verify(repository).findByIdAndDeletedFalse(id);
     verify(repository).save(existed);
     verifyNoMoreInteractions(repository);
-    verifyNoMoreInteractions(sourceFileRepository);
   }
 
   @Test
@@ -228,27 +194,12 @@ class AuthorityServiceTest {
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existing));
 
-    var thrown = assertThrows(OptimisticLockingException.class, () -> service.update(id, modified));
+    var thrown = assertThrows(OptimisticLockingException.class, () -> service.update(modified));
 
     assertThat(thrown.getMessage())
       .isEqualTo("Cannot update record " + id + " because it has been changed (optimistic locking): "
-        + "Stored _version is 1, _version of request is 0");
+                 + "Stored _version is 1, _version of request is 0");
     verifyNoMoreInteractions(repository);
-  }
-
-  @Test
-  void shouldThrowExceptionIfEntityIdDiffersFromProvidedId() {
-    var entity = new Authority();
-    UUID id = UUID.randomUUID();
-    UUID differentId = UUID.randomUUID();
-    entity.setId(id);
-
-    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.update(differentId, entity));
-
-    assertThat(thrown.getInvalidParameters()).hasSize(1);
-    assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("id");
-    assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(id.toString());
-    verifyNoInteractions(repository);
   }
 
   @Test
@@ -277,7 +228,7 @@ class AuthorityServiceTest {
 
   @Test
   void shouldHardDeleteAuthoritiesByIds() {
-    service.batchDeleteByIds(List.of(UUID.randomUUID()));
+    service.deleteByIds(List.of(UUID.randomUUID()));
 
     verify(repository).deleteAllByIdInBatch(anyIterable());
   }

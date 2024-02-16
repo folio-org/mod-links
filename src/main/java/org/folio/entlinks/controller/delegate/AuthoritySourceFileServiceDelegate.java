@@ -24,6 +24,7 @@ import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
 import org.springframework.stereotype.Service;
 
@@ -33,14 +34,13 @@ import org.springframework.stereotype.Service;
 public class AuthoritySourceFileServiceDelegate {
 
   private static final String URL_PROTOCOL_PATTERN = "^(https?://www\\.|https?://|www\\.)";
-  private static final String CREATE_ACTION = "create";
-  private static final String NEXT_HRID_ACTION = "next HRID";
 
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
   private final UserTenantsService tenantsService;
   private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
   private final FolioExecutionContext context;
+  private final SystemUserScopedExecutionService executionService;
 
   public AuthoritySourceFileDtoCollection getAuthoritySourceFiles(Integer offset, Integer limit, String cqlQuery) {
     var entities = service.getAll(offset, limit, cqlQuery);
@@ -54,7 +54,7 @@ public class AuthoritySourceFileServiceDelegate {
 
   public AuthoritySourceFileDto createAuthoritySourceFile(AuthoritySourceFilePostDto authoritySourceFile) {
     log.debug("create:: Attempting to create AuthoritySourceFile [createDto: {}]", authoritySourceFile);
-    validateActionRightsForTenant(CREATE_ACTION);
+    validateActionRightsForTenant(DomainEventType.CREATE);
     var entity = mapper.toEntity(authoritySourceFile);
     normalizeBaseUrl(entity);
     var created = service.create(entity);
@@ -68,7 +68,7 @@ public class AuthoritySourceFileServiceDelegate {
   public void patchAuthoritySourceFile(UUID id, AuthoritySourceFilePatchDto partiallyModifiedDto) {
     log.debug("patch:: Attempting to patch AuthoritySourceFile [id: {}, patchDto: {}]", id, partiallyModifiedDto);
     var existingEntity = service.getById(id);
-    validateModifyPossibility(DomainEventType.UPDATE, existingEntity);
+    validateActionRightsForTenant(DomainEventType.UPDATE);
     validatePatchRequest(partiallyModifiedDto, existingEntity);
 
     var partialEntityUpdate = new AuthoritySourceFile(existingEntity);
@@ -81,7 +81,7 @@ public class AuthoritySourceFileServiceDelegate {
 
   public void deleteAuthoritySourceFileById(UUID id) {
     var entity = service.getById(id);
-    validateModifyPossibility(DomainEventType.DELETE, entity);
+    validateActionRightsForTenant(DomainEventType.DELETE);
 
     service.deleteById(id);
     propagationService.propagate(entity, DELETE, context.getTenantId());
@@ -89,9 +89,8 @@ public class AuthoritySourceFileServiceDelegate {
 
   public AuthoritySourceFileHridDto getAuthoritySourceFileNextHrid(UUID id) {
     log.debug("nextHrid:: Attempting to get next AuthoritySourceFile HRID [id: {}]", id);
-    validateActionRightsForTenant(NEXT_HRID_ACTION);
-
-    var hrid = service.nextHrid(id);
+    var tenantId = tenantsService.getCentralTenant(context.getTenantId()).orElse(context.getTenantId());
+    var hrid = executionService.executeSystemUserScoped(tenantId, () -> service.nextHrid(id));
 
     return new AuthoritySourceFileHridDto().id(id).hrid(hrid);
   }
@@ -107,19 +106,12 @@ public class AuthoritySourceFileServiceDelegate {
     }
   }
 
-  private void validateActionRightsForTenant(String action) {
+  private void validateActionRightsForTenant(DomainEventType action) {
     var tenantId = context.getTenantId();
     var centralTenantId = tenantsService.getCentralTenant(tenantId);
     if (centralTenantId.isPresent() && !tenantId.equals(centralTenantId.get())) {
       throw new RequestBodyValidationException("Action '%s' is not supported for consortium member tenant"
-          .formatted(action), List.of(new Parameter("tenantId").value(tenantId)));
-    }
-  }
-
-  private void validateModifyPossibility(DomainEventType eventType, AuthoritySourceFile entity) {
-    if (entity.isConsortiumShadowCopy()) {
-      throw new RequestBodyValidationException(eventType.name() + " is not applicable to consortium shadow copy",
-        List.of(new Parameter("id").value(String.valueOf(entity.getId()))));
+        .formatted(action), List.of(new Parameter("tenantId").value(tenantId)));
     }
   }
 
@@ -131,18 +123,22 @@ public class AuthoritySourceFileServiceDelegate {
       return;
     }
 
+    if (existing.getSource().equals(FOLIO) && patchDto.getName() != null) {
+      errorParameters.add(new Parameter("name")
+        .value(String.join(",", patchDto.getName())));
+    }
     if (patchDto.getCodes() != null) {
       errorParameters.add(new Parameter("codes")
-          .value(String.join(",", patchDto.getCodes())));
+        .value(String.join(",", patchDto.getCodes())));
     }
-    if (patchDto.getHridManagement() != null) {
+    if (patchDto.getHridManagement() != null && patchDto.getHridManagement().getStartNumber() != null) {
       errorParameters.add(new Parameter("hridManagement.startNumber")
-          .value(patchDto.getHridManagement().getStartNumber().toString()));
+        .value(patchDto.getHridManagement().getStartNumber().toString()));
     }
 
     if (!errorParameters.isEmpty()) {
       throw new RequestBodyValidationException(
-          "Unable to patch. Authority source file source is FOLIO or it has authority references", errorParameters);
+        "Unable to patch. Authority source file source is FOLIO or it has authority references", errorParameters);
     }
   }
 }

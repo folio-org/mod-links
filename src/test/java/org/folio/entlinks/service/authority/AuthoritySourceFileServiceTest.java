@@ -2,13 +2,14 @@ package org.folio.entlinks.service.authority;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.CONSORTIUM;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
+import static org.folio.support.MatchUtils.authoritySourceFileMatch;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.assertj.core.api.Assertions;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
@@ -40,7 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -155,7 +154,7 @@ class AuthoritySourceFileServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"LOCAL", "CONSORTIUM"})
+  @ValueSource(strings = {"LOCAL", "FOLIO"})
   void shouldCreateAuthoritySourceFile(String source) {
     var code = new AuthoritySourceFileCode();
     code.setCode("code");
@@ -197,7 +196,7 @@ class AuthoritySourceFileServiceTest {
     var id = existing.getId();
     var modified = authoritySourceFile(1);
     modified.setId(id);
-    modified.setSource(CONSORTIUM);
+    modified.setSource(LOCAL);
 
     var expected = new AuthoritySourceFile(modified);
     expected.setSource(existing.getSource());
@@ -212,27 +211,15 @@ class AuthoritySourceFileServiceTest {
     when(repository.save(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
-    var fileSaveCaptor = ArgumentCaptor.forClass(AuthoritySourceFile.class);
 
     var actual = service.update(id, modified);
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(fileSaveCaptor.capture());
+    verify(repository).save(argThat(authoritySourceFileMatch(expected)));
     verify(jdbcTemplate).execute(
         "ALTER SEQUENCE %s RESTART WITH %d OWNED BY test.authority_source_file.sequence_name;"
             .formatted(existing.getSequenceName(), modified.getHridStartNumber()));
-
-    var captured = fileSaveCaptor.getValue();
-    Assertions.assertThat(captured.getName()).isEqualTo(expected.getName());
-    Assertions.assertThat(captured.getType()).isEqualTo(expected.getType());
-    Assertions.assertThat(captured.getBaseUrl()).isEqualTo(expected.getBaseUrl());
-    Assertions.assertThat(captured.getAuthoritySourceFileCodes()).isEqualTo(expected.getAuthoritySourceFileCodes());
-    Assertions.assertThat(captured.isSelectable()).isEqualTo(expected.isSelectable());
-    Assertions.assertThat(captured.getHridStartNumber()).isEqualTo(expected.getHridStartNumber());
-
-    Assertions.assertThat(captured.getSource()).isEqualTo(existing.getSource());
-    Assertions.assertThat(captured.getSequenceName()).isEqualTo(existing.getSequenceName());
   }
 
   @Test

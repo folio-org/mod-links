@@ -293,6 +293,9 @@ paths:
   /authority-storage/authorities:
     $ref: './paths/authority-storage/authorities.yaml'
 
+  /authority-storage/authorities/bulk:
+    $ref: './paths/authority-storage/authorities-bulk.yaml'
+
   /authority-storage/authorities/{id}:
     $ref: './paths/authority-storage/authorities-by-id.yaml'
 

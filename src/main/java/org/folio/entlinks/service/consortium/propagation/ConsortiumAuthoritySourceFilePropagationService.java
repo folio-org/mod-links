@@ -21,7 +21,6 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
   }
 
   protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType) {
-    sourceFile.markAsConsortiumShadowCopy();
     switch (propagationType) {
       case CREATE -> sourceFileService.create(sourceFile);
       case UPDATE -> sourceFileService.update(sourceFile.getId(), sourceFile);

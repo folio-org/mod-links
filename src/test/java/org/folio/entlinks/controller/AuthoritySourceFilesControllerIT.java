@@ -74,7 +74,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     FOLIO
   };
   private static final String[] SOURCE_FILE_TYPES = new String[] {"type1", "type2", "type3"};
-  private static final String[] SOURCE_FILE_URLS = new String[] {"http://base.url1", "https://baseUrl2", "http://base/url3"};
+  private static final String[] SOURCE_FILE_URLS = new String[] {"base.url1", "baseUrl2", "base/url3"};
 
   @BeforeAll
   static void prepare() {
@@ -234,7 +234,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     var createdEntities = createAuthoritySourceTypes();
 
     var dto = new AuthoritySourceFilePostDto("new name", "code")
-      .baseUrl(createdEntities.get(0).getBaseUrl()).type("type");
+      .baseUrl(createdEntities.get(0).getFullBaseUrl()).type("type");
 
     tryPost(authoritySourceFilesEndpoint(), dto)
       .andExpect(status().isUnprocessableEntity())
@@ -310,11 +310,15 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   void updateAuthoritySourceFilePartially_positive_entityGetUpdated() throws Exception {
     var createDto = new AuthoritySourceFilePostDto("name", "code").type("type").baseUrl("http://url");
     var hridStartNumber = 125;
-    var partiallyModified = new AuthoritySourceFilePatchDto();
-    partiallyModified.setVersion(1);
-    // remove code1 and insert code2 and code3
-    partiallyModified.setCodes(List.of("code2", "code3"));
-    partiallyModified.setHridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(hridStartNumber));
+    var partiallyModified = new AuthoritySourceFilePatchDto()
+      .version(1)
+      .name("name1")
+      .type("type1")
+      .baseUrl("https://url/")
+      .selectable(false)
+      // remove code and insert code2 and code3
+      .codes(List.of("code2", "code3"))
+      .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(hridStartNumber));
 
     var created = doPostAndReturn(authoritySourceFilesEndpoint(), createDto, AuthoritySourceFileDto.class);
 
@@ -323,6 +327,10 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
     var content = doGet(authoritySourceFilesEndpoint(created.getId()))
       .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
+      .andExpect(jsonPath("name", is(partiallyModified.getName())))
+      .andExpect(jsonPath("type", is(partiallyModified.getType())))
+      .andExpect(jsonPath("baseUrl", is(partiallyModified.getBaseUrl())))
+      .andExpect(jsonPath("selectable", is(partiallyModified.getSelectable())))
       .andExpect(jsonPath("codes", hasSize(2)))
       .andExpect(jsonPath("_version", is(1)))
       .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)))
@@ -341,8 +349,11 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   void updateAuthoritySourceFilePartially_positive_whenAuthorityReferenced() throws Exception {
     var createDto = new AuthoritySourceFilePostDto("name", "codeXXX").type("type").baseUrl("http://url");
     var partiallyModified = new AuthoritySourceFilePatchDto()
-        .version(1)
-        .baseUrl("http://url.upd");
+      .version(1)
+      .name("name1")
+      .type("type1")
+      .selectable(false)
+      .baseUrl("https://url.upd/");
 
     var created = doPostAndReturn(authoritySourceFilesEndpoint(), createDto, AuthoritySourceFileDto.class);
     var authorityPostDto = authorityDto(0, 0);
@@ -355,6 +366,10 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
     var content = doGet(authoritySourceFilesEndpoint(created.getId()))
       .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
+      .andExpect(jsonPath("name", is(partiallyModified.getName())))
+      .andExpect(jsonPath("type", is(partiallyModified.getType())))
+      .andExpect(jsonPath("baseUrl", is(partiallyModified.getBaseUrl())))
+      .andExpect(jsonPath("selectable", is(partiallyModified.getSelectable())))
       .andExpect(jsonPath("codes", hasSize(1)))
       .andExpect(jsonPath("_version", is(1)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
@@ -477,6 +492,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     entity.setName(SOURCE_FILE_NAMES[i]);
     entity.setSource(SOURCE_FILE_SOURCES[i]);
     entity.setType(SOURCE_FILE_TYPES[i]);
+    entity.setBaseUrlProtocol(i % 2 == 0 ? "https" : "http");
     entity.setBaseUrl(SOURCE_FILE_URLS[i] + "/");
     entity.setHridStartNumber(i + 1);
 

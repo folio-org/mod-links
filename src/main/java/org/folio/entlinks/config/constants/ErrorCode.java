@@ -17,7 +17,9 @@ public enum ErrorCode {
   DUPLICATE_AUTHORITY_SOURCE_FILE_SEQUENCE("110",
       "Authority source file with the same given 'code' and HRID generator name already exist."),
   DUPLICATE_AUTHORITY_SOURCE_FILE_ID("111",
-      "Authority Source File with the given 'id' already exists.");
+      "Authority Source File with the given 'id' already exists."),
+  NOT_EXISTED_AUTHORITY_SOURCE_FILE("112",
+    "Authority Source File with the given 'id' does not exists.");
 
   @Getter
   private final String code;
