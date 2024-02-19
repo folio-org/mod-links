@@ -624,13 +624,15 @@ Endpoint `GET /authority-storage/authorities` support CQL queries.
 
 **CQL queries examples**
 
-| Example                                           | Description                                                              |
-|:--------------------------------------------------|:-------------------------------------------------------------------------|
-| `headingType = personalName`                      | Matches authorities with `Personal Name` heading type                    |
-| `authoritySourceFile.id = 12345`                  | Matches authorities with `12345` source file id                          |
-| `authoritySourceFile.name = LC Genre/Form Terms`  | Matches authorities with source file name `LC Genre/Form Terms`          |
-| `createdDate > 2021-10-25T12:00:00.0"`            | Matches authorities that were created after `2021-10-25 12:00:00`        |
-| `updatedDate <= 2021-10-28T12:00:00.0`            | Matches authorities that were updated before or at `2021-10-28 12:00:00` |
+| Example                                                    | Description                                                                                                                                                                                                                                                   |
+|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `headingType = personalName`                               | Matches authorities with `Personal Name` heading type                                                                                                                                                                                                         |
+| `authoritySourceFile.id = 12345`                           | Matches authorities with `12345` source file id                                                                                                                                                                                                               |
+| `authoritySourceFile.name = LC Genre/Form Terms`           | Matches authorities with source file name `LC Genre/Form Terms`                                                                                                                                                                                               |
+| `authoritySourceFile = ""`                                 | Matches authorities with any defined authority source file, queries `authoritySourceFile.id = ""` and `authoritySourceFile.name = ""` gives the identical result as `id` and `name` are required attributes of source file                                    |
+| `headingType = corporateName NOT authoritySourceFile = ""` | Matches authorities with `Corporate Name` heading type and without any defined authority source file, same like in a previous query `NOT authoritySourceFile = ""` can be replaced by `NOT authoritySourceFile.id = ""` or `NOT authoritySourceFile.name = ""` |
+| `createdDate > 2021-10-25T12:00:00.0`                      | Matches authorities that were created after `2021-10-25 12:00:00`                                                                                                                                                                                             |
+| `updatedDate <= 2021-10-28T12:00:00.0`                     | Matches authorities that were updated before or at `2021-10-28 12:00:00`                                                                                                                                                                                      |
 
 #### Retention policy for archived authorities
 In order to provide an ability for a tenant to have specific retention period of authority archives, we need to add the below configuration in mod-settings.
