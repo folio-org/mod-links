@@ -143,11 +143,6 @@ public class AuthoritySourceFileService {
     var authoritySourceFile = repository.findById(id)
       .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (!FOLIO.equals(authoritySourceFile.getSource())) {
-      var sequenceName = authoritySourceFile.getSequenceName();
-      if (sequenceName != null) {
-        deleteSequence(sequenceName);
-      }
-      log.debug("deleteById:: Deleting AuthoritySourceFile with properties [lo:{}]", authoritySourceFile.toString());
       repository.deleteById(id);
     } else {
       throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
@@ -168,6 +163,8 @@ public class AuthoritySourceFileService {
         DROP SEQUENCE IF EXISTS %s.%s;
         """,
         sequenceName, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+    log.info("deleteSequence:: Deleting sequence [name: {}]", sequenceName);
+    log.debug("deleteSequence:: Executing command [command: {}]", command);
     jdbcTemplate.execute(command);
   }
 
