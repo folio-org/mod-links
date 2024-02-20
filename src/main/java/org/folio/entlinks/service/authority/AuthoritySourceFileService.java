@@ -164,7 +164,10 @@ public class AuthoritySourceFileService {
   }
 
   public void deleteSequence(String sequenceName) {
-    var command = String.format("DROP SEQUENCE IF EXISTS %s;", sequenceName);
+    var command = String.format("""
+        DROP SEQUENCE IF EXISTS %s.%s;
+        """,
+        sequenceName, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
     jdbcTemplate.execute(command);
   }
 
