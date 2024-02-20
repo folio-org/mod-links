@@ -262,7 +262,11 @@ class AuthorityControllerIT extends IntegrationTestBase {
     "authoritySourceFile.id=51243be4-27cb-4d78-9206-c956299483b1, personalName, 2",
     "authoritySourceFile.id=51243be4-27cb-4d78-9206-c956299483b1 and headingType=corporateName, corporateName, 1",
     "authoritySourceFile.name=name2, genreTerm, 1",
-    "createdDate>2021-10-25T12:00:00.0 and createdDate<=2021-10-30T12:00:00.0, genreTerm, 2",
+    "cql.allRecords=1 NOT authoritySourceFile=\"\", genreTerm, 1",
+    "subjectHeadingCode=d NOT authoritySourceFile=\"\", genreTerm, 1",
+    "subjectHeadingCode=d NOT authoritySourceFile.id=\"\", genreTerm, 1",
+    "subjectHeadingCode=d NOT authoritySourceFile.name=\"\", genreTerm, 1",
+    "createdDate>2021-10-25T12:00:00.0 and createdDate<=2021-10-30T12:00:00.0, genreTerm, 3",
     "updatedDate>=2021-10-24T12:00:00.0 and updatedDate<=2021-10-28T12:00:00.0, corporateName, 1",
     "authoritySourceFile.name=name1 and createdDate>2021-10-28T12:00:00.0, corporateName, 1",
   })
@@ -281,7 +285,18 @@ class AuthorityControllerIT extends IntegrationTestBase {
     databaseHelper.saveAuthority(TENANT_ID, authority1);
     databaseHelper.saveAuthority(TENANT_ID, authority2);
     databaseHelper.saveAuthority(TENANT_ID, authority3);
+    var authority4 = authority(3, 0);
+    authority4.setAuthoritySourceFile(null);
+    authority4.setUpdatedDate(Timestamp.from(Instant.parse(UPDATED_DATE).minus(2, ChronoUnit.DAYS)));
+    databaseHelper.saveAuthority(TENANT_ID, authority4);
 
+    // query and filter authorities
+    var cqlQuery = "(" + query + ")sortby createdDate";
+    doGet(authorityEndpoint() + "?query={cql}", cqlQuery)
+      .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
+      .andExpect(jsonPath("totalRecords").value(numberOfRecords));
+
+    // query and filter authority archives
     var archive1 = authorityArchive(0, 0);
     archive1.setCreatedDate(authority1.getCreatedDate());
     archive1.setUpdatedDate(authority1.getUpdatedDate());
@@ -292,14 +307,11 @@ class AuthorityControllerIT extends IntegrationTestBase {
     databaseHelper.saveAuthorityArchive(TENANT_ID, archive1);
     databaseHelper.saveAuthorityArchive(TENANT_ID, archive2);
     databaseHelper.saveAuthorityArchive(TENANT_ID, archive3);
+    var archive4 = authorityArchive(3, 0);
+    archive4.setAuthoritySourceFile(null);
+    archive4.setUpdatedDate(Timestamp.from(Instant.parse(UPDATED_DATE).minus(2, ChronoUnit.DAYS)));
+    databaseHelper.saveAuthorityArchive(TENANT_ID, archive4);
 
-    // query and filter authorities
-    var cqlQuery = "(cql.allRecords=1 and " + query + ")sortby createdDate";
-    doGet(authorityEndpoint() + "?query={cql}", cqlQuery)
-      .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
-      .andExpect(jsonPath("totalRecords").value(numberOfRecords));
-
-    // query and filter authority archives
     doGet(authorityEndpoint() + "?query={cql}&deleted=true", cqlQuery)
       .andExpect(jsonPath("authorities[0]." + heading, notNullValue()))
       .andExpect(jsonPath("totalRecords").value(numberOfRecords));
