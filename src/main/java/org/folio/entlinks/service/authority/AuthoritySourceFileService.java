@@ -143,7 +143,11 @@ public class AuthoritySourceFileService {
     var authoritySourceFile = repository.findById(id)
       .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (!FOLIO.equals(authoritySourceFile.getSource())) {
-      deleteSequence(authoritySourceFile.getSequenceName());
+      var sequenceName = authoritySourceFile.getSequenceName();
+      if (sequenceName != null) {
+        deleteSequence(sequenceName);
+      }
+      log.debug("deleteById:: Deleting AuthoritySourceFile with properties [lo:{}]", authoritySourceFile.toString());
       repository.deleteById(id);
     } else {
       throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
