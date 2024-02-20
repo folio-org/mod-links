@@ -61,14 +61,22 @@ public class DatabaseHelper {
 
   public void saveAuthoritySourceFile(String tenant, AuthoritySourceFile entity) {
     var sourceType = getDbPath(tenant, AUTHORITY_SOURCE_FILE_SOURCE_TYPE);
-    var sqlValues = "(?,?,?::" + sourceType + ",?,?,?,?,?,?,?,?)";
+    var sqlValues = "(?,?,?::" + sourceType + ",?,?,?,?,?,?,?,?,?)";
     var sql = "INSERT INTO " + getDbPath(tenant, AUTHORITY_SOURCE_FILE_TABLE)
       + " (id, name, source, type, base_url_protocol, base_url, hrid_start_number, created_date, updated_date,"
-      + "created_by_user_id, updated_by_user_id) VALUES " + sqlValues;
+      + "created_by_user_id, updated_by_user_id, sequence_name) VALUES " + sqlValues;
     jdbcTemplate.update(sql, entity.getId(), entity.getName(),
       entity.getSource().name(), entity.getType(), entity.getBaseUrlProtocol(), entity.getBaseUrl(),
       entity.getHridStartNumber(), entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(),
-      entity.getUpdatedByUserId());
+      entity.getUpdatedByUserId(), entity.getSequenceName());
+  }
+
+  public void createSequence(String sequenceName, int startNumber) {
+    var command = String.format("""
+        CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1;
+        """,
+        sequenceName, startNumber);
+    jdbcTemplate.execute(command);
   }
 
   public static String substringBefore(String string, String subString) {

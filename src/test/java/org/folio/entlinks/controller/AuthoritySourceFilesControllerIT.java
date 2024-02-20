@@ -525,7 +525,12 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private void createAuthoritySourceFile(AuthoritySourceFile entity) {
     databaseHelper.saveAuthoritySourceFile(TENANT_ID, entity);
+    createSequence(entity.getSequenceName(), entity.getHridStartNumber());
     createAuthoritySourceFileCode(entity);
+  }
+
+  private void createSequence(String sequenceName, int startNumber) {
+    databaseHelper.createSequence(sequenceName, startNumber);
   }
 
   private AuthoritySourceFileCode prepareAuthoritySourceFileCode(int i) {
