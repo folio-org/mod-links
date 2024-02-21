@@ -71,14 +71,6 @@ public class DatabaseHelper {
       entity.getUpdatedByUserId());
   }
 
-  public void createSequence(String sequenceName, int startNumber) {
-    var command = String.format("""
-        CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1;
-        """,
-        sequenceName, startNumber);
-    jdbcTemplate.execute(command);
-  }
-
   public static String substringBefore(String string, String subString) {
     if (StringUtils.isAnyBlank(string, subString)) {
       return string;

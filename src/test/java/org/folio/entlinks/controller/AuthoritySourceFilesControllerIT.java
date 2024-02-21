@@ -15,6 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -406,13 +407,22 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("DELETE: Should delete existing authority source file")
   void deleteAuthoritySourceFile_positive_deleteExistingEntity() {
-    var sourceFile = prepareAuthoritySourceFile(0);
-    sourceFile.setSequenceName(String.format("hrid_authority_local_file_%s_seq", SOURCE_FILE_CODE_IDS[0]));
-    createAuthoritySourceFile(sourceFile);
-    doDelete(authoritySourceFilesEndpoint(sourceFile.getId()));
+    var id = UUID.randomUUID();
+    var code = "abc";
+    var startNumber = 1;
+    var dto = new AuthoritySourceFilePostDto()
+        .id(id)
+        .name("name")
+        .code(code)
+        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(startNumber));
+
+    doPost(authoritySourceFilesEndpoint(), dto);
+    doDelete(authoritySourceFilesEndpoint(id));
+
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
-    assertEquals(1, databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sourceFile.getSequenceName()));
+    var sequenceName = String.format("hrid_authority_local_file_%s_seq", code);
+    assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sequenceName));
   }
 
   @Test
@@ -523,14 +533,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private void createAuthoritySourceFile(AuthoritySourceFile entity) {
     databaseHelper.saveAuthoritySourceFile(TENANT_ID, entity);
-    if (entity.getSequenceName() != null) {
-      createSequence(entity.getSequenceName(), entity.getHridStartNumber());
-    }
     createAuthoritySourceFileCode(entity);
-  }
-
-  private void createSequence(String sequenceName, int startNumber) {
-    databaseHelper.createSequence(sequenceName, startNumber);
   }
 
   private AuthoritySourceFileCode prepareAuthoritySourceFileCode(int i) {

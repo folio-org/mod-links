@@ -145,7 +145,6 @@ public class AuthoritySourceFileService {
     if (!FOLIO.equals(authoritySourceFile.getSource())) {
       var sequenceName = authoritySourceFile.getSequenceName();
       if (sequenceName != null) {
-        log.info("deleteById:: Deleting sequence [sequenceName: {}]", sequenceName);
         deleteSequence(sequenceName);
       }
       repository.deleteById(id);
@@ -167,8 +166,7 @@ public class AuthoritySourceFileService {
     var command = String.format("""
         DROP SEQUENCE IF EXISTS %s.%s;
         """,
-        sequenceName, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    log.info("deleteSequence:: Deleting command [command: {}]", command);
+        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
     jdbcTemplate.execute(command);
   }
 
