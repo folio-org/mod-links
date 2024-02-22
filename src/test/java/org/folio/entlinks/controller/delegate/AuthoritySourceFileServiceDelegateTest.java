@@ -194,7 +194,7 @@ class AuthoritySourceFileServiceDelegateTest {
       .selectable(true)
       .version(1)
       .baseUrl("baseUrl")
-      .codes(List.of("a", "b"))
+      .code("a")
       .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(1));
     var expected = new RequestBodyValidationException(
       "Unable to patch. Authority source file source is FOLIO or it has authority references", errors);
@@ -347,9 +347,9 @@ class AuthoritySourceFileServiceDelegateTest {
   static Stream<Arguments> patchValidationFailureData() {
     return Stream.of(
       Arguments.of(AuthoritySourceFileSource.FOLIO, false, List.of(new Parameter("name").value("name"),
-        new Parameter("codes").value("a,b"),
+        new Parameter("code").value("a"),
         new Parameter("hridManagement.startNumber").value("1"))),
-      Arguments.of(AuthoritySourceFileSource.LOCAL, true, List.of(new Parameter("codes").value("a,b"),
+      Arguments.of(AuthoritySourceFileSource.LOCAL, true, List.of(new Parameter("code").value("a"),
         new Parameter("hridManagement.startNumber").value("1"))));
   }
 

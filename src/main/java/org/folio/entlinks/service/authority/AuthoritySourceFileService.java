@@ -12,6 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
@@ -121,10 +122,7 @@ public class AuthoritySourceFileService {
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
     log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
 
-    if (!Objects.equals(id, modified.getId())) {
-      throw new RequestBodyValidationException("Request should have id = " + id,
-        List.of(new Parameter("id").value(String.valueOf(modified.getId()))));
-    }
+    validateOnUpdate(id, modified);
 
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
     if (modified.getVersion() < existingEntity.getVersion()) {
@@ -179,12 +177,23 @@ public class AuthoritySourceFileService {
   }
 
   private void validateOnCreate(AuthoritySourceFile entity) {
-    for (var sourceFileCode : entity.getAuthoritySourceFileCodes()) {
-      var code = sourceFileCode.getCode();
-      if (StringUtils.isBlank(code) || !StringUtils.isAlpha(code)) {
-        throw new RequestBodyValidationException("Authority Source File prefix should be non-empty sequence of letters",
-            List.of(new Parameter("code").value(code)));
-      }
+    entity.getAuthoritySourceFileCodes().forEach(this::validateSourceFileCode);
+  }
+
+  private void validateOnUpdate(UUID id, AuthoritySourceFile entity) {
+    if (!Objects.equals(id, entity.getId())) {
+      throw new RequestBodyValidationException("Request should have id = " + id,
+          List.of(new Parameter("id").value(String.valueOf(entity.getId()))));
+    }
+
+    entity.getAuthoritySourceFileCodes().forEach(this::validateSourceFileCode);
+  }
+
+  private void validateSourceFileCode(AuthoritySourceFileCode sourceFileCode) {
+    var code = sourceFileCode.getCode();
+    if (StringUtils.isBlank(code) || !StringUtils.isAlpha(code)) {
+      throw new RequestBodyValidationException("Authority Source File prefix should be non-empty sequence of letters",
+          List.of(new Parameter("code").value(code)));
     }
   }
 

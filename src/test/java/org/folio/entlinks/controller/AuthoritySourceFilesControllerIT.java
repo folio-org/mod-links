@@ -316,8 +316,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .type("type1")
       .baseUrl("https://url/")
       .selectable(false)
-      // remove code and insert code2 and code3
-      .codes(List.of("code2", "code3"))
+      .code("replacedCode")
       .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(hridStartNumber));
 
     var created = doPostAndReturn(authoritySourceFilesEndpoint(), createDto, AuthoritySourceFileDto.class);
@@ -325,23 +324,19 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doPatch(authoritySourceFilesEndpoint(created.getId()), partiallyModified)
       .andExpect(status().isNoContent());
 
-    var content = doGet(authoritySourceFilesEndpoint(created.getId()))
+    doGet(authoritySourceFilesEndpoint(created.getId()))
       .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
       .andExpect(jsonPath("name", is(partiallyModified.getName())))
       .andExpect(jsonPath("type", is(partiallyModified.getType())))
       .andExpect(jsonPath("baseUrl", is(partiallyModified.getBaseUrl())))
       .andExpect(jsonPath("selectable", is(partiallyModified.getSelectable())))
-      .andExpect(jsonPath("codes", hasSize(2)))
+      .andExpect(jsonPath("codes", is(List.of("replacedCode"))))
       .andExpect(jsonPath("_version", is(1)))
       .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
-      .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)))
-      .andReturn().getResponse().getContentAsString();
-    var resultDto = objectMapper.readValue(content, AuthoritySourceFileDto.class);
-
-    assertThat(new HashSet<>(resultDto.getCodes()), equalTo(new HashSet<>(partiallyModified.getCodes())));
+      .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)));
   }
 
   @Test

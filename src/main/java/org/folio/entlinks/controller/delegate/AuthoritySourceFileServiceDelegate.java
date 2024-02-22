@@ -127,9 +127,8 @@ public class AuthoritySourceFileServiceDelegate {
       errorParameters.add(new Parameter("name")
         .value(String.join(",", patchDto.getName())));
     }
-    if (patchDto.getCodes() != null) {
-      errorParameters.add(new Parameter("codes")
-        .value(String.join(",", patchDto.getCodes())));
+    if (patchDto.getCode() != null) {
+      errorParameters.add(new Parameter("code").value(patchDto.getCode()));
     }
     if (patchDto.getHridManagement() != null && patchDto.getHridManagement().getStartNumber() != null) {
       errorParameters.add(new Parameter("hridManagement.startNumber")
