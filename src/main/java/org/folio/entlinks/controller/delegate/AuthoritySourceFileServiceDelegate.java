@@ -83,6 +83,9 @@ public class AuthoritySourceFileServiceDelegate {
     var entity = service.getById(id);
     validateActionRightsForTenant(DomainEventType.DELETE);
 
+    if (entity.getSequenceName() != null) {
+      service.deleteSequence(entity.getSequenceName());
+    }
     service.deleteById(id);
     propagationService.propagate(entity, DELETE, context.getTenantId());
   }
