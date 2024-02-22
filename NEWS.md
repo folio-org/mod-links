@@ -32,6 +32,7 @@
 * Remove foreign key for authority_data_stat ([MODELINKS-155](https://issues.folio.org/browse/MODELINKS-155))
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
 * Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
+* Fix authority source file prefix validation for PATCH request ([MODELINKS-208](https://folio-org.atlassian.net/browse/MODELINKS-208))
 
 ### Tech Dept
 * Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
