@@ -158,6 +158,14 @@ public class AuthoritySourceFileService {
     jdbcTemplate.execute(command);
   }
 
+  public void deleteSequence(String sequenceName) {
+    var command = String.format("""
+        DROP SEQUENCE IF EXISTS %s.%s;
+        """,
+        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
+    jdbcTemplate.execute(command);
+  }
+
   public String nextHrid(UUID id) {
     log.debug("nextHrid:: Attempting to get next AuthoritySourceFile HRID [id: {}]", id);
     var sourceFile = getById(id);

@@ -407,15 +407,22 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("DELETE: Should delete existing authority source file")
   void deleteAuthoritySourceFile_positive_deleteExistingEntity() {
-    var sourceFile = prepareAuthoritySourceFile(0);
-    sourceFile.setSequenceName(String.format("hrid_authority_local_file_%s_seq", SOURCE_FILE_CODE_IDS[0]));
-    createAuthoritySourceFile(sourceFile);
+    var id = UUID.randomUUID();
+    var code = "abc";
+    var startNumber = 1;
+    var dto = new AuthoritySourceFilePostDto()
+        .id(id)
+        .name("name")
+        .code(code)
+        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(startNumber));
 
-    doDelete(authoritySourceFilesEndpoint(sourceFile.getId()));
+    doPost(authoritySourceFilesEndpoint(), dto);
+    doDelete(authoritySourceFilesEndpoint(id));
 
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
-    assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sourceFile.getSequenceName()));
+    var sequenceName = String.format("hrid_authority_local_file_%s_seq", code);
+    assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sequenceName));
   }
 
   @Test
