@@ -246,6 +246,7 @@ class AuthoritySourceFileServiceDelegateTest {
 
     delegate.deleteAuthoritySourceFileById(existing.getId());
 
+    verify(service).deleteSequence(existing.getSequenceName());
     verify(service).deleteById(existing.getId());
     verify(propagationService).propagate(existing, DELETE, TENANT_ID);
   }

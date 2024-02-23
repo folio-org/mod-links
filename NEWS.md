@@ -22,7 +22,6 @@
 * Make system user usage optional ([MODELINKS-150](https://issues.folio.org/browse/MODELINKS-150) and [MODROLESKC-24](https://issues.folio.org/browse/MODROLESKC-24))
 * Propagate authority archives deletion to member tenants ([MODELINKS-195](https://issues.folio.org/browse/MODELINKS-195))
 * Implement endpoint for bulk authorities upsert from external file ([MODELINKS-173](https://issues.folio.org/browse/MODELINKS-173))
-* Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
 * Add possibility to filter Authority records by (un)defined fields in Cql query ([MODELINKS-214](https://issues.folio.org/browse/MODELINKS-214))
 
 ### Bug fixes
@@ -32,10 +31,11 @@
 * Remove foreign key for authority_data_stat ([MODELINKS-155](https://issues.folio.org/browse/MODELINKS-155))
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
 * Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
+* Fix authority source file sequence deletion ([MODELINKS-211](https://issues.folio.org/browse/MODELINKS-211))
 * Fix authority source file prefix validation for PATCH request ([MODELINKS-208](https://folio-org.atlassian.net/browse/MODELINKS-208))
 
 ### Tech Dept
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+* Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
 
 ### Dependencies
 * Bump `folio-spring-support` from `7.2.0` to `7.2.1`
