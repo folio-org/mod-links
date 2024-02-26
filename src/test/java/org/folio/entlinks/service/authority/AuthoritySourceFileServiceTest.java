@@ -38,7 +38,6 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -187,7 +186,6 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(code);
   }
 
-  @NullSource
   @ValueSource(ints = 0)
   @ParameterizedTest
   void shouldUpdateAuthoritySourceFileModifiableFields(Integer existingHridStartNumber) {

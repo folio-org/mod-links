@@ -244,15 +244,20 @@ public class AuthoritySourceFileService {
   }
 
   private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
-    if (Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())) {
-      return;
+    if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())) {
+      if (existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
+        var sequenceName = existing.getSequenceName();
+        var modifiedStartNumber = (int) modified.getHridStartNumber();
+        var existingStartNumber = (int) existing.getHridStartNumber();
+        if (modifiedStartNumber > existingStartNumber) {
+          var sql = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
+             sequenceName, modifiedStartNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+          jdbcTemplate.execute(sql);
+        } else {
+          deleteSequence(sequenceName);
+          createSequence(sequenceName, modifiedStartNumber);
+        }
+      }
     }
-
-    var sequenceName = existing.getSequenceName();
-    var startNumber = (int) modified.getHridStartNumber();
-    var command = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
-      sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    jdbcTemplate.execute(command);
   }
-
 }
