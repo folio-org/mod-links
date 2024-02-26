@@ -80,7 +80,7 @@ class AuthoritySourceFileMapperTest {
     var patchDto = new AuthoritySourceFilePatchDto();
     patchDto.setName(UPDATED_NAME);
     patchDto.setType(UPDATED_TYPE);
-    patchDto.setCodes(List.of(UPDATED_CODE));
+    patchDto.setCode(UPDATED_CODE);
     patchDto.setBaseUrl(UPDATED_BASE_URL);
     patchDto.selectable(true);
     patchDto.hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(5));
@@ -90,8 +90,7 @@ class AuthoritySourceFileMapperTest {
     assertThat(updatedFile).isNotNull();
     assertThat(updatedFile.getName()).isEqualTo(patchDto.getName());
     assertThat(updatedFile.getType()).isEqualTo(patchDto.getType());
-    assertThat(updatedFile.getAuthoritySourceFileCodes().stream().map(AuthoritySourceFileCode::getCode).toList())
-        .isEqualTo(patchDto.getCodes());
+    assertThat(updatedFile.getAuthoritySourceFileCodes().iterator().next().getCode()).isEqualTo(patchDto.getCode());
     assertThat(updatedFile.getFullBaseUrl()).isEqualTo(patchDto.getBaseUrl());
     assertThat(updatedFile.isSelectable()).isEqualTo(patchDto.getSelectable());
     assertThat(updatedFile.getHridStartNumber()).isEqualTo(patchDto.getHridManagement().getStartNumber());
