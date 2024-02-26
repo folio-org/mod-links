@@ -2,7 +2,6 @@ package org.folio.entlinks.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
@@ -12,13 +11,6 @@ import org.junit.jupiter.api.Test;
 
 @UnitTest
 class KafkaUtilsTest {
-
-  @Test
-  void getTenantTopicName_positive() {
-    var actual = KafkaUtils.getTenantTopicName("topic-name", "tenant");
-
-    assertEquals("folio.tenant.topic-name", actual);
-  }
 
   @Test
   void toKafkaHeaders_positive() {

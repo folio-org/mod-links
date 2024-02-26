@@ -1,7 +1,5 @@
 package org.folio.entlinks.utils;
 
-import static org.folio.spring.config.properties.FolioEnvironment.getFolioEnvName;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,17 +11,6 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 
 @UtilityClass
 public class KafkaUtils {
-
-  /**
-   * Returns topic name in the format - `{env}.{tenant}.{topic-name}`
-   *
-   * @param initialName initial topic name as {@link String}
-   * @param tenantId    tenant id as {@link String}
-   * @return topic name as {@link String} object
-   */
-  public static String getTenantTopicName(String initialName, String tenantId) {
-    return String.format("%s.%s.%s", getFolioEnvName(), tenantId, initialName);
-  }
 
   public static List<Header> toKafkaHeaders(Map<String, Collection<String>> requestHeaders) {
     if (requestHeaders == null || requestHeaders.isEmpty()) {
