@@ -75,6 +75,6 @@ public class EventProducer<T extends BaseEvent> {
   }
 
   private String topicName() {
-    return KafkaUtils.getTenantTopicName(topicName, context.getTenantId());
+    return org.folio.spring.tools.kafka.KafkaUtils.getTenantTopicName(topicName, context.getTenantId());
   }
 }

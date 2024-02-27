@@ -1,3 +1,9 @@
+## v2.0.5 2024-03-12
+## Bug fixes
+* Use generic topic name instead of creating new for each tenant ([MODELINKS-213](https://issues.folio.org/browse/MODELINKS-213))
+
+---
+
 ## v2.0.4 2023-11-30
 ## Bug fixes
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
