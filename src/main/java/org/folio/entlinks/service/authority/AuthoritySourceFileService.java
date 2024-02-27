@@ -150,22 +150,6 @@ public class AuthoritySourceFileService {
     }
   }
 
-  public void createSequence(String sequenceName, int startNumber) {
-    var command = String.format("""
-        CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-        """,
-      sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    jdbcTemplate.execute(command);
-  }
-
-  public void deleteSequence(String sequenceName) {
-    var command = String.format("""
-        DROP SEQUENCE IF EXISTS %s.%s;
-        """,
-        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
-    jdbcTemplate.execute(command);
-  }
-
   public String nextHrid(UUID id) {
     log.debug("nextHrid:: Attempting to get next AuthoritySourceFile HRID [id: {}]", id);
     var sourceFile = getById(id);
@@ -243,20 +227,37 @@ public class AuthoritySourceFileService {
     }
   }
 
+  public void createSequence(String sequenceName, int startNumber) {
+    var command = String.format("""
+            CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
+            """,
+        sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+    jdbcTemplate.execute(command);
+  }
+
+  public void deleteSequence(String sequenceName) {
+    var command = String.format("DROP SEQUENCE IF EXISTS %s.%s;",
+        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
+    jdbcTemplate.execute(command);
+  }
+
+  private void updateSequenceStartNumber(String sequenceName, int modifiedStartNumber) {
+    var command = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
+        sequenceName, modifiedStartNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
+    jdbcTemplate.execute(command);
+  }
+
   private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
-    if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())) {
-      if (existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
-        var sequenceName = existing.getSequenceName();
-        var modifiedStartNumber = (int) modified.getHridStartNumber();
-        var existingStartNumber = (int) existing.getHridStartNumber();
-        if (modifiedStartNumber > existingStartNumber) {
-          var sql = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
-             sequenceName, modifiedStartNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-          jdbcTemplate.execute(sql);
-        } else {
-          deleteSequence(sequenceName);
-          createSequence(sequenceName, modifiedStartNumber);
-        }
+    if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())
+        && existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
+      var sequenceName = existing.getSequenceName();
+      var modifiedStartNumber = (int) modified.getHridStartNumber();
+      var existingStartNumber = (int) existing.getHridStartNumber();
+      if (modifiedStartNumber > existingStartNumber) {
+        updateSequenceStartNumber(sequenceName, modifiedStartNumber);
+      } else {
+        deleteSequence(sequenceName);
+        createSequence(sequenceName, modifiedStartNumber);
       }
     }
   }
