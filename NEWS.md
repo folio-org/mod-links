@@ -33,6 +33,7 @@
 * Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
 * Fix authority source file sequence deletion ([MODELINKS-211](https://issues.folio.org/browse/MODELINKS-211))
 * Fix authority source file prefix validation for PATCH request ([MODELINKS-208](https://folio-org.atlassian.net/browse/MODELINKS-208))
+* Use generic topic name instead of creating new for each tenant ([MODELINKS-213](https://issues.folio.org/browse/MODELINKS-213))
 
 ### Tech Dept
 * Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
