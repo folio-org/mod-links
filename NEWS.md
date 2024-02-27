@@ -32,6 +32,7 @@
 * Fix empty links list propagation ([MODELINKS-166](https://issues.folio.org/browse/MODELINKS-166))
 * Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
 * Fix authority source file sequence deletion ([MODELINKS-211](https://issues.folio.org/browse/MODELINKS-211))
+* Fix authority source file prefix validation for PATCH request ([MODELINKS-208](https://folio-org.atlassian.net/browse/MODELINKS-208))
 * Fix authority source file sequence start number update (([MODELINKS-212](https://issues.folio.org/browse/MODELINKS-212))
 
 ### Tech Dept

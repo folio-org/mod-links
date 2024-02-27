@@ -172,7 +172,7 @@ class AuthoritySourceFileServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "123", "#", "abc123", "abc def"})
+  @ValueSource(strings = {"", "123", "#", "abc123", "abc def", "abc,def"})
   void shouldNotBePossibleToCreateAuthoritySourceFileWithInvalidCode(String code) {
     var sourceFileCode = new AuthoritySourceFileCode();
     sourceFileCode.setCode(code);
@@ -310,6 +310,27 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters()).hasSize(1);
     assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("id");
     assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(id.toString());
+    verifyNoInteractions(repository);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "123", "#", "abc123", "abc def", "abc,def"})
+  void shouldThrowExceptionWhenProvidedInvalidSourceFileCode(String code) {
+    var entity = new AuthoritySourceFile();
+    UUID id = UUID.randomUUID();
+    entity.setId(id);
+    var sourceFileCode = new AuthoritySourceFileCode();
+    sourceFileCode.setCode(code);
+    entity.addCode(sourceFileCode);
+
+    var thrown = assertThrows(RequestBodyValidationException.class, () -> service.update(id, entity));
+
+    assertThat(thrown.getInvalidParameters()).hasSize(1);
+    assertThat(thrown.getInvalidParameters().get(0).getKey()).isEqualTo("code");
+    assertThat(thrown.getInvalidParameters().get(0).getValue())
+        .isEqualTo(sourceFileCode.getCode());
+    assertThat(thrown.getMessage())
+        .isEqualTo("Authority Source File prefix should be non-empty sequence of letters");
     verifyNoInteractions(repository);
   }
 
