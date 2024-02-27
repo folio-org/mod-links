@@ -115,12 +115,12 @@ public interface AuthoritySourceFileMapper {
 
   default Set<AuthoritySourceFileCode> toEntityCodes(AuthoritySourceFilePatchDto authoritySourceFileDto,
                                                      AuthoritySourceFile authoritySourceFile) {
-    var dtoCodes = authoritySourceFileDto.getCodes();
-    if (dtoCodes == null) {
+    var dtoCode = authoritySourceFileDto.getCode();
+    if (dtoCode == null) {
       return authoritySourceFile.getAuthoritySourceFileCodes();
     }
 
-    return toEntityCodes(dtoCodes);
+    return toEntityCodes(List.of(dtoCode));
   }
 
   default AuthoritySourceFileCode toEntityCode(String code) {

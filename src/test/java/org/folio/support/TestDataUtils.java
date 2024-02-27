@@ -306,7 +306,7 @@ public class TestDataUtils {
         UUID.fromString("453e9a34-31a3-4f82-b3f5-1057f20b050e"),
         UUID.fromString("08c9fd60-d038-46bb-be83-45f93a8e53b7")};
     private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
-    private static final String[] SOURCE_FILE_CODES = new String[] {"code1", "code2", "code3"};
+    private static final String[] SOURCE_FILE_CODES = new String[] {"codeOne", "codeTwo", "codeThree"};
     private static final String[] SOURCE_FILE_NAMES = new String[] {"name1", "name2", "name3"};
     private static final AuthoritySourceFileSource[] SOURCE_FILE_SOURCES = new AuthoritySourceFileSource[] {
       AuthoritySourceFileSource.LOCAL,
