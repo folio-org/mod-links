@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+  <changeSet id="MODELINKS-220@@set_auto_linking_enabled_for_6xx_fields" author="Tsaghik_Khachatryan">
+    <preConditions>
+      <tableExists tableName="instance_authority_linking_rule"/>
+    </preConditions>
+
+    <comment>Set auto_linking_enabled in instance_authority_linking_rule for 6xx fields</comment>
+
+    <sql>
+      UPDATE instance_authority_linking_rule
+      SET auto_linking_enabled = 'true'
+      WHERE bib_field like ('6%')
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
