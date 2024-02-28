@@ -168,23 +168,23 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled() {
+  void getAuthDataStat_shouldSuggestNewLink_whenOneField_is_600() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
-    var disabledAutoLinkingRecord = getRecord("600", null, givenSubfields);
-
-    var expectedErrorDetails = new LinkDetails().status(ERROR).errorCause(DISABLED_AUTO_LINKING.getCode());
-    var expectedErrorRecord = getRecord("600", expectedErrorDetails, givenSubfields);
-
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
     var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
-    var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord, disabledAutoLinkingRecord));
+    var givenSecondRecord = getRecord("600", null, givenSubfields);
+    var expectedSecondLinkDetails = getLinkDetails(NEW, NATURAL_ID, 8);
+    var expectedSecondSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSecondRecord = getRecord("600", expectedSecondLinkDetails, expectedSecondSubfields);
+
+    var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord, givenSecondRecord));
     doPost(linksSuggestionsEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(content().json(asJson(new ParsedRecordContentCollection()
-        .records(List.of(expectedRecord, expectedErrorRecord)), objectMapper)));
+        .records(List.of(expectedRecord, expectedSecondRecord)), objectMapper)));
   }
 
   @Test
@@ -232,12 +232,13 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled_andOnlyOneRecord() {
+  void getAuthDataStat_shouldSuggestNewLink_whenBibField_is_600() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("600", null, givenSubfields);
 
-    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(DISABLED_AUTO_LINKING.getCode());
-    var expectedRecord = getRecord("600", expectedLinkDetails, givenSubfields);
+    var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID, 8);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedRecord = getRecord("600", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
     doPost(linksSuggestionsEndpoint(), requestBody)
