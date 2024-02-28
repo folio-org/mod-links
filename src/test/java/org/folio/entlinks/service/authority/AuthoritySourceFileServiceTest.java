@@ -218,8 +218,8 @@ class AuthoritySourceFileServiceTest {
     verify(repository).findById(id);
     verify(repository).save(argThat(authoritySourceFileMatch(expected)));
     verify(jdbcTemplate).execute(
-        "ALTER SEQUENCE %s RESTART WITH %d OWNED BY test.authority_source_file.sequence_name;"
-            .formatted(existing.getSequenceName(), modified.getHridStartNumber()));
+        "ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;"
+            .formatted(existing.getSequenceName(), modified.getHridStartNumber(), "test"));
   }
 
   @ValueSource(ints = 1)
@@ -265,13 +265,6 @@ class AuthoritySourceFileServiceTest {
                 CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
                 """,
             existing.getSequenceName(), modified.getHridStartNumber(), "test"));
-
-    verify(jdbcTemplate).execute("DROP SEQUENCE IF EXISTS %s.%s;"
-        .formatted("test", existing.getSequenceName()));
-    verify(jdbcTemplate).execute("""
-            CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-            """
-            .formatted(existing.getSequenceName(), modified.getHridStartNumber(), "test"));
   }
 
   @Test
