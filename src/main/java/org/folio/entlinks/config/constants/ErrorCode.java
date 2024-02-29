@@ -19,7 +19,9 @@ public enum ErrorCode {
   DUPLICATE_AUTHORITY_SOURCE_FILE_ID("111",
       "Authority Source File with the given 'id' already exists."),
   NOT_EXISTED_AUTHORITY_SOURCE_FILE("112",
-    "Authority Source File with the given 'id' does not exists.");
+    "Authority Source File with the given 'id' does not exists."),
+  VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_ARCHIVE_AND_SOURCE_FILE("113",
+    "Cannot complete operation on the entity due to it's relation with Authority Archive/Authority Source File.");
 
   @Getter
   private final String code;

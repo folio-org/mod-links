@@ -2,7 +2,9 @@ package org.folio.entlinks.controller;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
+import static org.folio.support.TestDataUtils.AuthorityTestData.authority;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authorityDto;
+import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
@@ -57,6 +59,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @IntegrationTest
 @DatabaseCleanup(tables = {
   DatabaseHelper.AUTHORITY_TABLE,
+  DatabaseHelper.AUTHORITY_ARCHIVE_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE}
 )
@@ -450,6 +453,33 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(exceptionMatch(MethodArgumentTypeMismatchException.class))
       .andExpect(errorMessageMatch(containsString(
         "Failed to convert value of type 'java.lang.String' to required type 'java.util.UUID'")));
+  }
+
+  @Test
+  @DisplayName("DELETE: Should not delete existing authority source file after authority was deleted")
+  void deleteAuthoritySourceFileAfterAuthorityDeletion_negative_failDeletingSourceFile() throws Exception {
+    var authoritySrcFile = authoritySourceFile(0);
+    databaseHelper.saveAuthoritySourceFile(TENANT_ID, authoritySrcFile);
+    authoritySrcFile.getAuthoritySourceFileCodes().forEach(code ->
+      databaseHelper.saveAuthoritySourceFileCode(TENANT_ID, authoritySrcFile.getId(), code));
+
+    var authority = authority(0, 0);
+    databaseHelper.saveAuthority(TENANT_ID, authority);
+
+    doDelete(authorityEndpoint(authority.getId()));
+
+    awaitUntilAsserted(() ->
+      assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_TABLE, TENANT_ID)));
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_ARCHIVE_TABLE, TENANT_ID)));
+
+    tryDelete(authoritySourceFilesEndpoint(authoritySrcFile.getId()))
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(exceptionMatch(DataIntegrityViolationException.class))
+      .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
+        + " Authority Archive/Authority Source File.")));
+
+    assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
