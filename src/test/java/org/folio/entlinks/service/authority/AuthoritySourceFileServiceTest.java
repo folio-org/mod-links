@@ -217,9 +217,19 @@ class AuthoritySourceFileServiceTest {
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
     verify(repository).save(argThat(authoritySourceFileMatch(expected)));
-    verify(jdbcTemplate).execute(
-        "ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;"
-            .formatted(existing.getSequenceName(), modified.getHridStartNumber(), "test"));
+
+    var argumentCaptor = ArgumentCaptor.forClass(String.class);
+    verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
+
+    List<String> capturedArguments = argumentCaptor.getAllValues();
+
+    assertThat(capturedArguments.get(0)).isEqualTo(
+        String.format("DROP SEQUENCE IF EXISTS %s.%s;", "test", existing.getSequenceName()));
+    assertThat(capturedArguments.get(1)).isEqualTo(
+        String.format("""
+                CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
+                """,
+            existing.getSequenceName(), modified.getHridStartNumber(), "test"));
   }
 
   @ValueSource(ints = 1)

@@ -250,24 +250,13 @@ public class AuthoritySourceFileService {
     jdbcTemplate.execute(command);
   }
 
-  private void updateSequenceStartNumber(String sequenceName, int modifiedStartNumber) {
-    var command = String.format("ALTER SEQUENCE %s RESTART WITH %d OWNED BY %s.authority_source_file.sequence_name;",
-        sequenceName, modifiedStartNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    jdbcTemplate.execute(command);
-  }
-
   private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
     if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())
         && existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
       var sequenceName = existing.getSequenceName();
       var modifiedStartNumber = (int) modified.getHridStartNumber();
-      var existingStartNumber = (int) existing.getHridStartNumber();
-      if (modifiedStartNumber > existingStartNumber) {
-        updateSequenceStartNumber(sequenceName, modifiedStartNumber);
-      } else {
-        deleteSequence(sequenceName);
-        createSequence(sequenceName, modifiedStartNumber);
-      }
+      deleteSequence(sequenceName);
+      createSequence(sequenceName, modifiedStartNumber);
     }
   }
 }
