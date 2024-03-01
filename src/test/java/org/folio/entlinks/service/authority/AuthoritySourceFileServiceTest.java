@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -455,6 +457,24 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(authorityRepository).existsAuthorityByAuthoritySourceFileId(id);
+  }
+
+  @Test
+  void shouldCheckAuthoritiesExistForSourceFileAndTenant() {
+    var id = UUID.randomUUID();
+    var expected = true;
+    var tenant = "tenant";
+    var schema = "schema";
+    when(moduleMetadata.getDBSchemaName(tenant)).thenReturn(schema);
+    when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+    var captor = ArgumentCaptor.forClass(String.class);
+
+    var actual = service.authoritiesExistForSourceFile(id, tenant);
+
+    assertThat(actual).isEqualTo(expected);
+    verify(jdbcTemplate).queryForObject(captor.capture(), eq(Boolean.class));
+    assertThat("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)"
+        .formatted(schema, id.toString())).isEqualTo(captor.getValue());
   }
 
   @Test

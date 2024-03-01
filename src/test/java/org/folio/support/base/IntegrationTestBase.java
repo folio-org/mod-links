@@ -135,18 +135,25 @@ public class IntegrationTestBase {
   @SneakyThrows
   protected static void setUpConsortium(String centralTenantId, List<String> memberTenantIds, boolean loadReference) {
     setUpTenant(centralTenantId, loadReference);
+    setUpConsortiumMemberTenants(centralTenantId, memberTenantIds, loadReference);
+  }
+
+  @SneakyThrows
+  protected static void setUpConsortiumMemberTenants(String centralTenantId,
+                                                     List<String> memberTenantIds,
+                                                     boolean loadReference) {
     memberTenantIds.forEach(tenantId -> setUpTenant(tenantId, loadReference));
     var consortiumId = UUID.randomUUID().toString();
     var userTenants = new UserTenantsClient.UserTenants(
-      List.of(new UserTenantsClient.UserTenant(centralTenantId, consortiumId)));
+        List.of(new UserTenantsClient.UserTenant(centralTenantId, consortiumId)));
     mockGet("/user-tenants", objectMapper.writeValueAsString(userTenants), SC_OK, okapi.wireMockServer());
     var consortiumTenantList = memberTenantIds.stream()
-      .map(s -> new ConsortiumTenantsClient.ConsortiumTenant(s, false))
-      .collect(Collectors.toList());
+        .map(s -> new ConsortiumTenantsClient.ConsortiumTenant(s, false))
+        .collect(Collectors.toList());
     consortiumTenantList.add(new ConsortiumTenantsClient.ConsortiumTenant(centralTenantId, true));
     var consortiumTenants = new ConsortiumTenantsClient.ConsortiumTenants(consortiumTenantList);
     mockGet("/consortia/" + consortiumId + "/tenants", objectMapper.writeValueAsString(consortiumTenants), SC_OK,
-      okapi.wireMockServer());
+        okapi.wireMockServer());
   }
 
   protected static void mockGet(String url, String body, int status, WireMockServer mockServer) {

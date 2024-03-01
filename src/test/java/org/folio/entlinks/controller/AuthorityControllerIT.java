@@ -60,6 +60,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
+import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.spring.testing.extension.DatabaseCleanup;
@@ -730,9 +731,8 @@ class AuthorityControllerIT extends IntegrationTestBase {
 
     tryDelete(authoritySourceFilesEndpoint(expected.getSourceFileId()))
       .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
-                                      + " Authority/Authority Source File.")))
-      .andExpect(exceptionMatch(DataIntegrityViolationException.class));
+      .andExpect(errorMessageMatch(is("Unable to delete. Authority source file has referenced authorities")))
+      .andExpect(exceptionMatch(RequestBodyValidationException.class));
   }
 
   private void mockSuccessfulSettingsRequest() {

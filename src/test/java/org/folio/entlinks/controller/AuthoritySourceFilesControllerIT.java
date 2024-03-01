@@ -2,6 +2,8 @@ package org.folio.entlinks.controller;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
+import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
+import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authorityDto;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
@@ -20,12 +22,16 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.assertj.core.api.Assertions;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto.SourceEnum;
@@ -39,6 +45,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -50,20 +57,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @IntegrationTest
 @DatabaseCleanup(tables = {
-  DatabaseHelper.AUTHORITY_TABLE,
+  AUTHORITY_TABLE,
   DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
-  DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE}
+  AUTHORITY_SOURCE_FILE_TABLE}
 )
 class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
-  private static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
+  public static final String COLLEGE_TENANT_ID = "college";
 
+  private static final String CREATED_DATE = "2021-10-28T06:31:31+05:00";
   private static final UUID[] SOURCE_FILE_IDS = new UUID[] {randomUUID(), randomUUID(), randomUUID()};
   private static final Integer[] SOURCE_FILE_CODE_IDS = new Integer[] {1, 2, 3};
   private static final String[] SOURCE_FILE_CODES = new String[] {"c", "co", "cod"};
@@ -164,7 +173,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("POST: create new Authority Source File")
   void createAuthoritySourceFile_positive_entityCreated() throws Exception {
-    assumeTrue(databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID) == 0);
+    assumeTrue(databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID) == 0);
 
     var id = UUID.randomUUID();
     var dto = new AuthoritySourceFilePostDto()
@@ -187,7 +196,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
       .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)));
 
-    assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+    assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(expectedSequenceName, databaseHelper.queryAuthoritySourceFileSequenceName(TENANT_ID, id));
     assertEquals(dto.getHridManagement().getStartNumber(),
       databaseHelper.queryAuthoritySourceFileSequenceStartNumber(expectedSequenceName));
@@ -208,7 +217,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
 
     assertEquals(1,
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+      databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
@@ -225,7 +234,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
 
     assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+      databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
@@ -242,7 +251,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
 
     assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+      databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
@@ -258,7 +267,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(exceptionMatch(DataIntegrityViolationException.class));
 
     assertEquals(createdEntities.size(),
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+      databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
@@ -286,7 +295,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     }
 
     assertEquals(0,
-      databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+      databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
@@ -388,9 +397,8 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doPatch(authoritySourceFilesEndpoint(created.getId()), patchDto)
         .andExpect(status().isNoContent());
 
-    var expectedError = String.format("Cannot update record %s because it has been changed (optimistic locking): "
-            + "Stored _version is %d, _version of request is %d", created.getId().toString(),
-        1, 0);
+    var expectedError = String.format("Cannot update record %s because it has been changed (optimistic locking):"
+        + " Stored _version is %d, _version of request is %d", created.getId().toString(), 1, 0);
     tryPatch(authoritySourceFilesEndpoint(created.getId()), patchDto)
         .andExpect(status().isConflict())
         .andExpect(errorMessageMatch(is(expectedError)))
@@ -449,7 +457,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doPost(authoritySourceFilesEndpoint(), dto);
     doDelete(authoritySourceFilesEndpoint(id));
 
-    assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+    assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
     var sequenceName = String.format("hrid_authority_local_file_%s_seq", code);
     assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sequenceName));
@@ -508,7 +516,58 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
         .andExpect(jsonPath("id", is(id.toString())))
         .andExpect(jsonPath("hrid", is(code + (startNumber + i))));
     }
+  }
 
+  // Tests for Consortium cases
+
+  @Test
+  void patchAndDeleteAuthoritySourceFile_negative_whenExistReferencedAuthorityFromMemberTenant()
+      throws Exception {
+    setUpConsortiumMemberTenants(TENANT_ID, List.of(COLLEGE_TENANT_ID), false);
+    var id = UUID.randomUUID();
+    var dto = new AuthoritySourceFilePostDto()
+        .id(id).name("name").code("no").type("type");
+
+    // create source file
+    doPost(authoritySourceFilesEndpoint(), dto, tenantHeaders(TENANT_ID));
+    var sourceFileCentral = requestAuthoritySourceFile(id, TENANT_ID);
+    Assertions.assertThat(sourceFileCentral).extracting(AuthoritySourceFileDto::getId, AuthoritySourceFileDto::getName)
+        .containsExactly(id, dto.getName());
+
+    // should be also created in member tenants
+    awaitUntilAsserted(() -> {
+      var sourceFileMember = requestAuthoritySourceFile(id, COLLEGE_TENANT_ID);
+      Assertions.assertThat(sourceFileMember).extracting(AuthoritySourceFileDto::getId, AuthoritySourceFileDto::getName)
+          .containsExactly(id, dto.getName());
+    });
+
+    // create local authority in member tenant
+    var authorityDto = new AuthorityDto()
+        .id(UUID.randomUUID()).source("MARC").naturalId("ns12345").personalName("Nikola Tesla").sourceFileId(id);
+    doPost(authorityEndpoint(), authorityDto, tenantHeaders(COLLEGE_TENANT_ID));
+    var memberAuthority = requestAuthority(authorityDto.getId(), COLLEGE_TENANT_ID);
+    Assertions.assertThat(memberAuthority)
+        .extracting(AuthorityDto::getId, AuthorityDto::getSource, AuthorityDto::getNaturalId,
+            AuthorityDto::getPersonalName, AuthorityDto::getSourceFileId)
+        .containsExactly(authorityDto.getId(), authorityDto.getSource(), authorityDto.getNaturalId(),
+            authorityDto.getPersonalName(), authorityDto.getSourceFileId());
+
+    var patchDto = new AuthoritySourceFilePatchDto(0)
+        .code("updated").hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(5));
+
+    // patch source file
+    tryPatch(authoritySourceFilesEndpoint(id), patchDto)
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(exceptionMatch(RequestBodyValidationException.class))
+        .andExpect(errorMessageMatch(containsString(
+            "Unable to patch. Authority source file source is FOLIO or it has authority references")));
+
+    // delete source file
+    tryDelete(authoritySourceFilesEndpoint(id))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(exceptionMatch(RequestBodyValidationException.class))
+        .andExpect(errorMessageMatch(containsString(
+            "Unable to delete. Authority source file has referenced authorities")));
   }
 
   private List<AuthoritySourceFile> createAuthoritySourceTypes() {
@@ -581,5 +640,27 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {
     return jsonPath("$.errors.[0].message", errorMessageMatcher);
+  }
+
+  private HttpHeaders tenantHeaders(String tenant) {
+    var httpHeaders = defaultHeaders();
+    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
+    return httpHeaders;
+  }
+
+  private AuthorityDto requestAuthority(UUID id, String tenantId)
+      throws UnsupportedEncodingException, JsonProcessingException {
+    var response = doGet(authorityEndpoint(id), tenantHeaders(tenantId)).andReturn()
+        .getResponse()
+        .getContentAsString();
+    return objectMapper.readValue(response, AuthorityDto.class);
+  }
+
+  private AuthoritySourceFileDto requestAuthoritySourceFile(UUID id, String tenantId)
+      throws UnsupportedEncodingException, JsonProcessingException {
+    var response = doGet(authoritySourceFilesEndpoint(id), tenantHeaders(tenantId)).andReturn()
+        .getResponse()
+        .getContentAsString();
+    return objectMapper.readValue(response, AuthoritySourceFileDto.class);
   }
 }

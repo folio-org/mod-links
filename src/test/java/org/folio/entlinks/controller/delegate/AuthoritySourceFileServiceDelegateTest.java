@@ -10,12 +10,14 @@ import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
+import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
 import org.folio.spring.FolioExecutionContext;
@@ -70,6 +73,8 @@ class AuthoritySourceFileServiceDelegateTest {
   private FolioExecutionContext context;
   @Mock
   private SystemUserScopedExecutionService executionService;
+  @Mock
+  private ConsortiumTenantsService consortiumTenantsService;
 
   @InjectMocks
   private AuthoritySourceFileServiceDelegate delegate;
@@ -183,25 +188,26 @@ class AuthoritySourceFileServiceDelegateTest {
   @ParameterizedTest
   @MethodSource("patchValidationFailureData")
   void shouldNotPatchAuthoritySourceFile_whenSourceFolioOrAuthoritiesReferenced(AuthoritySourceFileSource source,
-                                                                                Boolean authoritiesReferenced,
+                                                                                Boolean authoritiesReferencedAtCentral,
+                                                                                Boolean authoritiesReferencedAtMember,
                                                                                 List<Parameter> errors) {
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     existing.setSource(source);
     existing.setSelectable(false);
-    var dto = new AuthoritySourceFilePatchDto()
-      .name("name")
-      .type("type")
-      .selectable(true)
-      .version(1)
-      .baseUrl("baseUrl")
-      .code("a")
-      .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(1));
-    var expected = new RequestBodyValidationException(
-      "Unable to patch. Authority source file source is FOLIO or it has authority references", errors);
 
     var id = existing.getId();
     when(service.getById(id)).thenReturn(existing);
-    when(service.authoritiesExistForSourceFile(id)).thenReturn(authoritiesReferenced);
+    when(service.authoritiesExistForSourceFile(id)).thenReturn(authoritiesReferencedAtCentral);
+    if (!authoritiesReferencedAtCentral) {
+      when(context.getTenantId()).thenReturn("central");
+      when(consortiumTenantsService.getConsortiumTenants("central")).thenReturn(List.of("member"));
+      when(service.authoritiesExistForSourceFile(id, "member")).thenReturn(authoritiesReferencedAtMember);
+    }
+    var dto = new AuthoritySourceFilePatchDto()
+        .name("name").type("type").selectable(true).version(1).baseUrl("baseUrl").code("a")
+        .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(1));
+    var expected = new RequestBodyValidationException(
+        "Unable to patch. Authority source file source is FOLIO or it has authority references", errors);
 
     var ex = assertThrows(RequestBodyValidationException.class,
       () -> delegate.patchAuthoritySourceFile(id, dto));
@@ -243,12 +249,34 @@ class AuthoritySourceFileServiceDelegateTest {
 
     when(service.getById(existing.getId())).thenReturn(existing);
     when(context.getTenantId()).thenReturn(TENANT_ID);
+    when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(false);
+    when(consortiumTenantsService.getConsortiumTenants(anyString())).thenReturn(Collections.emptyList());
 
     delegate.deleteAuthoritySourceFileById(existing.getId());
 
     verify(service).deleteSequence(existing.getSequenceName());
     verify(service).deleteById(existing.getId());
     verify(propagationService).propagate(existing, DELETE, TENANT_ID);
+  }
+
+  @Test
+  void shouldNotDeleteIfReferencedAuthorityExistForSourceFile() {
+    var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    var id = existing.getId();
+    when(service.getById(id)).thenReturn(existing);
+    when(context.getTenantId()).thenReturn(TENANT_ID);
+    when(service.authoritiesExistForSourceFile(id)).thenReturn(false);
+    when(consortiumTenantsService.getConsortiumTenants(anyString())).thenReturn(List.of("college"));
+    when(service.authoritiesExistForSourceFile(id, "college")).thenReturn(true);
+
+    var exc = assertThrows(RequestBodyValidationException.class,
+        () -> delegate.deleteAuthoritySourceFileById(id));
+
+    assertThat(exc.getMessage())
+        .isEqualTo("Unable to delete. Authority source file has referenced authorities");
+
+    verifyNoMoreInteractions(service);
+    verifyNoInteractions(propagationService);
   }
 
   @Test
@@ -347,10 +375,12 @@ class AuthoritySourceFileServiceDelegateTest {
 
   static Stream<Arguments> patchValidationFailureData() {
     return Stream.of(
-      Arguments.of(AuthoritySourceFileSource.FOLIO, false, List.of(new Parameter("name").value("name"),
+      Arguments.of(AuthoritySourceFileSource.FOLIO, false, false, List.of(new Parameter("name").value("name"),
         new Parameter("code").value("a"),
         new Parameter("hridManagement.startNumber").value("1"))),
-      Arguments.of(AuthoritySourceFileSource.LOCAL, true, List.of(new Parameter("code").value("a"),
+      Arguments.of(AuthoritySourceFileSource.LOCAL, true, false, List.of(new Parameter("code").value("a"),
+        new Parameter("hridManagement.startNumber").value("1"))),
+      Arguments.of(AuthoritySourceFileSource.LOCAL, false, true, List.of(new Parameter("code").value("a"),
         new Parameter("hridManagement.startNumber").value("1"))));
   }
 
