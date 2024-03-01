@@ -2,8 +2,11 @@ package org.folio.entlinks.controller;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
+import static org.folio.support.DatabaseHelper.AUTHORITY_ARCHIVE_TABLE;
+import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
+import static org.folio.support.TestDataUtils.AuthorityTestData.authority;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authorityDto;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.folio.support.base.TestConstants.TENANT_ID;
@@ -49,7 +52,6 @@ import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
-import org.folio.support.DatabaseHelper;
 import org.folio.support.base.IntegrationTestBase;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
@@ -66,7 +68,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @IntegrationTest
 @DatabaseCleanup(tables = {
   AUTHORITY_TABLE,
-  DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
+  AUTHORITY_ARCHIVE_TABLE,
+  AUTHORITY_SOURCE_FILE_CODE_TABLE,
   AUTHORITY_SOURCE_FILE_TABLE}
 )
 class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
@@ -424,7 +427,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doDelete(authoritySourceFilesEndpoint(id));
 
     assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
-    assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
+    assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_CODE_TABLE, TENANT_ID));
     var sequenceName = String.format("hrid_authority_local_file_%s_seq", code);
     assertNull(databaseHelper.queryAuthoritySourceFileSequenceStartNumber(sequenceName));
   }
@@ -475,9 +478,9 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doDelete(authorityEndpoint(authority.getId()));
 
     awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(DatabaseHelper.AUTHORITY_TABLE, TENANT_ID)));
+      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
     awaitUntilAsserted(() ->
-      assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_ARCHIVE_TABLE, TENANT_ID)));
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, TENANT_ID)));
 
     tryDelete(authoritySourceFilesEndpoint(authoritySrcFile.getId()))
       .andExpect(status().isUnprocessableEntity())
@@ -485,7 +488,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
         + " Authority Archive/Authority.")));
 
-    assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+    assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
 
   @Test
