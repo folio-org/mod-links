@@ -3,16 +3,8 @@ package org.folio.entlinks.controller;
 import static java.util.Collections.emptyList;
 import static org.apache.logging.log4j.Level.DEBUG;
 import static org.apache.logging.log4j.Level.WARN;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_ID;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_CODE;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_ID;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_NAME;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_SEQUENCE;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_SOURCE_FILE_URL;
-import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_NOTE_TYPE_NAME;
+import static org.folio.entlinks.config.constants.Constrains.getErrorCode;
 import static org.folio.entlinks.config.constants.ErrorCode.NOT_EXISTED_AUTHORITY_SOURCE_FILE;
-import static org.folio.entlinks.config.constants.ErrorCode.VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_AND_SOURCE_FILE;
-import static org.folio.entlinks.config.constants.ErrorCode.VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_ARCHIVE_AND_SOURCE_FILE;
 import static org.folio.entlinks.exception.type.ErrorType.UNKNOWN_ERROR;
 import static org.folio.entlinks.exception.type.ErrorType.VALIDATION_ERROR;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -21,7 +13,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
@@ -56,17 +47,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @Log4j2
 @RestControllerAdvice
 public class ApiErrorHandler {
-
-  private static final Map<String, ErrorCode> CONSTRAINS_I18N_MAP = Map.of(
-    "authority_note_type_name_unq", DUPLICATE_NOTE_TYPE_NAME,
-    "authority_source_file_name_unq", DUPLICATE_AUTHORITY_SOURCE_FILE_NAME,
-    "authority_source_file_base_url_unq", DUPLICATE_AUTHORITY_SOURCE_FILE_URL,
-    "authority_source_file_code_unq", DUPLICATE_AUTHORITY_SOURCE_FILE_CODE,
-    "pk_authority_storage", DUPLICATE_AUTHORITY_ID,
-    "authority_storage_source_file_id_foreign_key", VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_AND_SOURCE_FILE,
-    "authority_archive_source_file_id_foreign_key", VIOLATION_OF_RELATION_BETWEEN_AUTHORITY_ARCHIVE_AND_SOURCE_FILE,
-    "authority_source_file_sequence_name_unq", DUPLICATE_AUTHORITY_SOURCE_FILE_SEQUENCE,
-    "pk_authority_source_file", DUPLICATE_AUTHORITY_SOURCE_FILE_ID);
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Errors> handleGlobalExceptions(Exception e) {
@@ -155,7 +135,7 @@ public class ApiErrorHandler {
     var cause = e.getCause();
     if (cause instanceof ConstraintViolationException cve) {
       var constraintName = cve.getConstraintName();
-      var errorCode = CONSTRAINS_I18N_MAP.get(constraintName);
+      var errorCode = getErrorCode(constraintName);
       return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
     } else if (cause instanceof IllegalStateException ise) {
       var innerCause = ise.getCause();
