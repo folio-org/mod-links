@@ -184,6 +184,16 @@ public class AuthoritySourceFileService {
     return authorityRepository.existsAuthorityByAuthoritySourceFileId(sourceFileId);
   }
 
+  public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId) {
+    if (sourceFileId == null || tenantId == null) {
+      return false;
+    }
+
+    var command = String.format("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)",
+        moduleMetadata.getDBSchemaName(tenantId), sourceFileId);
+    return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
+  }
+
   private void validateOnCreate(AuthoritySourceFile entity) {
     entity.getAuthoritySourceFileCodes().forEach(this::validateSourceFileCode);
   }
