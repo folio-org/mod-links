@@ -419,7 +419,7 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(jdbcTemplate).queryForObject(captor.capture(), eq(Boolean.class));
-    assertThat("select exists (select true from %s.authority a where a.source_file_id='%s')"
+    assertThat("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)"
         .formatted(schema, id.toString())).isEqualTo(captor.getValue());
   }
 
