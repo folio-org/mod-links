@@ -477,7 +477,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
       .andExpect(status().isUnprocessableEntity())
       .andExpect(exceptionMatch(DataIntegrityViolationException.class))
       .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
-        + " Authority Archive/Authority Source File.")));
+        + " Authority Archive/Authority.")));
 
     assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
   }
