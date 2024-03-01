@@ -189,7 +189,7 @@ public class AuthoritySourceFileService {
       return false;
     }
 
-    var command = String.format("select exists (select true from %s.authority a where a.source_file_id='%s')",
+    var command = String.format("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)",
         moduleMetadata.getDBSchemaName(tenantId), sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
