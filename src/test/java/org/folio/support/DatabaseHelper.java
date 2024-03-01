@@ -93,6 +93,12 @@ public class DatabaseHelper {
     });
   }
 
+  public Integer queryAuthoritySourceFileSequenceCurrentValue(String tenant, UUID id) {
+    var sql = "SELECT last_value FROM " + metadata.getDBSchemaName(tenant) + "."
+        + queryAuthoritySourceFileSequenceName(tenant, id);
+    return jdbcTemplate.queryForObject(sql, Integer.class);
+  }
+
   public Integer queryAuthoritySourceFileSequenceStartNumber(String sequenceName) {
     var sql = "SELECT * from information_schema.sequences where sequence_name='" + sequenceName + "'";
     return jdbcTemplate.query(sql, rs -> {

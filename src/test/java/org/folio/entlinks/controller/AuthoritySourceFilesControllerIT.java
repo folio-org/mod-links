@@ -405,6 +405,41 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
         .andExpect(exceptionMatch(OptimisticLockingException.class));
   }
 
+  @Test
+  @DisplayName("PATCH: update Authority Source File with lower sequence start number than existing")
+  void updateAuthoritySourceFileWhenSequenceNumberLowerThanExisting() throws Exception {
+    var id = UUID.randomUUID();
+    var code = "abcdf";
+    var startNumber = 10;
+    var dto = new AuthoritySourceFilePostDto()
+        .id(id)
+        .name("name")
+        .code(code)
+        .hridManagement(new AuthoritySourceFilePostDtoHridManagement().startNumber(startNumber));
+
+    doPost(authoritySourceFilesEndpoint(), dto);
+    var expectedSequenceName = "hrid_authority_local_file_abcdf_seq";
+    assertEquals(expectedSequenceName, databaseHelper.queryAuthoritySourceFileSequenceName(TENANT_ID, id));
+    assertEquals(startNumber, databaseHelper.queryAuthoritySourceFileSequenceStartNumber(expectedSequenceName));
+    assertEquals(startNumber, databaseHelper.queryAuthoritySourceFileSequenceCurrentValue(TENANT_ID, id));
+
+    var hridStartNumber = 9;
+    var partiallyModified = new AuthoritySourceFilePatchDto()
+        .version(1)
+        .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(hridStartNumber));
+
+    doPatch(authoritySourceFilesEndpoint(id), partiallyModified)
+        .andExpect(status().isNoContent());
+
+    doGet(authoritySourceFilesEndpoint(id))
+        .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)));
+
+    assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+    assertEquals(expectedSequenceName, databaseHelper.queryAuthoritySourceFileSequenceName(TENANT_ID, id));
+    assertEquals(hridStartNumber, databaseHelper.queryAuthoritySourceFileSequenceCurrentValue(TENANT_ID, id));
+    assertEquals(hridStartNumber, databaseHelper.queryAuthoritySourceFileSequenceStartNumber(expectedSequenceName));
+  }
+
   // Tests for DELETE
 
   @Test
