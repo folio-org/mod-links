@@ -438,7 +438,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
     doGet(authoritySourceFilesEndpoint(id))
         .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)));
 
-    assertEquals(1, databaseHelper.countRows(DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
+    assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, TENANT_ID));
     assertEquals(expectedSequenceName, databaseHelper.queryAuthoritySourceFileSequenceName(TENANT_ID, id));
     assertEquals(hridStartNumber, databaseHelper.queryAuthoritySourceFileSequenceCurrentValue(TENANT_ID, id));
     assertEquals(hridStartNumber, databaseHelper.queryAuthoritySourceFileSequenceStartNumber(expectedSequenceName));
