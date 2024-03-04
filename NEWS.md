@@ -33,6 +33,7 @@
 * Fix base url of authority file after linking ([MODELINKS-192](https://folio-org.atlassian.net/browse/MODELINKS-192))
 * Fix authority source file sequence deletion ([MODELINKS-211](https://issues.folio.org/browse/MODELINKS-211))
 * Fix authority source file prefix validation for PATCH request ([MODELINKS-208](https://folio-org.atlassian.net/browse/MODELINKS-208))
+* Fix authority source file sequence start number update (([MODELINKS-212](https://issues.folio.org/browse/MODELINKS-212))
 * Use generic topic name instead of creating new for each tenant ([MODELINKS-213](https://issues.folio.org/browse/MODELINKS-213))
 * Fix modifying and deleting of source file referenced by authority of member tenant in ECS ([MODELINKS-217](https://issues.folio.org/browse/MODELINKS-217))
 * Add new error code to handle authority source file deletion after authority deletion ([MODELINKS-210](https://issues.folio.org/browse/MODELINKS-210))

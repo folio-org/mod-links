@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -40,7 +41,6 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -190,7 +190,6 @@ class AuthoritySourceFileServiceTest {
     assertThat(thrown.getInvalidParameters().get(0).getValue()).isEqualTo(code);
   }
 
-  @NullSource
   @ValueSource(ints = 0)
   @ParameterizedTest
   void shouldUpdateAuthoritySourceFileModifiableFields(Integer existingHridStartNumber) {
@@ -220,9 +219,64 @@ class AuthoritySourceFileServiceTest {
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
     verify(repository).save(argThat(authoritySourceFileMatch(expected)));
-    verify(jdbcTemplate).execute(
-        "ALTER SEQUENCE %s RESTART WITH %d OWNED BY test.authority_source_file.sequence_name;"
-            .formatted(existing.getSequenceName(), modified.getHridStartNumber()));
+
+    var argumentCaptor = ArgumentCaptor.forClass(String.class);
+    verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
+
+    List<String> capturedArguments = argumentCaptor.getAllValues();
+
+    assertThat(capturedArguments.get(0)).isEqualTo(
+        String.format("DROP SEQUENCE IF EXISTS %s.%s;", "test", existing.getSequenceName()));
+    assertThat(capturedArguments.get(1)).isEqualTo(
+        String.format("""
+                CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
+                """,
+            existing.getSequenceName(), modified.getHridStartNumber(), "test"));
+  }
+
+  @ValueSource(ints = 1)
+  @ParameterizedTest
+  void shouldUpdateAuthoritySourceFile_WhenSequenceStartNumberLessThenExisting(Integer existingHridStartNumber) {
+    var existing = authoritySourceFile(0);
+    existing.setHridStartNumber(existingHridStartNumber);
+    var id = existing.getId();
+    var modified = authoritySourceFile(1);
+    modified.setId(id);
+    modified.setSource(LOCAL);
+    modified.setHridStartNumber(0);
+
+    var expected = new AuthoritySourceFile(modified);
+    expected.setSource(existing.getSource());
+    expected.setSequenceName(existing.getSequenceName());
+    var existingDtoCodes = existing.getAuthoritySourceFileCodes().stream()
+        .map(AuthoritySourceFileCode::getCode).toList();
+    var modifiedDtoCodes = modified.getAuthoritySourceFileCodes().stream()
+        .map(AuthoritySourceFileCode::getCode).toList();
+
+    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(moduleMetadata.getDBSchemaName(any())).thenReturn("test");
+    when(repository.save(expected)).thenReturn(expected);
+    when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
+    when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
+
+    var actual = service.update(id, modified);
+
+    assertThat(actual).isEqualTo(expected);
+    verify(repository).findById(id);
+    verify(repository).save(argThat(authoritySourceFileMatch(expected)));
+
+    var argumentCaptor = ArgumentCaptor.forClass(String.class);
+    verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
+
+    List<String> capturedArguments = argumentCaptor.getAllValues();
+
+    assertThat(capturedArguments.get(0)).isEqualTo(
+        String.format("DROP SEQUENCE IF EXISTS %s.%s;", "test", existing.getSequenceName()));
+    assertThat(capturedArguments.get(1)).isEqualTo(
+        String.format("""
+                CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
+                """,
+            existing.getSequenceName(), modified.getHridStartNumber(), "test"));
   }
 
   @Test
