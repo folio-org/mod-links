@@ -5,6 +5,7 @@ import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropag
 import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService.PropagationType.DELETE;
 import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService.PropagationType.UPDATE;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
+import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
@@ -41,6 +43,7 @@ public class AuthoritySourceFileServiceDelegate {
   private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
   private final FolioExecutionContext context;
   private final SystemUserScopedExecutionService executionService;
+  private final ConsortiumTenantsService consortiumTenantsService;
 
   public AuthoritySourceFileDtoCollection getAuthoritySourceFiles(Integer offset, Integer limit, String cqlQuery) {
     var entities = service.getAll(offset, limit, cqlQuery);
@@ -83,6 +86,11 @@ public class AuthoritySourceFileServiceDelegate {
     var entity = service.getById(id);
     validateActionRightsForTenant(DomainEventType.DELETE);
 
+    if (anyAuthoritiesExistForSourceFile(entity)) {
+      throw new RequestBodyValidationException(
+          "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
+    }
+
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
     }
@@ -120,7 +128,7 @@ public class AuthoritySourceFileServiceDelegate {
 
   private void validatePatchRequest(AuthoritySourceFilePatchDto patchDto, AuthoritySourceFile existing) {
     var errorParameters = new LinkedList<Parameter>();
-    var hasAuthorityReferences = service.authoritiesExistForSourceFile(existing.getId());
+    var hasAuthorityReferences = anyAuthoritiesExistForSourceFile(existing);
 
     if (!(existing.getSource().equals(FOLIO) || hasAuthorityReferences)) {
       return;
@@ -142,5 +150,21 @@ public class AuthoritySourceFileServiceDelegate {
       throw new RequestBodyValidationException(
         "Unable to patch. Authority source file source is FOLIO or it has authority references", errorParameters);
     }
+  }
+
+  public boolean anyAuthoritiesExistForSourceFile(AuthoritySourceFile sourceFile) {
+    var sourceFileId = sourceFile.getId();
+    if (service.authoritiesExistForSourceFile(sourceFileId)) {
+      return true;
+    }
+
+    var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
+    for (String memberTenant : consortiumTenants) {
+      if (service.authoritiesExistForSourceFile(sourceFileId, memberTenant)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
