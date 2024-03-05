@@ -9,7 +9,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 
 @UnitTest
-public class DatabaseConstraintTranslatorTest {
+class DatabaseConstraintTranslatorTest {
   private static final String EXISTING_CONSTRAIN = "pk_authority_storage";
 
   @Test

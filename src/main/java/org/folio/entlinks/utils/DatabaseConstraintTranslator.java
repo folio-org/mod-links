@@ -29,6 +29,10 @@ public class DatabaseConstraintTranslator {
     "pk_authority_source_file", DUPLICATE_AUTHORITY_SOURCE_FILE_ID
   );
 
+  private DatabaseConstraintTranslator() {
+    throw new IllegalStateException("Utility class");
+  }
+
   public static ErrorCode translate(ConstraintViolationException cve) {
     return DB_CONSTRAINTS_I18N_MAP.getOrDefault(cve.getConstraintName(), UNKNOWN_CONSTRAINT);
   }
