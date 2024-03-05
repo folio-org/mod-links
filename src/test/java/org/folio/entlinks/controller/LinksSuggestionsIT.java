@@ -1,5 +1,6 @@
 package org.folio.entlinks.controller;
 
+import static org.folio.entlinks.config.constants.ErrorCode.DISABLED_AUTO_LINKING;
 import static org.folio.entlinks.config.constants.ErrorCode.MORE_THAN_ONE_SUGGESTIONS;
 import static org.folio.entlinks.config.constants.ErrorCode.NO_SUGGESTIONS;
 import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
@@ -44,6 +45,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   private static final String LINKABLE_AUTHORITY_WITH_T_SUBFIELD_ID = "cb398c08-736e-4d6b-aa94-5fa1bfcf9b10";
   private static final String NATURAL_ID = "n12345";
   private static final String NATURAL_ID_FOR_T_SUBFIELD = "tSubfieldAuthority";
+  private static final Integer RULE_ID_OF_600_FIELD = 8;
 
   @BeforeAll
   static void prepare() {
@@ -190,6 +192,32 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
+  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled() {
+    databaseHelper.disableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+
+    var givenSubfields = Map.of("0", NATURAL_ID);
+    var givenRecord = getRecord("100", null, givenSubfields);
+    var disabledAutoLinkingRecord = getRecord("600", null, givenSubfields);
+
+    var expectedErrorDetails = new LinkDetails().status(ERROR).errorCause(DISABLED_AUTO_LINKING.getCode());
+    var expectedErrorRecord = getRecord("600", expectedErrorDetails, givenSubfields);
+
+    var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
+
+    var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord, disabledAutoLinkingRecord));
+    doPost(linksSuggestionsEndpoint(), requestBody)
+        .andExpect(status().isOk())
+        .andExpect(content().json(asJson(new ParsedRecordContentCollection()
+            .records(List.of(expectedRecord, expectedErrorRecord)), objectMapper)));
+
+    databaseHelper.enableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+
+  }
+
+  @Test
+  @SneakyThrows
   void getAuthDataStat_shouldFillErrorDetails_whenTwoSuggestionsFound() {
     var naturalId = "twoAuthority";
     var authority1 = TestDataUtils.AuthorityTestData.authority(0, 0);
@@ -246,6 +274,26 @@ class LinksSuggestionsIT extends IntegrationTestBase {
         .andExpect(status().isOk())
         .andExpect(content().json(asJson(new ParsedRecordContentCollection()
             .records(List.of(expectedRecord)), objectMapper)));
+  }
+
+  @Test
+  @SneakyThrows
+  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled_andOnlyOneRecord() {
+    databaseHelper.disableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+
+    var givenSubfields = Map.of("0", NATURAL_ID);
+    var givenRecord = getRecord("600", null, givenSubfields);
+
+    var expectedLinkDetails = new LinkDetails().status(ERROR).errorCause(DISABLED_AUTO_LINKING.getCode());
+    var expectedRecord = getRecord("600", expectedLinkDetails, givenSubfields);
+
+    var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
+    doPost(linksSuggestionsEndpoint(), requestBody)
+        .andExpect(status().isOk())
+        .andExpect(content().json(asJson(new ParsedRecordContentCollection()
+            .records(List.of(expectedRecord)), objectMapper)));
+
+    databaseHelper.enableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
   }
 
   private ParsedRecordContent getRecord(String bibField, LinkDetails linkDetails, Map<String, String> subfields) {

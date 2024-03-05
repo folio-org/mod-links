@@ -26,6 +26,7 @@ public class DatabaseHelper {
   public static final String AUTHORITY_TABLE = "authority";
   public static final String AUTHORITY_ARCHIVE_TABLE = "authority_archive";
   public static final String AUTHORITY_REINDEX_JOB_TABLE = "reindex_job";
+  public static final String INSTANCE_AUTHORITY_LINKING_RULE = "instance_authority_linking_rule";
 
   private final FolioModuleMetadata metadata;
   private final JdbcTemplate jdbcTemplate;
@@ -97,6 +98,18 @@ public class DatabaseHelper {
     var sql = "SELECT last_value FROM " + metadata.getDBSchemaName(tenant) + "."
         + queryAuthoritySourceFileSequenceName(tenant, id);
     return jdbcTemplate.queryForObject(sql, Integer.class);
+  }
+
+  public void disableAutoLinking(String tenant, Integer ruleId){
+    var sql = "UPDATE " + getDbPath(tenant, INSTANCE_AUTHORITY_LINKING_RULE)
+        + " SET auto_linking_enabled = ? where id = ?";
+    jdbcTemplate.update(sql, false, ruleId);
+  }
+
+  public void enableAutoLinking(String tenant, Integer ruleId){
+    var sql = "UPDATE " + getDbPath(tenant, INSTANCE_AUTHORITY_LINKING_RULE)
+        + " SET auto_linking_enabled = ? where id = ?";
+    jdbcTemplate.update(sql, true, ruleId);
   }
 
   public Integer queryAuthoritySourceFileSequenceStartNumber(String sequenceName) {
