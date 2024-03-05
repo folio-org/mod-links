@@ -3,7 +3,7 @@ package org.folio.entlinks.config.constants;
 import lombok.Getter;
 
 public enum ErrorCode {
-  UNKNOWN_CONSTRAIN("100", "Unknown constrain."),
+  UNKNOWN_CONSTRAINT("-1", "Unknown constraint."),
   NO_SUGGESTIONS("101", ""),
   MORE_THAN_ONE_SUGGESTIONS("102", ""),
   DISABLED_AUTO_LINKING("103", ""),
