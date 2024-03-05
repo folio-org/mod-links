@@ -100,13 +100,13 @@ public class DatabaseHelper {
     return jdbcTemplate.queryForObject(sql, Integer.class);
   }
 
-  public void disableAutoLinking(String tenant, Integer ruleId){
+  public void disableAutoLinking(String tenant, Integer ruleId) {
     var sql = "UPDATE " + getDbPath(tenant, INSTANCE_AUTHORITY_LINKING_RULE)
         + " SET auto_linking_enabled = ? where id = ?";
     jdbcTemplate.update(sql, false, ruleId);
   }
 
-  public void enableAutoLinking(String tenant, Integer ruleId){
+  public void enableAutoLinking(String tenant, Integer ruleId) {
     var sql = "UPDATE " + getDbPath(tenant, INSTANCE_AUTHORITY_LINKING_RULE)
         + " SET auto_linking_enabled = ? where id = ?";
     jdbcTemplate.update(sql, true, ruleId);
