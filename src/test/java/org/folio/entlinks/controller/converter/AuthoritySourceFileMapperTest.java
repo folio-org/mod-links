@@ -99,6 +99,30 @@ class AuthoritySourceFileMapperTest {
   }
 
   @Test
+  void testPartialUpdateWithEmptyBaseUrl() {
+    var sourceFile = createAuthoritySourceFile();
+    var patchDto = new AuthoritySourceFilePatchDto();
+    patchDto.setName(UPDATED_NAME);
+    patchDto.setType(UPDATED_TYPE);
+    patchDto.setCode(UPDATED_CODE);
+    patchDto.setBaseUrl("");
+    patchDto.selectable(true);
+    patchDto.hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(5));
+
+    var updatedFile = mapper.partialUpdate(patchDto, sourceFile);
+
+    assertThat(updatedFile).isNotNull();
+    assertThat(updatedFile.getName()).isEqualTo(patchDto.getName());
+    assertThat(updatedFile.getType()).isEqualTo(patchDto.getType());
+    assertThat(updatedFile.getAuthoritySourceFileCodes().iterator().next().getCode()).isEqualTo(patchDto.getCode());
+    assertThat(updatedFile.getFullBaseUrl()).isEqualTo(null);
+    assertThat(updatedFile.isSelectable()).isEqualTo(patchDto.getSelectable());
+    assertThat(updatedFile.getHridStartNumber()).isEqualTo(patchDto.getHridManagement().getStartNumber());
+    assertThat(updatedFile.getSource()).isEqualTo(sourceFile.getSource());
+    assertThat(updatedFile.getSequenceName()).isEqualTo(sourceFile.getSequenceName());
+  }
+
+  @Test
   void testPartialUpdate_noCodesUpdate() {
     var code = new AuthoritySourceFileCode();
     code.setCode("a");
