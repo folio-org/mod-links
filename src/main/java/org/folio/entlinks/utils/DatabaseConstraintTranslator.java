@@ -15,7 +15,7 @@ import java.util.Map;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.hibernate.exception.ConstraintViolationException;
 
-public class DatabaseConstraintTranslator {
+public final class DatabaseConstraintTranslator {
 
   private static final Map<String, ErrorCode> DB_CONSTRAINTS_I18N_MAP = Map.of(
     "authority_note_type_name_unq", DUPLICATE_NOTE_TYPE_NAME,
