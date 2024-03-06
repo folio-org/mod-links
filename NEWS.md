@@ -37,6 +37,8 @@
 * Use generic topic name instead of creating new for each tenant ([MODELINKS-213](https://issues.folio.org/browse/MODELINKS-213))
 * Fix modifying and deleting of source file referenced by authority of member tenant in ECS ([MODELINKS-217](https://issues.folio.org/browse/MODELINKS-217))
 * Save an Authority file with an empty "Base URL" when another one with an empty url already exists ([MODELINKS-216](https://issues.folio.org/browse/MODELINKS-216))
+* Add new error code to handle authority source file deletion after authority deletion ([MODELINKS-210](https://issues.folio.org/browse/MODELINKS-210))
+
 
 ### Tech Dept
 * Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
