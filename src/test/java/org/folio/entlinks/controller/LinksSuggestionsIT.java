@@ -170,7 +170,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   @Test
   @SneakyThrows
   void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled() {
-    databaseHelper.disableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+    databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, false);
 
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
@@ -189,7 +189,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
       .andExpect(content().json(asJson(new ParsedRecordContentCollection()
         .records(List.of(expectedRecord, expectedErrorRecord)), objectMapper)));
 
-    databaseHelper.enableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+    databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, true);
   }
 
   @Test
@@ -255,7 +255,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
   @Test
   @SneakyThrows
   void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled_andOnlyOneRecord() {
-    databaseHelper.disableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+    databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, false);
 
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("600", null, givenSubfields);
@@ -269,7 +269,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
         .andExpect(content().json(asJson(new ParsedRecordContentCollection()
             .records(List.of(expectedRecord)), objectMapper)));
 
-    databaseHelper.enableAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD);
+    databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, true);
   }
 
   private ParsedRecordContent getRecord(String bibField, LinkDetails linkDetails, Map<String, String> subfields) {
