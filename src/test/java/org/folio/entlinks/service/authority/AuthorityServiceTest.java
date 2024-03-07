@@ -150,12 +150,12 @@ class AuthorityServiceTest {
     modified.setAuthoritySourceFile(sourceFileNew);
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
-    when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(repository.saveAndFlush(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
     var updated = service.update(modified);
 
     assertThat(updated).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(repository).save(argThat(authorityMatch(modified)));
+    verify(repository).saveAndFlush(argThat(authorityMatch(modified)));
   }
 
   @Test
@@ -173,13 +173,13 @@ class AuthorityServiceTest {
     modified.setAuthoritySourceFile(null);
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
-    when(repository.save(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(repository.saveAndFlush(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     var updated = service.update(modified);
 
     assertThat(updated.getAuthoritySourceFile()).isNull();
     verify(repository).findByIdAndDeletedFalse(id);
-    verify(repository).save(existed);
+    verify(repository).saveAndFlush(existed);
     verifyNoMoreInteractions(repository);
   }
 

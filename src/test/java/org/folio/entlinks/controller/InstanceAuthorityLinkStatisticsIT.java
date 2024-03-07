@@ -18,7 +18,7 @@ import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
 import static org.folio.support.TestDataUtils.stats;
 import static org.folio.support.base.TestConstants.TENANT_ID;
-import static org.folio.support.base.TestConstants.USER_ID;
+import static org.folio.support.base.TestConstants.UPDATER_USER_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.folio.support.base.TestConstants.authorityStatsEndpoint;
 import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
@@ -34,8 +34,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -52,6 +50,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.exception.type.ErrorType;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -154,9 +153,9 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
       .andExpect(jsonPath("$.stats[0].headingNew", is("headingPersonalName updated updated")))
       .andExpect(jsonPath("$.stats[0].headingTypeOld", is("100")))
       .andExpect(jsonPath("$.stats[0].headingTypeNew", is("100")))
-      .andExpect(jsonPath("$.stats[0].metadata.startedByUserId", is(USER_ID)))
-      .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is("Doe")))
-      .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is("John")))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserId", is(UPDATER_USER_ID)))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is("Tesla")))
+      .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is("Nikola")))
       .andExpect(jsonPath("$.stats[0].metadata.startedAt", notNullValue()));
   }
 
@@ -174,6 +173,12 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
     await().pollInterval(ONE_SECOND).atMost(Durations.ONE_MINUTE).untilAsserted(() ->
         assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID))
     );
+    doGet(authorityStatsEndpoint(UPDATE_HEADING, FROM_DATE, TO_DATE, 10))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.stats[0].metadata.startedByUserId", is(UPDATER_USER_ID)))
+        .andExpect(jsonPath("$.stats[0].metadata.startedByUserLastName", is("Tesla")))
+        .andExpect(jsonPath("$.stats[0].metadata.startedByUserFirstName", is("Nikola")))
+        .andExpect(jsonPath("$.stats[1]").doesNotExist());
 
     // send delete event to mark authority as deleted
     doDelete(authorityEndpoint(AUTHORITY_ID));
@@ -350,10 +355,13 @@ class InstanceAuthorityLinkStatisticsIT extends IntegrationTestBase {
     return jsonPath("$.next", is(next));
   }
 
-  private void sendAuthorityUpdateEvent() throws UnsupportedEncodingException, JsonProcessingException {
+  private void sendAuthorityUpdateEvent() throws Exception {
     var content = doGet(authorityEndpoint(AUTHORITY_ID)).andReturn().getResponse().getContentAsString();
     var authorityDto = objectMapper.readValue(content, AuthorityDto.class);
     authorityDto.setPersonalName(authorityDto.getPersonalName() + " updated");
-    doPut(authorityEndpoint(AUTHORITY_ID), authorityDto);
+    var headers = defaultHeaders();
+    headers.put(XOkapiHeaders.USER_ID, List.of(UPDATER_USER_ID));
+    tryPut(authorityEndpoint(authorityDto.getId()), authorityDto, headers)
+        .andExpect(status().isNoContent());
   }
 }
