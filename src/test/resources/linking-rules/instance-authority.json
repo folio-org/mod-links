@@ -201,7 +201,7 @@
       "s",
       "t"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 9,
@@ -225,7 +225,7 @@
       "s",
       "t"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 10,
@@ -247,7 +247,7 @@
       "g",
       "n"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 11,
@@ -269,7 +269,7 @@
       "s",
       "t"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 12,
@@ -280,7 +280,7 @@
       "b",
       "g"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 13,
@@ -290,7 +290,7 @@
       "a",
       "g"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 14,
@@ -299,7 +299,7 @@
     "authoritySubfields": [
       "a"
     ],
-    "autoLinkingEnabled": false
+    "autoLinkingEnabled": true
   },
   {
     "id": 15,
