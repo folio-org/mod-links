@@ -16,11 +16,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
@@ -93,6 +95,7 @@ public class AuthorityBase extends MetadataEntity {
     this.id = other.id;
     this.naturalId = other.naturalId;
     this.authoritySourceFile = Optional.ofNullable(other.authoritySourceFile)
+        .map(sourceFile -> Hibernate.unproxy(sourceFile, AuthoritySourceFile.class))
         .map(AuthoritySourceFile::new)
         .orElse(null);
     this.source = other.source;

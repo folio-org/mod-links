@@ -23,7 +23,7 @@ import org.springframework.data.domain.Persistable;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(callSuper = true)
 @Table(name = "authority")
 public class Authority extends AuthorityBase implements Persistable<UUID>, Identifiable<UUID> {
 

@@ -28,6 +28,19 @@
     },
     {
       "request": {
+        "method": "GET",
+        "url": "/users?query=id%3D%284df34034-dc86-4364-8d8a-65ab22d44063%29"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n \"users\": [\n {\n \"id\": \"4df34034-dc86-4364-8d8a-65ab22d44063\",\n \"username\": \"nikola.tesla\",\n \"personal\": {\n \"firstName\": \"Nikola\",\n \"lastName\": \"Tesla\"\n }\n }\n ],\n \"totalRecords\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
         "method": "POST",
         "url": "/users"
       },

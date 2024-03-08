@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.config.constants.ErrorCode.DUPLICATE_AUTHORITY_ID;
 import static org.folio.entlinks.integration.dto.event.DomainEventType.CREATE;
 import static org.folio.entlinks.integration.dto.event.DomainEventType.DELETE;
@@ -20,6 +21,7 @@ import static org.folio.support.TestDataUtils.AuthorityTestData.authorityArchive
 import static org.folio.support.TestDataUtils.AuthorityTestData.authorityDto;
 import static org.folio.support.TestDataUtils.AuthorityTestData.authoritySourceFile;
 import static org.folio.support.base.TestConstants.TENANT_ID;
+import static org.folio.support.base.TestConstants.UPDATER_USER_ID;
 import static org.folio.support.base.TestConstants.USER_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.folio.support.base.TestConstants.authorityExpireEndpoint;
@@ -63,6 +65,7 @@ import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -493,7 +496,10 @@ class AuthorityControllerIT extends IntegrationTestBase {
     expected.setSftCorporateName(List.of("sftCorporateName"));
     expected.setSaftCorporateName(List.of("saftCorporateName"));
 
-    tryPut(authorityEndpoint(expected.getId()), expected).andExpect(status().isNoContent());
+    var headers = defaultHeaders();
+    headers.put(XOkapiHeaders.USER_ID, List.of(UPDATER_USER_ID));
+    tryPut(authorityEndpoint(expected.getId()), expected, headers)
+        .andExpect(status().isNoContent());
 
     var content = doGet(authorityEndpoint(expected.getId()))
       .andExpect(jsonPath("source", is(expected.getSource())))
@@ -504,22 +510,29 @@ class AuthorityControllerIT extends IntegrationTestBase {
       .andExpect(jsonPath("_version", is(1)))
       .andExpect(jsonPath("metadata.createdDate", notNullValue()))
       .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
-      .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
+      .andExpect(jsonPath("metadata.updatedByUserId", is(UPDATER_USER_ID)))
       .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)))
       .andReturn().getResponse().getContentAsString();
 
     var resultDto = objectMapper.readValue(content, AuthorityDto.class);
-    var event = getConsumedEvent();
-    awaitUntilAsserted(() ->
-      assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
-
-    verifyConsumedAuthorityEvent(event, UPDATE, resultDto);
     assertEquals(expected.getNotes(), resultDto.getNotes());
     assertEquals(expected.getIdentifiers(), resultDto.getIdentifiers());
     assertEquals(expected.getSftPersonalName(), resultDto.getSftPersonalName());
     assertEquals(expected.getSaftPersonalName(), resultDto.getSaftPersonalName());
     assertEquals(expected.getSftCorporateName(), resultDto.getSftCorporateName());
     assertEquals(expected.getSaftCorporateName(), resultDto.getSaftCorporateName());
+
+    var event = getConsumedEvent();
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));
+
+    verifyConsumedAuthorityEvent(event, UPDATE, resultDto);
+    collection = objectMapper.readValue(existingAsString, AuthorityDtoCollection.class);
+    var oldDto = collection.getAuthorities().get(0);
+    assertThat(event.value().getOldEntity())
+        .usingRecursiveComparison()
+        .ignoringFields(IGNORED_FIELDS_FOR_VERIFICATION)
+        .isEqualTo(oldDto);
   }
 
   @Test
