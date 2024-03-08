@@ -203,7 +203,7 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
 
     copyModifiableFields(existing, modified);
 
-    var saved = repository.save(existing);
+    var saved = repository.saveAndFlush(existing);
     if (authorityConsumer != null) {
       authorityConsumer.accept(saved, detachedExisting);
     }
