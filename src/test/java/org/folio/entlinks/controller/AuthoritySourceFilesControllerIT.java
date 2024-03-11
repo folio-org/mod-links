@@ -355,7 +355,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   @Test
   @DisplayName("PATCH: partially update Authority File when another Authority File with empty base url already exists")
   void updateAuthoritySourceFilePartially_positive_whenAnotherFileWithEmptyBaseUrlAlreadyExists() throws Exception {
-    var createWithEmptyBaseUrlDto = new AuthoritySourceFilePostDto("name3", "codeYYY").type("type3").baseUrl("");
+    var createWithEmptyBaseUrlDto = new AuthoritySourceFilePostDto("filename", "fileCode").type("fileType").baseUrl("");
     var createDto = new AuthoritySourceFilePostDto("name1", "newCode").type("type1").baseUrl("http://url");
     var hridStartNumber = 125;
     var partiallyModified = new AuthoritySourceFilePatchDto()
