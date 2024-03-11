@@ -1,5 +1,7 @@
 package org.folio.entlinks.domain.entity;
 
+import static java.util.stream.Collectors.toSet;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,7 +96,7 @@ public class AuthoritySourceFile extends MetadataEntity implements Persistable<U
       .orElse(Set.of())
       .stream()
       .map(AuthoritySourceFileCode::new)
-      .collect(java.util.stream.Collectors.toSet());
+      .collect(toSet());
     this.sequenceName = other.sequenceName;
     this.selectable = other.selectable;
     this.hridStartNumber = other.hridStartNumber;
