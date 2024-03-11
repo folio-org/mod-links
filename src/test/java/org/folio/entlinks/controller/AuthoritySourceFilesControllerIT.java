@@ -353,6 +353,42 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   }
 
   @Test
+  @DisplayName("PATCH: partially update Authority File when another Authority File with empty base url already exists")
+  void updateAuthoritySourceFilePartially_positive_whenAnotherFileWithEmptyBaseUrlAlreadyExists() throws Exception {
+    var createWithEmptyBaseUrlDto = new AuthoritySourceFilePostDto("filename", "fileCode").type("fileType").baseUrl("");
+    var createDto = new AuthoritySourceFilePostDto("name1", "newCode").type("type1").baseUrl("http://url");
+    var hridStartNumber = 125;
+    var partiallyModified = new AuthoritySourceFilePatchDto()
+        .version(1)
+        .name("name2")
+        .type("type2")
+        .baseUrl("")
+        .selectable(false)
+        .code("replacedCode")
+        .hridManagement(new AuthoritySourceFilePatchDtoHridManagement().startNumber(hridStartNumber));
+
+    doPostAndReturn(authoritySourceFilesEndpoint(), createWithEmptyBaseUrlDto, AuthoritySourceFileDto.class);
+    var created = doPostAndReturn(authoritySourceFilesEndpoint(), createDto, AuthoritySourceFileDto.class);
+
+    doPatch(authoritySourceFilesEndpoint(created.getId()), partiallyModified)
+        .andExpect(status().isNoContent());
+
+    doGet(authoritySourceFilesEndpoint(created.getId()))
+        .andExpect(jsonPath("$.baseUrl").doesNotExist())
+        .andExpect(jsonPath("source", is(SourceEnum.LOCAL.getValue())))
+        .andExpect(jsonPath("name", is(partiallyModified.getName())))
+        .andExpect(jsonPath("type", is(partiallyModified.getType())))
+        .andExpect(jsonPath("selectable", is(partiallyModified.getSelectable())))
+        .andExpect(jsonPath("codes", is(List.of("replacedCode"))))
+        .andExpect(jsonPath("_version", is(1)))
+        .andExpect(jsonPath("hridManagement.startNumber", is(hridStartNumber)))
+        .andExpect(jsonPath("metadata.createdDate", notNullValue()))
+        .andExpect(jsonPath("metadata.updatedDate", notNullValue()))
+        .andExpect(jsonPath("metadata.updatedByUserId", is(USER_ID)))
+        .andExpect(jsonPath("metadata.createdByUserId", is(USER_ID)));
+  }
+
+  @Test
   @DisplayName("PATCH: partially update Authority Source File with reference in Authority")
   void updateAuthoritySourceFilePartially_positive_whenAuthorityReferenced() throws Exception {
     var createDto = new AuthoritySourceFilePostDto("name", "codeXXX").type("type").baseUrl("http://url");

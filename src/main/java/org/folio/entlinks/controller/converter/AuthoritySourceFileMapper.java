@@ -145,7 +145,12 @@ public interface AuthoritySourceFileMapper {
   }
 
   private static void setUrlProperties(String baseUrlDto, AuthoritySourceFile target) {
-    if (StringUtils.isBlank(baseUrlDto)) {
+    if (baseUrlDto == null) {
+      return;
+    }
+    if (baseUrlDto.isEmpty()) {
+      target.setBaseUrl(null);
+      target.setBaseUrlProtocol(null);
       return;
     }
 
