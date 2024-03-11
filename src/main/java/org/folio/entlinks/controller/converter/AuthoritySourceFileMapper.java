@@ -150,6 +150,7 @@ public interface AuthoritySourceFileMapper {
     }
     if (baseUrlDto.isEmpty()) {
       target.setBaseUrl(null);
+      target.setBaseUrlProtocol(null);
       return;
     }
 
