@@ -18,13 +18,13 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.testcontainers.shaded.org.hamcrest.Matchers.not;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
@@ -353,7 +353,7 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
   }
 
   @Test
-  @DisplayName("PATCH: partially update Authority Source File when another Authority file with empty base url already exists")
+  @DisplayName("PATCH: partially update Authority File when another Authority File with empty base url already exists")
   void updateAuthoritySourceFilePartially_positive_whenAnotherFileWithEmptyBaseUrlAlreadyExists() throws Exception {
     var createWithEmptyBaseUrlDto = new AuthoritySourceFilePostDto("name", "code").type("type").baseUrl("");
     var createDto = new AuthoritySourceFilePostDto("name1", "newCode").type("type1").baseUrl("http://url");
