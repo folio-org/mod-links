@@ -115,7 +115,7 @@ class AuthoritySourceFileMapperTest {
     assertThat(updatedFile.getName()).isEqualTo(patchDto.getName());
     assertThat(updatedFile.getType()).isEqualTo(patchDto.getType());
     assertThat(updatedFile.getAuthoritySourceFileCodes().iterator().next().getCode()).isEqualTo(patchDto.getCode());
-    assertThat(updatedFile.getFullBaseUrl()).isEqualTo(null);
+    assertThat(updatedFile.getFullBaseUrl()).isNull();
     assertThat(updatedFile.isSelectable()).isEqualTo(patchDto.getSelectable());
     assertThat(updatedFile.getHridStartNumber()).isEqualTo(patchDto.getHridManagement().getStartNumber());
     assertThat(updatedFile.getSource()).isEqualTo(sourceFile.getSource());
