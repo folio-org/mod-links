@@ -41,6 +41,7 @@ public class AuthoritySourceFileService {
   private final AuthoritySourceFileRepository repository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
+  private final AuthoritySourceFileEventPublisher eventPublisher;
   private final JdbcTemplate jdbcTemplate;
   private final FolioModuleMetadata moduleMetadata;
   private final FolioExecutionContext folioExecutionContext;
@@ -120,6 +121,15 @@ public class AuthoritySourceFileService {
     maxAttempts = 2,
     backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
+    return update(id, modified, false);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Retryable(
+    retryFor = OptimisticLockingException.class,
+    maxAttempts = 2,
+    backoff = @Backoff(delay = 500))
+  public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified, boolean publishRequired) {
     log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
 
     validateOnUpdate(id, modified);
@@ -133,7 +143,12 @@ public class AuthoritySourceFileService {
     updateSequenceStartNumber(existingEntity, modified);
 
     copyModifiableFields(existingEntity, modified);
-    return repository.save(existingEntity);
+
+    AuthoritySourceFile saved = repository.save(existingEntity);
+    if (publishRequired) {
+      eventPublisher.publishUpdateEvent(mapper.toDto(saved), mapper.toDto(existingEntity));
+    }
+    return saved;
   }
 
   public void deleteById(UUID id) {

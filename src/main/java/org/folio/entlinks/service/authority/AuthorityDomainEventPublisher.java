@@ -9,6 +9,7 @@ import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.reindex.ReindexContext;
 import org.folio.spring.FolioExecutionContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,6 +20,7 @@ public class AuthorityDomainEventPublisher {
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
   private static final String REINDEX_JOB_ID_HEADER = "reindex-job-id";
 
+  @Qualifier("authority")
   private final EventProducer<DomainEvent<?>> eventProducer;
   private final FolioExecutionContext folioExecutionContext;
 

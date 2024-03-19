@@ -24,7 +24,7 @@ public class ConsortiumAuthorityDataStatsPropagationService
 
   @Override
   protected void doPropagation(List<AuthorityDataStat> authorityDataStats,
-                               PropagationType propagationType) {
+                               PropagationType propagationType, boolean publishRequired) {
     switch (propagationType) {
       case CREATE -> authorityDataStatService.createInBatch(authorityDataStats);
       case UPDATE, DELETE -> throw new IllegalArgumentException(ILLEGAL_PROPAGATION_MSG.formatted(propagationType));

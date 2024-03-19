@@ -20,10 +20,11 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
     this.sourceFileService = sourceFileService;
   }
 
-  protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType) {
+  protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType,
+                               boolean publishRequired) {
     switch (propagationType) {
       case CREATE -> sourceFileService.create(sourceFile);
-      case UPDATE -> sourceFileService.update(sourceFile.getId(), sourceFile);
+      case UPDATE -> sourceFileService.update(sourceFile.getId(), sourceFile, publishRequired);
       case DELETE -> sourceFileService.deleteById(sourceFile.getId());
       default -> throw new IllegalStateException("Unexpected value: " + propagationType);
     }

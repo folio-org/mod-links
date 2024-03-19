@@ -21,6 +21,12 @@ public abstract class ConsortiumPropagationService<T> {
   @Async
   public void propagate(T entity, PropagationType propagationType,
                         String tenantId) {
+    propagate(entity, propagationType, tenantId, false);
+  }
+
+  @Async
+  public void propagate(T entity, PropagationType propagationType,
+                        String tenantId, boolean publishRequired) {
     log.info("Try to propagate [entity: {}, propagationType: {}, context: {}]", entity.getClass().getSimpleName(),
       propagationType, tenantId);
     log.debug("Try to propagate [entity: {}, propagationType: {}, context: {}]", entity, propagationType, tenantId);
@@ -29,16 +35,15 @@ public abstract class ConsortiumPropagationService<T> {
       log.debug("Find consortium tenants for propagation: {}, context: {}", consortiumTenants, tenantId);
       for (String consortiumTenant : consortiumTenants) {
         executionService.executeAsyncSystemUserScoped(consortiumTenant,
-          () -> doPropagation(entity, propagationType));
+          () -> doPropagation(entity, propagationType, publishRequired));
       }
     } catch (FolioIntegrationException e) {
       log.warn("Skip propagation. Exception: ", e);
     }
-
   }
 
   protected abstract void doPropagation(T entity,
-                                        PropagationType propagationType);
+                                        PropagationType propagationType, boolean publishRequired);
 
   public enum PropagationType {
     CREATE, UPDATE, DELETE

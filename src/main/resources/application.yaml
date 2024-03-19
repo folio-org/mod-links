@@ -74,6 +74,9 @@ folio:
     permissionsFilePath: permissions/mod-entities-links-permissions.csv
   kafka:
     topics:
+      - name: authority.authority-source-file
+        numPartitions: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS:50}
+        replicationFactor: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_REPLICATION_FACTOR:}
       - name: authorities.authority
         numPartitions: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS:50}
         replicationFactor: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_REPLICATION_FACTOR:}

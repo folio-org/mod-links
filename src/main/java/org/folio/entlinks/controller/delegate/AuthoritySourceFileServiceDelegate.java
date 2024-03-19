@@ -21,6 +21,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
+import org.folio.entlinks.service.authority.AuthoritySourceFileEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
@@ -40,6 +41,7 @@ public class AuthoritySourceFileServiceDelegate {
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
   private final UserTenantsService tenantsService;
+  private final AuthoritySourceFileEventPublisher eventPublisher;
   private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
   private final FolioExecutionContext context;
   private final SystemUserScopedExecutionService executionService;
@@ -72,14 +74,17 @@ public class AuthoritySourceFileServiceDelegate {
     log.debug("patch:: Attempting to patch AuthoritySourceFile [id: {}, patchDto: {}]", id, partiallyModifiedDto);
     var existingEntity = service.getById(id);
     validateActionRightsForTenant(DomainEventType.UPDATE);
-    validatePatchRequest(partiallyModifiedDto, existingEntity);
+    var hasAuthorityReferences = anyAuthoritiesExistForSourceFile(existingEntity);
+    validatePatchRequest(partiallyModifiedDto, existingEntity, hasAuthorityReferences);
 
     var partialEntityUpdate = new AuthoritySourceFile(existingEntity);
     partialEntityUpdate = mapper.partialUpdate(partiallyModifiedDto, partialEntityUpdate);
     normalizeBaseUrl(partialEntityUpdate);
-    var patched = service.update(id, partialEntityUpdate);
+
+    var publishRequired = publishRequired(hasAuthorityReferences, partiallyModifiedDto, existingEntity);
+    var patched = service.update(id, partialEntityUpdate, publishRequired);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    propagationService.propagate(patched, UPDATE, context.getTenantId());
+    propagationService.propagate(patched, UPDATE, context.getTenantId(), publishRequired);
   }
 
   public void deleteAuthoritySourceFileById(UUID id) {
@@ -126,9 +131,9 @@ public class AuthoritySourceFileServiceDelegate {
     }
   }
 
-  private void validatePatchRequest(AuthoritySourceFilePatchDto patchDto, AuthoritySourceFile existing) {
+  private void validatePatchRequest(AuthoritySourceFilePatchDto patchDto, AuthoritySourceFile existing,
+                                    boolean hasAuthorityReferences) {
     var errorParameters = new LinkedList<Parameter>();
-    var hasAuthorityReferences = anyAuthoritiesExistForSourceFile(existing);
 
     if (!(existing.getSource().equals(FOLIO) || hasAuthorityReferences)) {
       return;
@@ -166,5 +171,9 @@ public class AuthoritySourceFileServiceDelegate {
     }
 
     return false;
+  }
+
+  private boolean publishRequired(boolean hasRef, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {
+    return hasRef && !modified.getBaseUrl().equals(existed.getBaseUrl());
   }
 }
