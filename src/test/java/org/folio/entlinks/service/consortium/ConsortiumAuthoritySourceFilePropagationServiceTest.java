@@ -58,7 +58,7 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     assertThat(sourceFile.getSource()).isEqualTo(LOCAL);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(3)).executeAsyncSystemUserScoped(any(), any());
-    verify(authorityService, times(3)).update(sourceFile.getId(), sourceFile);
+    verify(authorityService, times(3)).update(sourceFile.getId(), sourceFile, null);
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.folio.entlinks.service.consortium.propagation;
 
+import java.util.function.BiConsumer;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
@@ -13,6 +14,8 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
 
   private final AuthoritySourceFileService sourceFileService;
 
+  private BiConsumer<AuthoritySourceFile, AuthoritySourceFile> updatePublishConsumer;
+
   public ConsortiumAuthoritySourceFilePropagationService(AuthoritySourceFileService sourceFileService,
                                                          ConsortiumTenantsService tenantsService,
                                                          SystemUserScopedExecutionService executionService) {
@@ -20,14 +23,17 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
     this.sourceFileService = sourceFileService;
   }
 
-  protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType,
-                               boolean publishRequired) {
+  protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType) {
     switch (propagationType) {
       case CREATE -> sourceFileService.create(sourceFile);
-      case UPDATE -> sourceFileService.update(sourceFile.getId(), sourceFile, publishRequired);
+      case UPDATE -> sourceFileService.update(sourceFile.getId(), sourceFile, updatePublishConsumer);
       case DELETE -> sourceFileService.deleteById(sourceFile.getId());
       default -> throw new IllegalStateException("Unexpected value: " + propagationType);
     }
   }
 
+  @Override
+  public void setUpdatePublishConsumer(BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
+    this.updatePublishConsumer = consumer;
+  }
 }

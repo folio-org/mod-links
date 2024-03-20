@@ -21,7 +21,7 @@ public class ConsortiumAuthorityPropagationService extends ConsortiumPropagation
     this.authorityService = service;
   }
 
-  protected void doPropagation(Authority authority, PropagationType propagationType, boolean publishRequired) {
+  protected void doPropagation(Authority authority, PropagationType propagationType) {
     authority.makeAsConsortiumShadowCopy();
     switch (propagationType) {
       case CREATE -> authorityService.create(authority);

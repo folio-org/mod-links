@@ -170,12 +170,12 @@ class AuthoritySourceFileServiceDelegateTest {
     when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
     when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
       .thenAnswer(i -> i.getArguments()[1]);
-    when(service.update(any(UUID.class), any(AuthoritySourceFile.class))).thenAnswer(i -> i.getArguments()[1]);
+    when(service.update(any(UUID.class), any(AuthoritySourceFile.class), any())).thenAnswer(i -> i.getArguments()[1]);
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
 
-    verify(service).update(eq(existing.getId()), sourceFileArgumentCaptor.capture());
+    verify(service).update(eq(existing.getId()), sourceFileArgumentCaptor.capture(), eq(null));
     var patchedSourceFile = sourceFileArgumentCaptor.getValue();
     assertThat(expected).usingDefaultComparator().isEqualTo(patchedSourceFile);
     verify(service).authoritiesExistForSourceFile(existing.getId());

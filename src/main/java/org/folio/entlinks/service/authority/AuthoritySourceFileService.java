@@ -7,6 +7,7 @@ import static org.folio.entlinks.utils.ServiceUtils.initId;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +122,7 @@ public class AuthoritySourceFileService {
     maxAttempts = 2,
     backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
-    return update(id, modified, false);
+    return update(id, modified, null);
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -129,7 +130,8 @@ public class AuthoritySourceFileService {
     retryFor = OptimisticLockingException.class,
     maxAttempts = 2,
     backoff = @Backoff(delay = 500))
-  public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified, boolean publishRequired) {
+  public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified,
+                                    BiConsumer<AuthoritySourceFile, AuthoritySourceFile> publishConsumer) {
     log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
 
     validateOnUpdate(id, modified);
@@ -145,8 +147,8 @@ public class AuthoritySourceFileService {
     copyModifiableFields(existingEntity, modified);
 
     AuthoritySourceFile saved = repository.save(existingEntity);
-    if (publishRequired) {
-      eventPublisher.publishUpdateEvent(mapper.toDto(saved), mapper.toDto(existingEntity));
+    if (publishConsumer != null) {
+      publishConsumer.accept(saved, existingEntity);
     }
     return saved;
   }

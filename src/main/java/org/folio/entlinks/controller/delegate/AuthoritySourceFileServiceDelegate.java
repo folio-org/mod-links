@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationSe
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -81,10 +83,12 @@ public class AuthoritySourceFileServiceDelegate {
     partialEntityUpdate = mapper.partialUpdate(partiallyModifiedDto, partialEntityUpdate);
     normalizeBaseUrl(partialEntityUpdate);
 
-    var publishRequired = publishRequired(hasAuthorityReferences, partiallyModifiedDto, existingEntity);
-    var patched = service.update(id, partialEntityUpdate, publishRequired);
+    var publishConsumer = publishRequired(hasAuthorityReferences, partiallyModifiedDto, existingEntity)
+      ? getUpdatePublishConsumer() : null;
+    var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    propagationService.propagate(patched, UPDATE, context.getTenantId(), publishRequired);
+    propagationService.setUpdatePublishConsumer(publishConsumer);
+    propagationService.propagate(patched, UPDATE, context.getTenantId());
   }
 
   public void deleteAuthoritySourceFileById(UUID id) {
@@ -171,6 +175,12 @@ public class AuthoritySourceFileServiceDelegate {
     }
 
     return false;
+  }
+
+  @NotNull
+  private BiConsumer<AuthoritySourceFile, AuthoritySourceFile> getUpdatePublishConsumer() {
+    return (newAuthSrcFile, oldAuthSrcFile) ->
+      eventPublisher.publishUpdateEvent(mapper.toDto(newAuthSrcFile), mapper.toDto(oldAuthSrcFile));
   }
 
   private boolean publishRequired(boolean hasRef, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {

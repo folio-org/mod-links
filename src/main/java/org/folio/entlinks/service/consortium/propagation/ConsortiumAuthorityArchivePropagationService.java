@@ -23,7 +23,7 @@ public class ConsortiumAuthorityArchivePropagationService extends ConsortiumProp
     this.authorityArchiveService = authorityArchiveService;
   }
 
-  protected void doPropagation(AuthorityArchive archive, PropagationType propagationType, boolean publishRequired) {
+  protected void doPropagation(AuthorityArchive archive, PropagationType propagationType) {
     archive.makeAsConsortiumShadowCopy();
     switch (propagationType) {
       case DELETE -> authorityArchiveService.delete(archive);

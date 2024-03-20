@@ -7,7 +7,7 @@ import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.scheduling.annotation.Async;
 
 @Log4j2
-public abstract class ConsortiumPropagationService<T> {
+public abstract class ConsortiumPropagationService<T> implements PropagationEventPublisherI<T> {
 
   private final ConsortiumTenantsService tenantsService;
   private final SystemUserScopedExecutionService executionService;
@@ -21,12 +21,6 @@ public abstract class ConsortiumPropagationService<T> {
   @Async
   public void propagate(T entity, PropagationType propagationType,
                         String tenantId) {
-    propagate(entity, propagationType, tenantId, false);
-  }
-
-  @Async
-  public void propagate(T entity, PropagationType propagationType,
-                        String tenantId, boolean publishRequired) {
     log.info("Try to propagate [entity: {}, propagationType: {}, context: {}]", entity.getClass().getSimpleName(),
       propagationType, tenantId);
     log.debug("Try to propagate [entity: {}, propagationType: {}, context: {}]", entity, propagationType, tenantId);
@@ -35,7 +29,7 @@ public abstract class ConsortiumPropagationService<T> {
       log.debug("Find consortium tenants for propagation: {}, context: {}", consortiumTenants, tenantId);
       for (String consortiumTenant : consortiumTenants) {
         executionService.executeAsyncSystemUserScoped(consortiumTenant,
-          () -> doPropagation(entity, propagationType, publishRequired));
+          () -> doPropagation(entity, propagationType));
       }
     } catch (FolioIntegrationException e) {
       log.warn("Skip propagation. Exception: ", e);
@@ -43,7 +37,7 @@ public abstract class ConsortiumPropagationService<T> {
   }
 
   protected abstract void doPropagation(T entity,
-                                        PropagationType propagationType, boolean publishRequired);
+                                        PropagationType propagationType);
 
   public enum PropagationType {
     CREATE, UPDATE, DELETE
