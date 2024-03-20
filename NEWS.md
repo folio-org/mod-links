@@ -1,11 +1,10 @@
-## v3.0.0 in progress
+## v3.0.0 2024-03-19
 ### Breaking changes
 * Delete PUT endpoint from authority-source-files api([MODELINKS-161](https://issues.folio.org/browse/MODELINKS-161))
 * Update authority-source-files PATCH endpoint body, add validations and optimistic locking([MODELINKS-160](https://issues.folio.org/browse/MODELINKS-160))
 
 ### New APIs versions
 * Provides `authority-source-files v2.2`
-* Requires `API_NAME vX.Y`
 
 ### Features
 * Implement Authority Archiving for deleted authorities ([MODELINKS-138](https://issues.folio.org/browse/MODELINKS-138))
@@ -45,7 +44,12 @@
 * Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
 
 ### Dependencies
-* Bump `folio-spring-support` from `7.2.0` to `7.2.1`
+* Bump `spring-boot` from `3.1.5` to `3.2.3`
+* Bump `folio-spring-support` from `7.2.0` to `8.1.0`
+* Bump `folio-service-tools` from `3.1.0` to `4.0.0`
+* Added `folio-s3-client` `2.1.0`
+* Added `aws-sdk.s3` `2.25.12`
+* Removed `hypersistence-utils`
 
 ---
 
