@@ -32,8 +32,7 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
     }
   }
 
-  @Override
-  public void setUpdatePublishConsumer(BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
+  public void initUpdatePublishConsumer(BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
     this.updatePublishConsumer = consumer;
   }
 }

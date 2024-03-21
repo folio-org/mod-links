@@ -7,7 +7,7 @@ import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.scheduling.annotation.Async;
 
 @Log4j2
-public abstract class ConsortiumPropagationService<T> implements PropagationEventPublisherI<T> {
+public abstract class ConsortiumPropagationService<T> {
 
   private final ConsortiumTenantsService tenantsService;
   private final SystemUserScopedExecutionService executionService;

@@ -26,6 +26,7 @@ import org.folio.entlinks.service.authority.AuthoritySourceFileEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
+import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
@@ -87,7 +88,7 @@ public class AuthoritySourceFileServiceDelegate {
       ? getUpdatePublishConsumer() : null;
     var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    propagationService.setUpdatePublishConsumer(publishConsumer);
+    ((ConsortiumAuthoritySourceFilePropagationService) propagationService).initUpdatePublishConsumer(publishConsumer);
     propagationService.propagate(patched, UPDATE, context.getTenantId());
   }
 
