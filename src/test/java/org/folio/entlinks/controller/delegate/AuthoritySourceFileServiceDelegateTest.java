@@ -207,7 +207,7 @@ class AuthoritySourceFileServiceDelegateTest {
       .thenAnswer(i -> i.getArguments()[1]);
     when(service.update(any(UUID.class), any(AuthoritySourceFile.class), eq(null))).thenReturn(expected);
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
-    doCallRealMethod().when(propagationService).initUpdatePublishConsumer(any());
+    doCallRealMethod().when(propagationService).setCurrentUpdatePublishConsumer(any());
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
 
@@ -217,7 +217,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).authoritiesExistForSourceFile(existing.getId());
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
-    verify(propagationService).initUpdatePublishConsumer(eq(null));
+    verify(propagationService).setCurrentUpdatePublishConsumer(null);
     verify(propagationService).propagate(expected, UPDATE, TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
@@ -246,7 +246,7 @@ class AuthoritySourceFileServiceDelegateTest {
       return expected;
     });
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL + changeUrlSuffix);
-    doCallRealMethod().when(propagationService).initUpdatePublishConsumer(any());
+    doCallRealMethod().when(propagationService).setCurrentUpdatePublishConsumer(any());
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
 
@@ -256,7 +256,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).authoritiesExistForSourceFile(existing.getId());
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
-    verify(propagationService).initUpdatePublishConsumer(any(BiConsumer.class));
+    verify(propagationService).setCurrentUpdatePublishConsumer(any(BiConsumer.class));
     verify(propagationService).propagate(expected, UPDATE, CENTRAL_TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }

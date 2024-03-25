@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-public class AuthoritySourceFileEventPublisherTest {
+class AuthoritySourceFileEventPublisherTest {
   private static final String TENANT_ID = "test";
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
 

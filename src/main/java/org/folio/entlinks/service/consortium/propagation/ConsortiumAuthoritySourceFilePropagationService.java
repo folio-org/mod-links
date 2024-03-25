@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumPropagationService<AuthoritySourceFile> {
 
   private final AuthoritySourceFileService sourceFileService;
-
   private BiConsumer<AuthoritySourceFile, AuthoritySourceFile> updatePublishConsumer;
 
   public ConsortiumAuthoritySourceFilePropagationService(AuthoritySourceFileService sourceFileService,
@@ -21,6 +20,7 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
                                                          SystemUserScopedExecutionService executionService) {
     super(tenantsService, executionService);
     this.sourceFileService = sourceFileService;
+    this.updatePublishConsumer = null;
   }
 
   protected void doPropagation(AuthoritySourceFile sourceFile, PropagationType propagationType) {
@@ -32,7 +32,7 @@ public class ConsortiumAuthoritySourceFilePropagationService extends ConsortiumP
     }
   }
 
-  public void initUpdatePublishConsumer(BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
+  public void setCurrentUpdatePublishConsumer(BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
     this.updatePublishConsumer = consumer;
   }
 }
