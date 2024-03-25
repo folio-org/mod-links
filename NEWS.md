@@ -23,6 +23,7 @@
 * Implement endpoint for bulk authorities upsert from external file ([MODELINKS-173](https://issues.folio.org/browse/MODELINKS-173))
 * Add possibility to filter Authority records by (un)defined fields in Cql query ([MODELINKS-214](https://issues.folio.org/browse/MODELINKS-214))
 * Set auto_linking_enabled in instance_authority_linking_rule for 6xx fields ([MODELINKS-220](https://folio-org.atlassian.net/browse/MODELINKS-220))
+* Add Authority source file Kafka topic and publisher for update event ([MODELINKS-202](https://folio-org.atlassian.net/browse/MODELINKS-202))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
