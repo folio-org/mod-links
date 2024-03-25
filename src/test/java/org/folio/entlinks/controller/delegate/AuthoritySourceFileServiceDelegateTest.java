@@ -224,7 +224,7 @@ class AuthoritySourceFileServiceDelegateTest {
 
   @Test
   void shouldProduceEventForSourceFilePartialUpdate() {
-    var changeUrlSuffix = "change/url/suffix";
+    var changeUrlSuffix = "change/suffix";
     var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     existing.setBaseUrl(INPUT_BASE_URL);
     existing.setSource(AuthoritySourceFileSource.FOLIO);
