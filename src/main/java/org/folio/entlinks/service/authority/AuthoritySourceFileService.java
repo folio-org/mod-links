@@ -122,7 +122,7 @@ public class AuthoritySourceFileService {
     maxAttempts = 2,
     backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified) {
-    return update(id, modified, null);
+    return updateInner(id, modified, null);
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -132,26 +132,7 @@ public class AuthoritySourceFileService {
     backoff = @Backoff(delay = 500))
   public AuthoritySourceFile update(UUID id, AuthoritySourceFile modified,
                                     BiConsumer<AuthoritySourceFile, AuthoritySourceFile> publishConsumer) {
-    log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
-
-    validateOnUpdate(id, modified);
-
-    var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    var detachedExisting = new AuthoritySourceFile(existingEntity);
-    if (modified.getVersion() < existingEntity.getVersion()) {
-      throw OptimisticLockingException.optimisticLockingOnUpdate(
-        id, existingEntity.getVersion(), modified.getVersion());
-    }
-
-    updateSequenceStartNumber(existingEntity, modified);
-
-    copyModifiableFields(existingEntity, modified);
-
-    AuthoritySourceFile saved = repository.save(existingEntity);
-    if (publishConsumer != null) {
-      publishConsumer.accept(saved, detachedExisting);
-    }
-    return saved;
+    return updateInner(id, modified, publishConsumer);
   }
 
   public void deleteById(UUID id) {
@@ -198,6 +179,30 @@ public class AuthoritySourceFileService {
 
   private void validateOnCreate(AuthoritySourceFile entity) {
     entity.getAuthoritySourceFileCodes().forEach(this::validateSourceFileCode);
+  }
+
+  private AuthoritySourceFile updateInner(UUID id, AuthoritySourceFile modified,
+                                          BiConsumer<AuthoritySourceFile, AuthoritySourceFile> publishConsumer) {
+    log.debug("update:: Attempting to update AuthoritySourceFile [id: {}]", id);
+
+    validateOnUpdate(id, modified);
+
+    var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
+    var detachedExisting = new AuthoritySourceFile(existingEntity);
+    if (modified.getVersion() < existingEntity.getVersion()) {
+      throw OptimisticLockingException.optimisticLockingOnUpdate(
+        id, existingEntity.getVersion(), modified.getVersion());
+    }
+
+    updateSequenceStartNumber(existingEntity, modified);
+
+    copyModifiableFields(existingEntity, modified);
+
+    AuthoritySourceFile saved = repository.save(existingEntity);
+    if (publishConsumer != null) {
+      publishConsumer.accept(saved, detachedExisting);
+    }
+    return saved;
   }
 
   private void validateOnUpdate(UUID id, AuthoritySourceFile entity) {
