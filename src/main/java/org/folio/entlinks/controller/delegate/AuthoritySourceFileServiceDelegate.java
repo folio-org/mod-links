@@ -88,7 +88,8 @@ public class AuthoritySourceFileServiceDelegate {
       ? getUpdatePublishConsumer() : null;
     var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    ((ConsortiumAuthoritySourceFilePropagationService) propagationService).setCurrentUpdatePublishConsumer(publishConsumer);
+    ((ConsortiumAuthoritySourceFilePropagationService) propagationService)
+      .setCurrentUpdatePublishConsumer(publishConsumer);
     propagationService.propagate(patched, UPDATE, context.getTenantId());
   }
 
