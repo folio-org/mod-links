@@ -180,11 +180,10 @@ public class AuthoritySourceFileServiceDelegate {
 
   @NotNull
   private BiConsumer<AuthoritySourceFile, AuthoritySourceFile> getUpdatePublishConsumer() {
-    return (newAuthSrcFile, oldAuthSrcFile) ->
-      eventPublisher.publishUpdateEvent(mapper.toDto(newAuthSrcFile), mapper.toDto(oldAuthSrcFile));
+    return (newAsf, oldAsf) -> eventPublisher.publishUpdateEvent(mapper.toDto(newAsf), mapper.toDto(oldAsf));
   }
 
-  private boolean publishRequired(boolean hasRef, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {
-    return hasRef && !modified.getBaseUrl().equals(existed.getBaseUrl());
+  private boolean publishRequired(boolean hasRefs, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {
+    return hasRefs && !modified.getBaseUrl().equals(existed.getBaseUrl());
   }
 }

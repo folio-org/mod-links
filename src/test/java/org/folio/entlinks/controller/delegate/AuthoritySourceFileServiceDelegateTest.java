@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.dto.AuthoritySourceFileDto;
@@ -34,6 +36,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.exception.RequestBodyValidationException;
+import org.folio.entlinks.service.authority.AuthoritySourceFileEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
@@ -75,12 +78,16 @@ class AuthoritySourceFileServiceDelegateTest {
   private SystemUserScopedExecutionService executionService;
   @Mock
   private ConsortiumTenantsService consortiumTenantsService;
+  @Mock
+  private AuthoritySourceFileEventPublisher eventPublisher;
 
   @InjectMocks
   private AuthoritySourceFileServiceDelegate delegate;
 
   @Captor
   private ArgumentCaptor<AuthoritySourceFile> sourceFileArgumentCaptor;
+  @Captor
+  private ArgumentCaptor<AuthoritySourceFileDto> sourceFileArgumentDtoCaptor;
 
   @Test
   void shouldGetSourceFileCollectionByQuery() {
@@ -182,6 +189,75 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
     verify(propagationService).propagate(expected, UPDATE, TENANT_ID);
+    verifyNoMoreInteractions(mapper, service);
+  }
+
+  @Test
+  void shouldNotProduceEventForSourceFilePartialUpdate() {
+    var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    existing.setBaseUrl(INPUT_BASE_URL);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
+    var expected = new AuthoritySourceFile(existing);
+    expected.setBaseUrl(SANITIZED_BASE_URL);
+
+    mockAsNonConsortiumTenant();
+    when(service.getById(existing.getId())).thenReturn(existing);
+    when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
+    when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
+      .thenAnswer(i -> i.getArguments()[1]);
+    when(service.update(any(UUID.class), any(AuthoritySourceFile.class), eq(null))).thenReturn(expected);
+    var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
+    doCallRealMethod().when(propagationService).initUpdatePublishConsumer(any());
+
+    delegate.patchAuthoritySourceFile(existing.getId(), dto);
+
+    verify(service).update(eq(existing.getId()), sourceFileArgumentCaptor.capture(), any());
+    var patchedSourceFile = sourceFileArgumentCaptor.getValue();
+    assertThat(expected).usingDefaultComparator().isEqualTo(patchedSourceFile);
+    verify(service).authoritiesExistForSourceFile(existing.getId());
+    verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
+    verify(service).getById(any(UUID.class));
+    verify(propagationService).initUpdatePublishConsumer(eq(null));
+    verify(propagationService).propagate(expected, UPDATE, TENANT_ID);
+    verifyNoMoreInteractions(mapper, service);
+  }
+
+  @Test
+  void shouldProduceEventForSourceFilePartialUpdate() {
+    var changeUrlSuffix = "change/url/suffix";
+    var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    existing.setBaseUrl(INPUT_BASE_URL);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
+    var expected = new AuthoritySourceFile(existing);
+    expected.setBaseUrl(SANITIZED_BASE_URL + changeUrlSuffix);
+
+    mockAsConsortiumCentralTenant();
+    when(service.getById(existing.getId())).thenReturn(existing);
+    when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
+    when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
+      .thenAnswer(i -> i.getArguments()[1]);
+    var existingDto = new AuthoritySourceFileDto().id(existing.getId());
+    var modifiedDto = new AuthoritySourceFileDto().id(existing.getId());
+    when(mapper.toDto(any(AuthoritySourceFile.class))).thenReturn(modifiedDto).thenReturn(existingDto);
+    when(service.update(any(UUID.class), any(AuthoritySourceFile.class), any())).thenAnswer(invocation -> {
+      @SuppressWarnings("unchecked")
+      var consumer = (BiConsumer<AuthoritySourceFile, AuthoritySourceFile>) invocation.getArgument(2);
+      consumer.accept(expected, existing);
+      return expected;
+    });
+    var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL + changeUrlSuffix);
+    doCallRealMethod().when(propagationService).initUpdatePublishConsumer(any());
+
+    delegate.patchAuthoritySourceFile(existing.getId(), dto);
+
+    verify(service).update(eq(existing.getId()), sourceFileArgumentCaptor.capture(), any());
+    var patchedSourceFile = sourceFileArgumentCaptor.getValue();
+    assertThat(expected).usingDefaultComparator().isEqualTo(patchedSourceFile);
+    verify(service).authoritiesExistForSourceFile(existing.getId());
+    verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
+    verify(service).getById(any(UUID.class));
+    verify(propagationService).initUpdatePublishConsumer(any(BiConsumer.class));
+    verify(propagationService).propagate(expected, UPDATE, CENTRAL_TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 

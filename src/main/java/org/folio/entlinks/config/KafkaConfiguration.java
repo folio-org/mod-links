@@ -160,13 +160,13 @@ public class KafkaConfiguration {
     return new KafkaTemplate<>(domainProducerFactory);
   }
 
-  @Bean("authority")
+  @Bean("authorityDomainMessageProducer")
   public EventProducer<DomainEvent<?>> authorityDomainMessageProducerService(
     KafkaTemplate<String, DomainEvent<?>> template) {
     return new EventProducer<>(template, "authorities.authority");
   }
 
-  @Bean("authoritySourceFile")
+  @Bean("authoritySourceFileMessageProducer")
   public EventProducer<DomainEvent<?>> authoritySourceFileMessageProducerService(
     KafkaTemplate<String, DomainEvent<?>> template) {
     return new EventProducer<>(template, "authority.authority-source-file");

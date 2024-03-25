@@ -20,7 +20,7 @@ public class AuthorityDomainEventPublisher {
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
   private static final String REINDEX_JOB_ID_HEADER = "reindex-job-id";
 
-  @Qualifier("authority")
+  @Qualifier("authorityDomainMessageProducer")
   private final EventProducer<DomainEvent<?>> eventProducer;
   private final FolioExecutionContext folioExecutionContext;
 

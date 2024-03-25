@@ -16,21 +16,21 @@ import org.springframework.stereotype.Component;
 public class AuthoritySourceFileEventPublisher {
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
 
-  @Qualifier("authoritySourceFile")
+  @Qualifier("authoritySourceFileMessageProducer")
   private final EventProducer<DomainEvent<?>> eventProducer;
   private final FolioExecutionContext folioExecutionContext;
 
-  public void publishUpdateEvent(AuthoritySourceFileDto oldAuthSrcFile, AuthoritySourceFileDto updatedAuthSrcFile) {
-    var id = updatedAuthSrcFile.getId();
-    if (id == null || oldAuthSrcFile.getId() == null) {
+  public void publishUpdateEvent(AuthoritySourceFileDto oldAsfDto, AuthoritySourceFileDto updatedAsfDto) {
+    var id = updatedAsfDto.getId();
+    if (id == null || oldAsfDto.getId() == null) {
       log.warn("Old/New Authority Source File cannot have null id: updated.id - {}, old.id: {}",
-        id, oldAuthSrcFile.getId());
+        id, oldAsfDto.getId());
       return;
     }
 
     log.debug("publishUpdated::process authority source file id={}", id);
 
-    var domainEvent = DomainEvent.updateEvent(id, oldAuthSrcFile, updatedAuthSrcFile,
+    var domainEvent = DomainEvent.updateEvent(id, oldAsfDto, updatedAsfDto,
       folioExecutionContext.getTenantId());
     eventProducer.sendMessage(id.toString(), domainEvent, DOMAIN_EVENT_TYPE_HEADER, DomainEventType.UPDATE);
   }
