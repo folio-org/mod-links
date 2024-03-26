@@ -815,7 +815,7 @@
       {
         "name": "KAFKA_AUTHORITY_SOURCE_FILE_TOPIC_REPLICATION_FACTOR",
         "value": "",
-        "description": "Replication factor for `links.instance-authority` topic."
+        "description": "Replication factor for `authority-authority-source-file` topic."
       },
       {
         "name": "KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS",
