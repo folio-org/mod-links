@@ -27,6 +27,7 @@ import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
+import org.folio.entlinks.service.consortium.propagation.model.AuthoritySourceFilePropagationData;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
@@ -68,7 +69,7 @@ public class AuthoritySourceFileServiceDelegate {
 
     service.createSequence(created.getSequenceName(), created.getHridStartNumber());
 
-    propagationService.propagate(entity, CREATE, context.getTenantId());
+    propagationService.propagate(getPropagationData(entity, null), CREATE, context.getTenantId());
     return mapper.toDto(created);
   }
 
@@ -87,8 +88,7 @@ public class AuthoritySourceFileServiceDelegate {
       ? getUpdatePublishConsumer() : null;
     var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    propagationService.setCurrentUpdatePublishConsumer(publishConsumer);
-    propagationService.propagate(patched, UPDATE, context.getTenantId());
+    propagationService.propagate(getPropagationData(patched, publishConsumer), UPDATE, context.getTenantId());
   }
 
   public void deleteAuthoritySourceFileById(UUID id) {
@@ -97,14 +97,14 @@ public class AuthoritySourceFileServiceDelegate {
 
     if (anyAuthoritiesExistForSourceFile(entity)) {
       throw new RequestBodyValidationException(
-          "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
+        "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
     }
 
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
     }
     service.deleteById(id);
-    propagationService.propagate(entity, DELETE, context.getTenantId());
+    propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
   }
 
   public AuthoritySourceFileHridDto getAuthoritySourceFileNextHrid(UUID id) {
@@ -175,6 +175,11 @@ public class AuthoritySourceFileServiceDelegate {
     }
 
     return false;
+  }
+
+  private AuthoritySourceFilePropagationData<AuthoritySourceFile> getPropagationData(
+    AuthoritySourceFile authoritySourceFile, BiConsumer<AuthoritySourceFile, AuthoritySourceFile> publishConsumer) {
+    return new AuthoritySourceFilePropagationData<>(authoritySourceFile, publishConsumer);
   }
 
   @NotNull

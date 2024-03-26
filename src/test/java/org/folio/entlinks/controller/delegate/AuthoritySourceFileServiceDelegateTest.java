@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
@@ -41,6 +41,7 @@ import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
+import org.folio.entlinks.service.consortium.propagation.model.AuthoritySourceFilePropagationData;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.spring.testing.type.UnitTest;
@@ -86,8 +87,6 @@ class AuthoritySourceFileServiceDelegateTest {
 
   @Captor
   private ArgumentCaptor<AuthoritySourceFile> sourceFileArgumentCaptor;
-  @Captor
-  private ArgumentCaptor<AuthoritySourceFileDto> sourceFileArgumentDtoCaptor;
 
   @Test
   void shouldGetSourceFileCollectionByQuery() {
@@ -135,7 +134,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).create(expected);
     verify(mapper).toDto(expected);
     verify(service).createSequence(expected.getSequenceName(), expected.getHridStartNumber());
-    verify(propagationService).propagate(expected, CREATE, TENANT_ID);
+    verify(propagationService).propagate(getMockData(expected, null), CREATE, TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 
@@ -160,7 +159,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).create(expected);
     verify(mapper).toDto(expected);
     verify(service).createSequence(expected.getSequenceName(), expected.getHridStartNumber());
-    verify(propagationService).propagate(expected, CREATE, CENTRAL_TENANT_ID);
+    verify(propagationService).propagate(getMockData(expected, null), CREATE, CENTRAL_TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 
@@ -188,7 +187,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).authoritiesExistForSourceFile(existing.getId());
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
-    verify(propagationService).propagate(expected, UPDATE, TENANT_ID);
+    verify(propagationService).propagate(getMockData(expected, null), UPDATE, TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 
@@ -207,7 +206,6 @@ class AuthoritySourceFileServiceDelegateTest {
       .thenAnswer(i -> i.getArguments()[1]);
     when(service.update(any(UUID.class), any(AuthoritySourceFile.class), eq(null))).thenReturn(expected);
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL);
-    doCallRealMethod().when(propagationService).setCurrentUpdatePublishConsumer(any());
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
 
@@ -217,8 +215,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).authoritiesExistForSourceFile(existing.getId());
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
-    verify(propagationService).setCurrentUpdatePublishConsumer(null);
-    verify(propagationService).propagate(expected, UPDATE, TENANT_ID);
+    verify(propagationService).propagate(getMockData(expected, null), UPDATE, TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 
@@ -238,15 +235,14 @@ class AuthoritySourceFileServiceDelegateTest {
       .thenAnswer(i -> i.getArguments()[1]);
     var existingDto = new AuthoritySourceFileDto().id(existing.getId());
     var modifiedDto = new AuthoritySourceFileDto().id(existing.getId());
+    AtomicReference<BiConsumer<AuthoritySourceFile, AuthoritySourceFile>> consumer = new AtomicReference<>();
     when(mapper.toDto(any(AuthoritySourceFile.class))).thenReturn(modifiedDto).thenReturn(existingDto);
     when(service.update(any(UUID.class), any(AuthoritySourceFile.class), any())).thenAnswer(invocation -> {
-      @SuppressWarnings("unchecked")
-      var consumer = (BiConsumer<AuthoritySourceFile, AuthoritySourceFile>) invocation.getArgument(2);
-      consumer.accept(expected, existing);
+      consumer.set(invocation.getArgument(2));
+      consumer.get().accept(expected, existing);
       return expected;
     });
     var dto = new AuthoritySourceFilePatchDto().baseUrl(INPUT_BASE_URL + changeUrlSuffix);
-    doCallRealMethod().when(propagationService).setCurrentUpdatePublishConsumer(any());
 
     delegate.patchAuthoritySourceFile(existing.getId(), dto);
 
@@ -256,8 +252,7 @@ class AuthoritySourceFileServiceDelegateTest {
     verify(service).authoritiesExistForSourceFile(existing.getId());
     verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
     verify(service).getById(any(UUID.class));
-    verify(propagationService).setCurrentUpdatePublishConsumer(any(BiConsumer.class));
-    verify(propagationService).propagate(expected, UPDATE, CENTRAL_TENANT_ID);
+    verify(propagationService).propagate(getMockData(expected, consumer.get()), UPDATE, CENTRAL_TENANT_ID);
     verifyNoMoreInteractions(mapper, service);
   }
 
@@ -332,7 +327,7 @@ class AuthoritySourceFileServiceDelegateTest {
 
     verify(service).deleteSequence(existing.getSequenceName());
     verify(service).deleteById(existing.getId());
-    verify(propagationService).propagate(existing, DELETE, TENANT_ID);
+    verify(propagationService).propagate(getMockData(existing, null), DELETE, TENANT_ID);
   }
 
   @Test
@@ -473,5 +468,10 @@ class AuthoritySourceFileServiceDelegateTest {
   private void mockAsConsortiumMemberTenant() {
     when(context.getTenantId()).thenReturn(TENANT_ID);
     when(tenantsService.getCentralTenant(TENANT_ID)).thenReturn(Optional.of(CENTRAL_TENANT_ID));
+  }
+
+  private AuthoritySourceFilePropagationData<AuthoritySourceFile> getMockData(
+    AuthoritySourceFile asf, BiConsumer<AuthoritySourceFile, AuthoritySourceFile> consumer) {
+    return new AuthoritySourceFilePropagationData<>(asf, consumer);
   }
 }

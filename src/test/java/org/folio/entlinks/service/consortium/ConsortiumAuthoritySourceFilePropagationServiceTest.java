@@ -16,6 +16,7 @@ import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
+import org.folio.entlinks.service.consortium.propagation.model.AuthoritySourceFilePropagationData;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,8 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     var sourceFile = new AuthoritySourceFile();
     sourceFile.setSource(LOCAL);
     doMocks();
-    propagationService.propagate(sourceFile, ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
+    propagationService.propagate(getMockData(sourceFile),
+      ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
 
     assertThat(sourceFile.getSource()).isEqualTo(LOCAL);
     verify(tenantsService).getConsortiumTenants(TENANT_ID);
@@ -53,7 +55,8 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     sourceFile.setId(UUID.randomUUID());
     sourceFile.setSource(LOCAL);
     doMocks();
-    propagationService.propagate(sourceFile, ConsortiumAuthorityPropagationService.PropagationType.UPDATE, TENANT_ID);
+    propagationService.propagate(getMockData(sourceFile),
+      ConsortiumAuthorityPropagationService.PropagationType.UPDATE, TENANT_ID);
 
     assertThat(sourceFile.getSource()).isEqualTo(LOCAL);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
@@ -67,7 +70,8 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     sourceFile.setId(UUID.randomUUID());
     sourceFile.setSource(LOCAL);
     doMocks();
-    propagationService.propagate(sourceFile, ConsortiumAuthorityPropagationService.PropagationType.DELETE, TENANT_ID);
+    propagationService.propagate(getMockData(sourceFile),
+      ConsortiumAuthorityPropagationService.PropagationType.DELETE, TENANT_ID);
 
     assertThat(sourceFile.getSource()).isEqualTo(LOCAL);
     verify(tenantsService, times(1)).getConsortiumTenants(any());
@@ -80,7 +84,8 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     Mockito.doThrow(FolioIntegrationException.class).when(tenantsService).getConsortiumTenants(any());
 
     var sourceFile = new AuthoritySourceFile();
-    propagationService.propagate(sourceFile, ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
+    propagationService.propagate(getMockData(sourceFile),
+      ConsortiumAuthorityPropagationService.PropagationType.CREATE, TENANT_ID);
 
     verify(tenantsService, times(1)).getConsortiumTenants(any());
     verify(executionService, times(0)).executeAsyncSystemUserScoped(any(), any());
@@ -95,4 +100,7 @@ class ConsortiumAuthoritySourceFilePropagationServiceTest {
     }).when(executionService).executeAsyncSystemUserScoped(any(), any());
   }
 
+  private AuthoritySourceFilePropagationData<AuthoritySourceFile> getMockData(AuthoritySourceFile asf) {
+    return new AuthoritySourceFilePropagationData<>(asf, null);
+  }
 }
