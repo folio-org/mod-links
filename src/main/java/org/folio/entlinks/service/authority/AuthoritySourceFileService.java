@@ -42,7 +42,7 @@ public class AuthoritySourceFileService {
   private final AuthoritySourceFileRepository repository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
-  private final AuthoritySourceFileEventPublisher eventPublisher;
+  private final AuthoritySourceFileDomainEventPublisher eventPublisher;
   private final JdbcTemplate jdbcTemplate;
   private final FolioModuleMetadata moduleMetadata;
   private final FolioExecutionContext folioExecutionContext;

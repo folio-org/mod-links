@@ -75,8 +75,8 @@ folio:
   kafka:
     topics:
       - name: authority.authority-source-file
-        numPartitions: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS:50}
-        replicationFactor: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_REPLICATION_FACTOR:}
+        numPartitions: ${KAFKA_AUTHORITY_SOURCE_FILE_TOPIC_PARTITIONS:1}
+        replicationFactor: ${KAFKA_AUTHORITY_SOURCE_FILE_TOPIC_REPLICATION_FACTOR:}
       - name: authorities.authority
         numPartitions: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS:50}
         replicationFactor: ${KAFKA_INSTANCE_AUTHORITY_TOPIC_REPLICATION_FACTOR:}

@@ -36,7 +36,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDtoHridManagement;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.exception.RequestBodyValidationException;
-import org.folio.entlinks.service.authority.AuthoritySourceFileEventPublisher;
+import org.folio.entlinks.service.authority.AuthoritySourceFileDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
@@ -79,7 +79,7 @@ class AuthoritySourceFileServiceDelegateTest {
   @Mock
   private ConsortiumTenantsService consortiumTenantsService;
   @Mock
-  private AuthoritySourceFileEventPublisher eventPublisher;
+  private AuthoritySourceFileDomainEventPublisher eventPublisher;
 
   @InjectMocks
   private AuthoritySourceFileServiceDelegate delegate;

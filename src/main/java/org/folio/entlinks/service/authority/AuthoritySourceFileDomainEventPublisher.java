@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Log4j2
-public class AuthoritySourceFileEventPublisher {
+public class AuthoritySourceFileDomainEventPublisher {
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
 
-  @Qualifier("authoritySourceFileMessageProducer")
+  @Qualifier("authoritySourceFileDomainMessageProducer")
   private final EventProducer<DomainEvent<?>> eventProducer;
   private final FolioExecutionContext folioExecutionContext;
 

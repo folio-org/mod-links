@@ -166,8 +166,8 @@ public class KafkaConfiguration {
     return new EventProducer<>(template, "authorities.authority");
   }
 
-  @Bean("authoritySourceFileMessageProducer")
-  public <T> EventProducer<DomainEvent<T>> authoritySourceFileMessageProducerService(
+  @Bean("authoritySourceFileDomainMessageProducer")
+  public <T> EventProducer<DomainEvent<T>> authoritySourceFileDomainMessageProducerService(
     KafkaTemplate<String, DomainEvent<T>> template) {
     return new EventProducer<>(template, "authority.authority-source-file");
   }

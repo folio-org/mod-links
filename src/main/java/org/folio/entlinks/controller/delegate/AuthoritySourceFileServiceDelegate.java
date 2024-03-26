@@ -22,12 +22,11 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
-import org.folio.entlinks.service.authority.AuthoritySourceFileEventPublisher;
+import org.folio.entlinks.service.authority.AuthoritySourceFileDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
-import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
@@ -44,8 +43,8 @@ public class AuthoritySourceFileServiceDelegate {
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
   private final UserTenantsService tenantsService;
-  private final AuthoritySourceFileEventPublisher eventPublisher;
-  private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
+  private final AuthoritySourceFileDomainEventPublisher eventPublisher;
+  private final ConsortiumAuthoritySourceFilePropagationService propagationService;
   private final FolioExecutionContext context;
   private final SystemUserScopedExecutionService executionService;
   private final ConsortiumTenantsService consortiumTenantsService;
@@ -88,8 +87,7 @@ public class AuthoritySourceFileServiceDelegate {
       ? getUpdatePublishConsumer() : null;
     var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    ((ConsortiumAuthoritySourceFilePropagationService) propagationService)
-      .setCurrentUpdatePublishConsumer(publishConsumer);
+    propagationService.setCurrentUpdatePublishConsumer(publishConsumer);
     propagationService.propagate(patched, UPDATE, context.getTenantId());
   }
 

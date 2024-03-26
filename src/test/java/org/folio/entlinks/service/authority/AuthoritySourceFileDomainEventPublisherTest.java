@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-class AuthoritySourceFileEventPublisherTest {
+class AuthoritySourceFileDomainEventPublisherTest {
   private static final String TENANT_ID = "test";
   private static final String DOMAIN_EVENT_TYPE_HEADER = "domain-event-type";
 
@@ -33,7 +33,7 @@ class AuthoritySourceFileEventPublisherTest {
   private FolioExecutionContext folioExecutionContext;
 
   @InjectMocks
-  private AuthoritySourceFileEventPublisher eventPublisher;
+  private AuthoritySourceFileDomainEventPublisher eventPublisher;
 
   private final ArgumentCaptor<DomainEvent> captor = ArgumentCaptor.forClass(DomainEvent.class);
 
