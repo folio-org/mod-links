@@ -210,7 +210,7 @@ class AuthoritySourceFileServiceTest {
 
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(moduleMetadata.getDBSchemaName(any())).thenReturn("test");
-    when(repository.save(expected)).thenReturn(expected);
+    when(repository.saveAndFlush(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
 
@@ -218,7 +218,7 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(argThat(authoritySourceFileMatch(expected)));
+    verify(repository).saveAndFlush(argThat(authoritySourceFileMatch(expected)));
 
     var argumentCaptor = ArgumentCaptor.forClass(String.class);
     verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
@@ -255,7 +255,7 @@ class AuthoritySourceFileServiceTest {
 
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(moduleMetadata.getDBSchemaName(any())).thenReturn("test");
-    when(repository.save(expected)).thenReturn(expected);
+    when(repository.saveAndFlush(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
 
@@ -263,7 +263,7 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(argThat(authoritySourceFileMatch(expected)));
+    verify(repository).saveAndFlush(argThat(authoritySourceFileMatch(expected)));
 
     var argumentCaptor = ArgumentCaptor.forClass(String.class);
     verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
@@ -289,7 +289,7 @@ class AuthoritySourceFileServiceTest {
     var expected = new AuthoritySourceFile(modified);
 
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(repository.save(expected)).thenReturn(expected);
+    when(repository.saveAndFlush(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(emptyList());
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(emptyList());
 
@@ -297,7 +297,7 @@ class AuthoritySourceFileServiceTest {
 
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
-    verify(repository).save(expected);
+    verify(repository).saveAndFlush(expected);
     verifyNoInteractions(context);
     verifyNoInteractions(moduleMetadata);
     verifyNoInteractions(jdbcTemplate);

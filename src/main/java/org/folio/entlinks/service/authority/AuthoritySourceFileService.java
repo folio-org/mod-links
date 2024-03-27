@@ -197,7 +197,7 @@ public class AuthoritySourceFileService {
 
     copyModifiableFields(existingEntity, modified);
 
-    AuthoritySourceFile saved = repository.save(existingEntity);
+    AuthoritySourceFile saved = repository.saveAndFlush(existingEntity);
     if (publishConsumer != null) {
       publishConsumer.accept(saved, detachedExisting);
     }
