@@ -34,7 +34,6 @@ public abstract class ConsortiumPropagationService<T> {
     } catch (FolioIntegrationException e) {
       log.warn("Skip propagation. Exception: ", e);
     }
-
   }
 
   protected abstract void doPropagation(T entity,
