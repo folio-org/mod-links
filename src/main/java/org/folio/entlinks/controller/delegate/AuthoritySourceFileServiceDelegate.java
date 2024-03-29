@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -21,13 +22,16 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
+import org.folio.entlinks.service.authority.AuthoritySourceFileDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthoritySourceFileService;
 import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.UserTenantsService;
-import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
+import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthoritySourceFilePropagationService;
+import org.folio.entlinks.service.consortium.propagation.model.AuthoritySourceFilePropagationData;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -40,7 +44,8 @@ public class AuthoritySourceFileServiceDelegate {
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
   private final UserTenantsService tenantsService;
-  private final ConsortiumPropagationService<AuthoritySourceFile> propagationService;
+  private final AuthoritySourceFileDomainEventPublisher eventPublisher;
+  private final ConsortiumAuthoritySourceFilePropagationService propagationService;
   private final FolioExecutionContext context;
   private final SystemUserScopedExecutionService executionService;
   private final ConsortiumTenantsService consortiumTenantsService;
@@ -64,7 +69,7 @@ public class AuthoritySourceFileServiceDelegate {
 
     service.createSequence(created.getSequenceName(), created.getHridStartNumber());
 
-    propagationService.propagate(entity, CREATE, context.getTenantId());
+    propagationService.propagate(getPropagationData(entity, null), CREATE, context.getTenantId());
     return mapper.toDto(created);
   }
 
@@ -72,14 +77,18 @@ public class AuthoritySourceFileServiceDelegate {
     log.debug("patch:: Attempting to patch AuthoritySourceFile [id: {}, patchDto: {}]", id, partiallyModifiedDto);
     var existingEntity = service.getById(id);
     validateActionRightsForTenant(DomainEventType.UPDATE);
-    validatePatchRequest(partiallyModifiedDto, existingEntity);
+    var hasAuthorityReferences = anyAuthoritiesExistForSourceFile(existingEntity);
+    validatePatchRequest(partiallyModifiedDto, existingEntity, hasAuthorityReferences);
 
     var partialEntityUpdate = new AuthoritySourceFile(existingEntity);
     partialEntityUpdate = mapper.partialUpdate(partiallyModifiedDto, partialEntityUpdate);
     normalizeBaseUrl(partialEntityUpdate);
-    var patched = service.update(id, partialEntityUpdate);
+
+    var publishConsumer = publishRequired(hasAuthorityReferences, partiallyModifiedDto, existingEntity)
+      ? getUpdatePublishConsumer() : null;
+    var patched = service.update(id, partialEntityUpdate, publishConsumer);
     log.debug("patch:: Authority Source File partially updated: {}", patched);
-    propagationService.propagate(patched, UPDATE, context.getTenantId());
+    propagationService.propagate(getPropagationData(patched, publishConsumer), UPDATE, context.getTenantId());
   }
 
   public void deleteAuthoritySourceFileById(UUID id) {
@@ -88,14 +97,14 @@ public class AuthoritySourceFileServiceDelegate {
 
     if (anyAuthoritiesExistForSourceFile(entity)) {
       throw new RequestBodyValidationException(
-          "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
+        "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
     }
 
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
     }
     service.deleteById(id);
-    propagationService.propagate(entity, DELETE, context.getTenantId());
+    propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
   }
 
   public AuthoritySourceFileHridDto getAuthoritySourceFileNextHrid(UUID id) {
@@ -126,9 +135,9 @@ public class AuthoritySourceFileServiceDelegate {
     }
   }
 
-  private void validatePatchRequest(AuthoritySourceFilePatchDto patchDto, AuthoritySourceFile existing) {
+  private void validatePatchRequest(AuthoritySourceFilePatchDto patchDto, AuthoritySourceFile existing,
+                                    boolean hasAuthorityReferences) {
     var errorParameters = new LinkedList<Parameter>();
-    var hasAuthorityReferences = anyAuthoritiesExistForSourceFile(existing);
 
     if (!(existing.getSource().equals(FOLIO) || hasAuthorityReferences)) {
       return;
@@ -166,5 +175,19 @@ public class AuthoritySourceFileServiceDelegate {
     }
 
     return false;
+  }
+
+  private AuthoritySourceFilePropagationData<AuthoritySourceFile> getPropagationData(
+    AuthoritySourceFile authoritySourceFile, BiConsumer<AuthoritySourceFile, AuthoritySourceFile> publishConsumer) {
+    return new AuthoritySourceFilePropagationData<>(authoritySourceFile, publishConsumer);
+  }
+
+  @NotNull
+  private BiConsumer<AuthoritySourceFile, AuthoritySourceFile> getUpdatePublishConsumer() {
+    return (newAsf, oldAsf) -> eventPublisher.publishUpdateEvent(mapper.toDto(newAsf), mapper.toDto(oldAsf));
+  }
+
+  private boolean publishRequired(boolean hasRefs, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {
+    return hasRefs && !modified.getBaseUrl().equals(existed.getBaseUrl());
   }
 }

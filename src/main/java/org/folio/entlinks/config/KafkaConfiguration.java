@@ -150,20 +150,26 @@ public class KafkaConfiguration {
   }
 
   @Bean
-  public ProducerFactory<String, DomainEvent<?>> domainProducerFactory(KafkaProperties kafkaProperties) {
+  public <T> ProducerFactory<String, DomainEvent<T>> domainProducerFactory(KafkaProperties kafkaProperties) {
     return getProducerConfigProps(kafkaProperties);
   }
 
   @Bean
-  public KafkaTemplate<String, DomainEvent<?>> domainKafkaTemplate(
-    ProducerFactory<String, DomainEvent<?>> domainProducerFactory) {
+  public <T> KafkaTemplate<String, DomainEvent<T>> domainKafkaTemplate(
+    ProducerFactory<String, DomainEvent<T>> domainProducerFactory) {
     return new KafkaTemplate<>(domainProducerFactory);
   }
 
-  @Bean
-  public EventProducer<DomainEvent<?>> authorityDomainMessageProducerService(
-    KafkaTemplate<String, DomainEvent<?>> template) {
+  @Bean("authorityDomainMessageProducer")
+  public <T> EventProducer<DomainEvent<T>> authorityDomainMessageProducerService(
+    KafkaTemplate<String, DomainEvent<T>> template) {
     return new EventProducer<>(template, "authorities.authority");
+  }
+
+  @Bean("authoritySourceFileDomainMessageProducer")
+  public <T> EventProducer<DomainEvent<T>> authoritySourceFileDomainMessageProducerService(
+    KafkaTemplate<String, DomainEvent<T>> template) {
+    return new EventProducer<>(template, "authority.authority-source-file");
   }
 
   private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(

@@ -808,6 +808,16 @@
         "description": "Maximum number of records returned in a single call to poll()."
       },
       {
+        "name": "KAFKA_AUTHORITY_SOURCE_FILE_TOPIC_PARTITIONS",
+        "value": "1",
+        "description": "Amount of partitions for `authority-authority-source-file` topic."
+      },
+      {
+        "name": "KAFKA_AUTHORITY_SOURCE_FILE_TOPIC_REPLICATION_FACTOR",
+        "value": "",
+        "description": "Replication factor for `authority-authority-source-file` topic."
+      },
+      {
         "name": "KAFKA_INSTANCE_AUTHORITY_TOPIC_PARTITIONS",
         "value": "10",
         "description": "Amount of partitions for `links.instance-authority` topic."
