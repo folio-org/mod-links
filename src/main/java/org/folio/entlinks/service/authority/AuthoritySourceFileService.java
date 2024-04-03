@@ -187,7 +187,7 @@ public class AuthoritySourceFileService {
     validateOnUpdate(id, modified);
 
     var existingEntity = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    var detachedExisting = new AuthoritySourceFile(existingEntity);
+    final var detachedExisting = new AuthoritySourceFile(existingEntity);
     if (modified.getVersion() < existingEntity.getVersion()) {
       throw OptimisticLockingException.optimisticLockingOnUpdate(
         id, existingEntity.getVersion(), modified.getVersion());
