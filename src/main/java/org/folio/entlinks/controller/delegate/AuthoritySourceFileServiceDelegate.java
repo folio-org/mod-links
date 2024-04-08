@@ -188,6 +188,6 @@ public class AuthoritySourceFileServiceDelegate {
   }
 
   private boolean publishRequired(boolean hasRefs, AuthoritySourceFilePatchDto modified, AuthoritySourceFile existed) {
-    return hasRefs && !modified.getBaseUrl().equals(existed.getBaseUrl());
+    return modified.getBaseUrl() != null && hasRefs && !modified.getBaseUrl().equals(existed.getBaseUrl());
   }
 }
