@@ -256,6 +256,34 @@ class AuthoritySourceFileServiceDelegateTest {
     verifyNoMoreInteractions(mapper, service);
   }
 
+  @Test
+  void shouldNotProduceEventForSourceFilePartialUpdateWhenNoBaseUrlChange() {
+    var existing = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
+    existing.setBaseUrl(INPUT_BASE_URL);
+    existing.setSource(AuthoritySourceFileSource.FOLIO);
+    var expected = new AuthoritySourceFile(existing);
+    expected.setBaseUrl(SANITIZED_BASE_URL);
+
+    mockAsNonConsortiumTenant();
+    when(service.getById(existing.getId())).thenReturn(existing);
+    when(service.authoritiesExistForSourceFile(existing.getId())).thenReturn(true);
+    when(mapper.partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class)))
+        .thenAnswer(i -> i.getArguments()[1]);
+    when(service.update(any(UUID.class), any(AuthoritySourceFile.class), eq(null))).thenReturn(expected);
+    var dto = new AuthoritySourceFilePatchDto();
+
+    delegate.patchAuthoritySourceFile(existing.getId(), dto);
+
+    verify(service).update(eq(existing.getId()), sourceFileArgumentCaptor.capture(), any());
+    var patchedSourceFile = sourceFileArgumentCaptor.getValue();
+    assertThat(expected).usingDefaultComparator().isEqualTo(patchedSourceFile);
+    verify(service).authoritiesExistForSourceFile(existing.getId());
+    verify(mapper).partialUpdate(any(AuthoritySourceFilePatchDto.class), any(AuthoritySourceFile.class));
+    verify(service).getById(any(UUID.class));
+    verify(propagationService).propagate(getMockData(expected, null), UPDATE, TENANT_ID);
+    verifyNoMoreInteractions(mapper, service);
+  }
+
   @ParameterizedTest
   @MethodSource("patchValidationFailureData")
   void shouldNotPatchAuthoritySourceFile_whenSourceFolioOrAuthoritiesReferenced(AuthoritySourceFileSource source,
