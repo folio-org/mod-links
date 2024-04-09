@@ -39,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthoritySourceFileService {
 
   private static final String AUTHORITY_SEQUENCE_NAME_TEMPLATE = "hrid_authority_local_file_%s_seq";
+  private static final String AUTHORITY_TABLE_NAME = "authority";
+  private static final String AUTHORITY_ARCHIVE_TABLE_NAME = "authority_archive";
   private final AuthoritySourceFileRepository repository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
@@ -167,12 +169,20 @@ public class AuthoritySourceFileService {
   }
 
   public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId) {
+    return hasExistingData(sourceFileId, tenantId, AUTHORITY_TABLE_NAME);
+  }
+
+  public boolean authority_archivesExistForSourceFile(UUID sourceFileId, String tenantId) {
+    return hasExistingData(sourceFileId, tenantId, AUTHORITY_ARCHIVE_TABLE_NAME);
+  }
+
+  private boolean hasExistingData(UUID sourceFileId, String tenantId, String tableName) {
     if (sourceFileId == null || tenantId == null) {
       return false;
     }
 
-    var command = String.format("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)",
-        moduleMetadata.getDBSchemaName(tenantId), sourceFileId);
+    var command = String.format("select exists (select true from %s.%s a where a.source_file_id='%s' limit 1)",
+        moduleMetadata.getDBSchemaName(tenantId), tableName, sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
 

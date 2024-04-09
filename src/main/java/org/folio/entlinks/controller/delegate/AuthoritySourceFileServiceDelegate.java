@@ -20,6 +20,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFileHridDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.exception.AuthorityArchiveConstraintViolationException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthoritySourceFileDomainEventPublisher;
@@ -103,6 +104,10 @@ public class AuthoritySourceFileServiceDelegate {
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
     }
+
+    if (anyAuthorityArchivesExistForSourceFile(entity)) {
+      throw new AuthorityArchiveConstraintViolationException();
+    }
     service.deleteById(id);
     propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
   }
@@ -174,6 +179,18 @@ public class AuthoritySourceFileServiceDelegate {
       }
     }
 
+    return false;
+  }
+
+  public boolean anyAuthorityArchivesExistForSourceFile(AuthoritySourceFile sourceFile) {
+    var sourceFileId = sourceFile.getId();
+
+    var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
+    for (String memberTenant : consortiumTenants) {
+      if (service.authority_archivesExistForSourceFile(sourceFileId, memberTenant)) {
+        return true;
+      }
+    }
     return false;
   }
 

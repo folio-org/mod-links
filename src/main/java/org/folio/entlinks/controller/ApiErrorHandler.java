@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Level;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
+import org.folio.entlinks.exception.AuthorityArchiveConstraintViolationException;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -134,8 +135,7 @@ public class ApiErrorHandler {
   public ResponseEntity<Errors> conflict(Exception e) {
     var cause = e.getCause();
     if (cause instanceof ConstraintViolationException cve) {
-      var errorCode = translate(cve);
-      return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
+      return constraintViolation(cve);
     } else if (cause instanceof IllegalStateException ise) {
       var innerCause = ise.getCause();
       if (innerCause instanceof TransientPropertyValueException tpve) {
@@ -148,6 +148,12 @@ public class ApiErrorHandler {
       }
     }
     return buildResponseEntity(e, BAD_REQUEST, VALIDATION_ERROR);
+  }
+
+  @ExceptionHandler(AuthorityArchiveConstraintViolationException.class)
+  public ResponseEntity<Errors> constraintViolation(ConstraintViolationException cve) {
+    var errorCode = translate(cve);
+    return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
   }
 
   private static ResponseEntity<Errors> buildResponseEntity(Exception e, HttpStatus status, ErrorType type) {
