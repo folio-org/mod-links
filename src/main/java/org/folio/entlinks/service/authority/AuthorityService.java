@@ -111,7 +111,8 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
   public List<Authority> upsert(List<Authority> authorities, Consumer<Authority> authorityCreateCallback,
                                 BiConsumer<Authority, Authority> authorityUpdateCallback) {
     var existingRecordsMap = getAllByIds(authorities.stream().map(Authority::getId).toList());
-    var detachedExistingRecordsMap = Maps.transformEntries(existingRecordsMap, (key, value) -> new Authority(value));
+    final var detachedExistingRecordsMap = Maps.transformEntries(existingRecordsMap,
+      (key, value) -> new Authority(value));
     var modifiedRecords = authorities.stream()
       .filter(authority -> existingRecordsMap.containsKey(authority.getId()))
       .toList();
