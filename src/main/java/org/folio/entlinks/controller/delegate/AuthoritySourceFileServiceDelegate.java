@@ -32,7 +32,9 @@ import org.folio.entlinks.service.consortium.propagation.model.AuthoritySourceFi
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.folio.tenant.domain.dto.Parameter;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -105,9 +107,11 @@ public class AuthoritySourceFileServiceDelegate {
       service.deleteSequence(entity.getSequenceName());
     }
 
-    if (anyAuthorityArchivesExistForSourceFile(entity)) {
-      throw new AuthorityArchiveConstraintException();
-    }
+    validateNoReferencesForSourceFile(entity);
+//    ) {
+//      throw new AuthorityArchiveConstraintException();
+//      throw new DataIntegrityViolationException();
+//    }
     service.deleteById(id);
     propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
   }
@@ -166,6 +170,17 @@ public class AuthoritySourceFileServiceDelegate {
     }
   }
 
+  public void validateNoReferencesForSourceFile(AuthoritySourceFile sourceFile) {
+    var sourceFileId = sourceFile.getId();
+
+    var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
+    for (String memberTenant : consortiumTenants) {
+      if (service.authorityArchivesExistForSourceFile(sourceFileId, memberTenant)) {
+        throw new AuthorityArchiveConstraintException();
+      }
+    }
+  }
+
   public boolean anyAuthoritiesExistForSourceFile(AuthoritySourceFile sourceFile) {
     var sourceFileId = sourceFile.getId();
     if (service.authoritiesExistForSourceFile(sourceFileId)) {
@@ -179,18 +194,6 @@ public class AuthoritySourceFileServiceDelegate {
       }
     }
 
-    return false;
-  }
-
-  public boolean anyAuthorityArchivesExistForSourceFile(AuthoritySourceFile sourceFile) {
-    var sourceFileId = sourceFile.getId();
-
-    var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
-    for (String memberTenant : consortiumTenants) {
-      if (service.authorityArchivesExistForSourceFile(sourceFileId, memberTenant)) {
-        return true;
-      }
-    }
     return false;
   }
 

@@ -57,8 +57,8 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  @DisplayName("DELETE: Should not delete existing authority source file after authority was deleted")
-  void deleteConsortiumAsfAfterAuthorityDeletion_negative_failDeletingAsf() {
+  @DisplayName("DELETE: Should not delete authority source file with referenced authority archive in member tenant")
+  void deleteAsfWithAuthorityArchiveReference_negative_failDeletingAsf() {
     var sourceFile = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     sourceFile.setBaseUrl(BASE_URL);
     sourceFile.setBaseUrlProtocol("http");
