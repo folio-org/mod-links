@@ -100,12 +100,12 @@ public class AuthoritySourceFileServiceDelegate {
       throw new RequestBodyValidationException(
         "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
     }
+    validateNoReferencesForSourceFile(entity);
 
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
     }
 
-    validateNoReferencesForSourceFile(entity);
     service.deleteById(id);
     propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
   }
