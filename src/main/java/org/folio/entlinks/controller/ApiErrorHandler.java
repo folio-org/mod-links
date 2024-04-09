@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Level;
 import org.folio.entlinks.config.constants.ErrorCode;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
-import org.folio.entlinks.exception.AuthorityArchiveConstraintViolationException;
+import org.folio.entlinks.exception.AuthorityArchiveConstraintException;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -150,7 +150,7 @@ public class ApiErrorHandler {
     return buildResponseEntity(e, BAD_REQUEST, VALIDATION_ERROR);
   }
 
-  @ExceptionHandler(AuthorityArchiveConstraintViolationException.class)
+  @ExceptionHandler(AuthorityArchiveConstraintException.class)
   public ResponseEntity<Errors> constraintViolation(ConstraintViolationException cve) {
     var errorCode = translate(cve);
     return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);

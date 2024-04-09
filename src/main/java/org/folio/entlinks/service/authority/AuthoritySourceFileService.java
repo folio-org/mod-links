@@ -172,7 +172,7 @@ public class AuthoritySourceFileService {
     return hasExistingData(sourceFileId, tenantId, AUTHORITY_TABLE_NAME);
   }
 
-  public boolean authority_archivesExistForSourceFile(UUID sourceFileId, String tenantId) {
+  public boolean authorityArchivesExistForSourceFile(UUID sourceFileId, String tenantId) {
     return hasExistingData(sourceFileId, tenantId, AUTHORITY_ARCHIVE_TABLE_NAME);
   }
 

@@ -20,7 +20,7 @@ import org.folio.entlinks.domain.dto.AuthoritySourceFileHridDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePatchDto;
 import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.exception.AuthorityArchiveConstraintViolationException;
+import org.folio.entlinks.exception.AuthorityArchiveConstraintException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthoritySourceFileDomainEventPublisher;
@@ -106,7 +106,7 @@ public class AuthoritySourceFileServiceDelegate {
     }
 
     if (anyAuthorityArchivesExistForSourceFile(entity)) {
-      throw new AuthorityArchiveConstraintViolationException();
+      throw new AuthorityArchiveConstraintException();
     }
     service.deleteById(id);
     propagationService.propagate(getPropagationData(entity, null), DELETE, context.getTenantId());
@@ -187,7 +187,7 @@ public class AuthoritySourceFileServiceDelegate {
 
     var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
     for (String memberTenant : consortiumTenants) {
-      if (service.authority_archivesExistForSourceFile(sourceFileId, memberTenant)) {
+      if (service.authorityArchivesExistForSourceFile(sourceFileId, memberTenant)) {
         return true;
       }
     }

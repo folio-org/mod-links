@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.exception.AuthorityArchiveConstraintViolationException;
+import org.folio.entlinks.exception.AuthorityArchiveConstraintException;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
@@ -58,7 +58,7 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
   @Test
   @SneakyThrows
   @DisplayName("DELETE: Should not delete existing authority source file after authority was deleted")
-  public void deleteConsortiumAsfAfterAuthorityDeletion_negative_failDeletingAsf() {
+  void deleteConsortiumAsfAfterAuthorityDeletion_negative_failDeletingAsf() {
     var sourceFile = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
     sourceFile.setBaseUrl(BASE_URL);
     sourceFile.setBaseUrlProtocol("http");
@@ -103,7 +103,7 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
 
     tryDelete(authoritySourceFilesEndpoint(sourceFile.getId()), tenantHeaders(CENTRAL_TENANT_ID))
       .andExpect(status().isUnprocessableEntity())
-      .andExpect(exceptionMatch(AuthorityArchiveConstraintViolationException.class))
+      .andExpect(exceptionMatch(AuthorityArchiveConstraintException.class))
       .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
         + " Authority Archive/Authority.")));
 
