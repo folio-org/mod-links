@@ -130,12 +130,14 @@ public class ApiErrorHandler {
 
   @ExceptionHandler({
     DataIntegrityViolationException.class,
-    InvalidDataAccessApiUsageException.class
+    InvalidDataAccessApiUsageException.class,
+    AuthorityArchiveConstraintException.class
   })
   public ResponseEntity<Errors> conflict(Exception e) {
     var cause = e.getCause();
     if (cause instanceof ConstraintViolationException cve) {
-      return constraintViolation(cve);
+      var errorCode = translate(cve);
+      return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
     } else if (cause instanceof IllegalStateException ise) {
       var innerCause = ise.getCause();
       if (innerCause instanceof TransientPropertyValueException tpve) {
@@ -148,12 +150,6 @@ public class ApiErrorHandler {
       }
     }
     return buildResponseEntity(e, BAD_REQUEST, VALIDATION_ERROR);
-  }
-
-  @ExceptionHandler(AuthorityArchiveConstraintException.class)
-  public ResponseEntity<Errors> constraintViolation(ConstraintViolationException cve) {
-    var errorCode = translate(cve);
-    return buildResponseEntity(errorCode, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
   }
 
   private static ResponseEntity<Errors> buildResponseEntity(Exception e, HttpStatus status, ErrorType type) {

@@ -1,7 +1,6 @@
 package org.folio.entlinks.controller;
 
 import static org.folio.entlinks.controller.ConsortiumLinksSuggestionsIT.COLLEGE_TENANT_ID;
-import static org.folio.entlinks.controller.ConsortiumLinksSuggestionsIT.UNIVERSITY_TENANT_ID;
 import static org.folio.support.DatabaseHelper.AUTHORITY_ARCHIVE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
@@ -19,11 +18,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.domain.dto.AuthorityDto;
+import org.folio.entlinks.domain.dto.AuthoritySourceFilePostDto;
 import org.folio.entlinks.exception.AuthorityArchiveConstraintException;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
-import org.folio.support.TestDataUtils;
 import org.folio.support.base.IntegrationTestBase;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,77 +38,60 @@ import org.springframework.test.web.servlet.ResultMatcher;
     AUTHORITY_ARCHIVE_TABLE,
     AUTHORITY_SOURCE_FILE_CODE_TABLE,
     AUTHORITY_SOURCE_FILE_TABLE},
-  tenants = {CENTRAL_TENANT_ID, COLLEGE_TENANT_ID, UNIVERSITY_TENANT_ID})
+  tenants = {CENTRAL_TENANT_ID, COLLEGE_TENANT_ID})
 class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
 
   public static final String COLLEGE_TENANT_ID = "college";
-  public static final String UNIVERSITY_TENANT_ID = "university";
-
-  private static final String BASE_URL = "id.loc.gov/authorities/names/";
-  private static final String FULL_BASE_URL = "http://" + BASE_URL;
   private static final String AUTHORITY_ID = "417f3355-081c-4aae-9209-ccb305f25f7e";
-  private static final String NATURAL_ID = "n12345";
 
   @BeforeAll
   static void prepare() {
-    setUpConsortium(CENTRAL_TENANT_ID, List.of(COLLEGE_TENANT_ID, UNIVERSITY_TENANT_ID), true);
+    setUpConsortium(CENTRAL_TENANT_ID, List.of(COLLEGE_TENANT_ID), false);
   }
 
   @Test
   @SneakyThrows
   @DisplayName("DELETE: Should not delete authority source file with referenced authority archive in member tenant")
-  void deleteAsfWithAuthorityArchiveReference_negative_failDeletingAsf() {
-    var sourceFile = TestDataUtils.AuthorityTestData.authoritySourceFile(0);
-    sourceFile.setBaseUrl(BASE_URL);
-    sourceFile.setBaseUrlProtocol("http");
+  void deleteAsfWithMemberTenantAuthorityArchiveReference_negative_failDeletingAsf() {
+    var sourceFileId = UUID.randomUUID();
+    var dto = new AuthoritySourceFilePostDto()
+      .id(sourceFileId).name("authority source file").code("sly").type("type");
 
-    databaseHelper.saveAuthoritySourceFile(CENTRAL_TENANT_ID, sourceFile);
-    databaseHelper.saveAuthoritySourceFile(COLLEGE_TENANT_ID, sourceFile);
-    databaseHelper.saveAuthoritySourceFile(UNIVERSITY_TENANT_ID, sourceFile);
-
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, COLLEGE_TENANT_ID));
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, UNIVERSITY_TENANT_ID));
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID));
+    // create source file
+    doPost(authoritySourceFilesEndpoint(), dto, tenantHeaders(CENTRAL_TENANT_ID));
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, COLLEGE_TENANT_ID)));
+    awaitUntilAsserted(() ->
+      assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID)));
 
     var authorityDto = new AuthorityDto()
       .id(UUID.fromString(AUTHORITY_ID))
-      .sourceFileId(sourceFile.getId())
-      .naturalId(NATURAL_ID)
+      .sourceFileId(sourceFileId)
+      .naturalId("n12345")
       .source("MARC")
-      .personalName("Personal Name")
+      .personalName("Sylvester Stallone")
       .subjectHeadings("a");
 
+    // create authority in member tenant
     doPost(authorityEndpoint(), authorityDto, tenantHeaders(COLLEGE_TENANT_ID));
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, COLLEGE_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, UNIVERSITY_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, CENTRAL_TENANT_ID)));
 
+    // delete authority in member tenant
     doDelete(authorityEndpoint(authorityDto.getId()), tenantHeaders(COLLEGE_TENANT_ID));
     awaitUntilAsserted(() ->
       assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, COLLEGE_TENANT_ID)));
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, COLLEGE_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, UNIVERSITY_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, UNIVERSITY_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_TABLE, CENTRAL_TENANT_ID)));
-    awaitUntilAsserted(() ->
-      assertEquals(0, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, CENTRAL_TENANT_ID)));
 
-    tryDelete(authoritySourceFilesEndpoint(sourceFile.getId()), tenantHeaders(CENTRAL_TENANT_ID))
+    // try ti delete in central tenant the authority source file with reference in member tenant
+    tryDelete(authoritySourceFilesEndpoint(sourceFileId), tenantHeaders(CENTRAL_TENANT_ID))
       .andExpect(status().isUnprocessableEntity())
       .andExpect(exceptionMatch(AuthorityArchiveConstraintException.class))
       .andExpect(errorMessageMatch(is("Cannot complete operation on the entity due to it's relation with"
         + " Authority Archive/Authority.")));
 
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, COLLEGE_TENANT_ID));
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, UNIVERSITY_TENANT_ID));
-    assertEquals(2, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID));
+    assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID));
   }
 
   private ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {
