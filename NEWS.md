@@ -1,3 +1,9 @@
+## v2.0.6 2024-04-10
+### Bug fixes
+* Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
+
+---
+
 ## v2.0.5 2024-03-12
 ## Bug fixes
 * Use generic topic name instead of creating new for each tenant ([MODELINKS-213](https://issues.folio.org/browse/MODELINKS-213))
