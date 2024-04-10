@@ -39,8 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthoritySourceFileService {
 
   private static final String AUTHORITY_SEQUENCE_NAME_TEMPLATE = "hrid_authority_local_file_%s_seq";
-  private static final String AUTHORITY_TABLE_NAME = "authority";
-  private static final String AUTHORITY_ARCHIVE_TABLE_NAME = "authority_archive";
   private final AuthoritySourceFileRepository repository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
@@ -168,15 +166,7 @@ public class AuthoritySourceFileService {
     return authorityRepository.existsAuthorityByAuthoritySourceFileId(sourceFileId);
   }
 
-  public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId) {
-    return hasExistingData(sourceFileId, tenantId, AUTHORITY_TABLE_NAME);
-  }
-
-  public boolean authorityArchivesExistForSourceFile(UUID sourceFileId, String tenantId) {
-    return hasExistingData(sourceFileId, tenantId, AUTHORITY_ARCHIVE_TABLE_NAME);
-  }
-
-  private boolean hasExistingData(UUID sourceFileId, String tenantId, String tableName) {
+  public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId, String tableName) {
     if (sourceFileId == null || tenantId == null) {
       return false;
     }

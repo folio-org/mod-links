@@ -41,6 +41,8 @@ import org.springframework.stereotype.Service;
 public class AuthoritySourceFileServiceDelegate {
 
   private static final String URL_PROTOCOL_PATTERN = "^(https?://www\\.|https?://|www\\.)";
+  private static final String AUTHORITY_TABLE_NAME = "authority";
+  private static final String AUTHORITY_ARCHIVE_TABLE_NAME = "authority_archive";
 
   private final AuthoritySourceFileService service;
   private final AuthoritySourceFileMapper mapper;
@@ -100,7 +102,11 @@ public class AuthoritySourceFileServiceDelegate {
       throw new RequestBodyValidationException(
         "Unable to delete. Authority source file has referenced authorities", Collections.emptyList());
     }
-    validateNoReferencesForSourceFile(entity);
+
+    if (anyReferenceForSourceFile(entity)) {
+      throw new AuthorityArchiveConstraintException(
+        "Unable to delete. Authority source file has referenced authority archives");
+    }
 
     if (entity.getSequenceName() != null) {
       service.deleteSequence(entity.getSequenceName());
@@ -164,15 +170,8 @@ public class AuthoritySourceFileServiceDelegate {
     }
   }
 
-  public void validateNoReferencesForSourceFile(AuthoritySourceFile sourceFile) {
-    var sourceFileId = sourceFile.getId();
-
-    var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
-    for (String memberTenant : consortiumTenants) {
-      if (service.authorityArchivesExistForSourceFile(sourceFileId, memberTenant)) {
-        throw new AuthorityArchiveConstraintException();
-      }
-    }
+  public boolean anyReferenceForSourceFile(AuthoritySourceFile sourceFile) {
+    return anyDataExistForSourceFile(sourceFile.getId(), AUTHORITY_ARCHIVE_TABLE_NAME);
   }
 
   public boolean anyAuthoritiesExistForSourceFile(AuthoritySourceFile sourceFile) {
@@ -180,14 +179,16 @@ public class AuthoritySourceFileServiceDelegate {
     if (service.authoritiesExistForSourceFile(sourceFileId)) {
       return true;
     }
+    return anyDataExistForSourceFile(sourceFileId, AUTHORITY_TABLE_NAME);
+  }
 
+  private boolean anyDataExistForSourceFile(UUID sourceFileId, String tableName) {
     var consortiumTenants = consortiumTenantsService.getConsortiumTenants(context.getTenantId());
     for (String memberTenant : consortiumTenants) {
-      if (service.authoritiesExistForSourceFile(sourceFileId, memberTenant)) {
+      if (service.authoritiesExistForSourceFile(sourceFileId, memberTenant, tableName)) {
         return true;
       }
     }
-
     return false;
   }
 

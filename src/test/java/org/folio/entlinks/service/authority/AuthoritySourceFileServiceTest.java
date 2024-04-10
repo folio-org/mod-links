@@ -469,7 +469,7 @@ class AuthoritySourceFileServiceTest {
     when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class))).thenReturn(true);
     var captor = ArgumentCaptor.forClass(String.class);
 
-    var actual = service.authoritiesExistForSourceFile(id, tenant);
+    var actual = service.authoritiesExistForSourceFile(id, tenant, "authority");
 
     assertThat(actual).isEqualTo(expected);
     verify(jdbcTemplate).queryForObject(captor.capture(), eq(Boolean.class));
