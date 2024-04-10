@@ -1,3 +1,7 @@
+## v3.0.1 2024-04-11
+### Bug fixes
+* Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
+
 ## v3.0.0 2024-03-19
 ### Breaking changes
 * Delete PUT endpoint from authority-source-files api([MODELINKS-161](https://issues.folio.org/browse/MODELINKS-161))

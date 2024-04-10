@@ -26,7 +26,7 @@
     </sonar.exclusions>
 
     <folio-spring-support.version>8.1.0</folio-spring-support.version>
-    <folio-service-tools.version>4.0.0</folio-service-tools.version>
+    <folio-service-tools.version>4.0.1</folio-service-tools.version>
     <folio-s3-client.version>2.1.0</folio-s3-client.version>
     <aws-sdk-java.version>2.25.12</aws-sdk-java.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
