@@ -201,7 +201,7 @@ class AuthoritySourceFileServiceDelegateTest {
     if (!authoritiesReferencedAtCentral) {
       when(context.getTenantId()).thenReturn("central");
       when(consortiumTenantsService.getConsortiumTenants("central")).thenReturn(List.of("member"));
-      when(service.authoritiesExistForSourceFile(id, "member")).thenReturn(authoritiesReferencedAtMember);
+      when(service.authoritiesExistForSourceFile(id, "member", "authority")).thenReturn(authoritiesReferencedAtMember);
     }
     var dto = new AuthoritySourceFilePatchDto()
         .name("name").type("type").selectable(true).version(1).baseUrl("baseUrl").code("a")
@@ -267,7 +267,7 @@ class AuthoritySourceFileServiceDelegateTest {
     when(context.getTenantId()).thenReturn(TENANT_ID);
     when(service.authoritiesExistForSourceFile(id)).thenReturn(false);
     when(consortiumTenantsService.getConsortiumTenants(anyString())).thenReturn(List.of("college"));
-    when(service.authoritiesExistForSourceFile(id, "college")).thenReturn(true);
+    when(service.authoritiesExistForSourceFile(id, "college", "authority")).thenReturn(true);
 
     var exc = assertThrows(RequestBodyValidationException.class,
         () -> delegate.deleteAuthoritySourceFileById(id));
