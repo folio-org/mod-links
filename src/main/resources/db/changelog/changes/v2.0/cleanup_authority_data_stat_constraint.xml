@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="MODELINKS-234@@cleanup-authority_data_stat-foreign-key" author="Pavlo_Smahin">
+    <preConditions onFail="MARK_RAN">
+      <foreignKeyConstraintExists foreignKeyName="fk_authority_data_stat_authority_id"
+                                  schemaName="${database.defaultSchemaName}"
+                                  foreignKeyTableName="authority_data_stat"/>
+    </preConditions>
+
+    <comment>Cleanup fk_authority_data_stat_authority_id constraint from authority_data_stat table</comment>
+    <dropForeignKeyConstraint baseTableName="authority_data_stat" constraintName="fk_authority_data_stat_authority_id"/>
+  </changeSet>
+
+</databaseChangeLog>
