@@ -166,13 +166,13 @@ public class AuthoritySourceFileService {
     return authorityRepository.existsAuthorityByAuthoritySourceFileId(sourceFileId);
   }
 
-  public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId) {
+  public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId, String tableName) {
     if (sourceFileId == null || tenantId == null) {
       return false;
     }
 
-    var command = String.format("select exists (select true from %s.authority a where a.source_file_id='%s' limit 1)",
-        moduleMetadata.getDBSchemaName(tenantId), sourceFileId);
+    var command = String.format("select exists (select true from %s.%s a where a.source_file_id='%s' limit 1)",
+        moduleMetadata.getDBSchemaName(tenantId), tableName, sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
 

@@ -39,7 +39,7 @@ services:
     ports:
       - "9130:8080"
     volumes:
-      - ../src/test/resources/mappings:/home/wiremock/mappings
+      - ./mappings:/home/wiremock/mappings
 
   zookeeper:
     container_name: zookeeper_mod-entities-links

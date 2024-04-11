@@ -11,6 +11,7 @@
 
 ### Bug fixes
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
+* Add checking for Authority source file references for member tenant in ECS ([MODELINKS-227](https://issues.folio.org/browse/MODELINKS-227))
 
 ### Tech Dept
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
