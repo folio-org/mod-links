@@ -15,4 +15,4 @@ updates:
         dependency-type: "development"
     ignore:
       - dependency-name: hibernate-core
-        versions: [ ">=6.5.1" ]
+        versions: [ ">=6.3.1" ]
