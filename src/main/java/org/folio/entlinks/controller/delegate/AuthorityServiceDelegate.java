@@ -15,7 +15,9 @@ import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityBulkRequest;
 import org.folio.entlinks.domain.dto.AuthorityBulkResponse;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityFullDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.exception.RequestBodyValidationException;
@@ -61,12 +63,12 @@ public class AuthorityServiceDelegate {
     this.authorityS3Service = authorityS3Service;
   }
 
-  public AuthorityDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery,
-                                                            Boolean idOnly) {
+  public AuthorityFullDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery,
+                                                                Boolean idOnly) {
     if (Boolean.TRUE.equals(idOnly)) {
       var entities = service.getAllIds(offset, limit, cqlQuery)
-        .map(id -> new AuthorityDto().id(id)).stream().toList();
-      return new AuthorityDtoCollection(entities, entities.size());
+        .map(id -> new AuthorityIdDto().id(id)).toList();
+      return new AuthorityIdDtoCollection(entities, entities.size());
     }
 
     var entitiesPage = service.getAll(offset, limit, cqlQuery)

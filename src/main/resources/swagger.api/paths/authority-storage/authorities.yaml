@@ -48,7 +48,10 @@ get:
         application/json:
           example: examples/authorities.sample
           schema:
-            $ref: '../../schemas/authority-storage/authorityDtoCollection.yaml'
+            title: authorityFullDtoCollection
+            oneOf:
+              - $ref: '../../schemas/authority-storage/authorityDtoCollection.yaml'
+              - $ref: '../../schemas/authority-storage/authorityIdDtoCollection.yaml'
         text/plain;charset=utf-8:
           schema:
             type: string
