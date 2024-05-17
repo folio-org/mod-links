@@ -12,7 +12,9 @@ import org.folio.entlinks.controller.delegate.AuthorityServiceDelegate;
 import org.folio.entlinks.domain.dto.AuthorityBulkRequest;
 import org.folio.entlinks.domain.dto.AuthorityBulkResponse;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityFullDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.rest.resource.AuthorityStorageApi;
 import org.folio.tenant.domain.dto.Parameter;
@@ -93,16 +95,16 @@ public class AuthorityController implements AuthorityStorageApi {
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
 
-  private ResponseEntity<Object> getAuthoritiesCollectionResponse(AuthorityDtoCollection collectionDto,
+  private ResponseEntity<Object> getAuthoritiesCollectionResponse(AuthorityFullDtoCollection collectionDto,
                                                                   List<String> acceptingMediaTypes,
                                                                   Boolean idOnly) {
     var headers = new HttpHeaders();
     if (Boolean.TRUE.equals(idOnly) && CollectionUtils.isNotEmpty(acceptingMediaTypes)
-        && acceptingMediaTypes.contains(TEXT_PLAIN_VALUE)) {
+      && acceptingMediaTypes.contains(TEXT_PLAIN_VALUE)) {
       headers.setContentType(MediaType.TEXT_PLAIN);
       return new ResponseEntity<>(
-        collectionDto.getAuthorities().stream()
-          .map(AuthorityDto::getId)
+        ((AuthorityIdDtoCollection) collectionDto).getAuthorities().stream()
+          .map(AuthorityIdDto::getId)
           .map(UUID::toString)
           .collect(Collectors.joining(System.lineSeparator())),
         headers,

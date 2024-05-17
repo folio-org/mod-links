@@ -1,0 +1,7 @@
+description: An authority ID record
+type: object
+properties:
+  id:
+    description: Authority UUID
+    type: string
+    format: uuid

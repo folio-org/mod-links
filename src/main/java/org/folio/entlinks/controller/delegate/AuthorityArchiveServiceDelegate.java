@@ -8,8 +8,9 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.client.SettingsClient;
 import org.folio.entlinks.config.properties.AuthorityArchiveProperties;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
-import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityFullDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
@@ -37,12 +38,12 @@ public class AuthorityArchiveServiceDelegate {
   private final AuthorityMapper authorityMapper;
   private final FolioExecutionContext context;
 
-  public AuthorityDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
-                                                          Boolean idOnly) {
+  public AuthorityFullDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
+                                                              Boolean idOnly) {
     if (Boolean.TRUE.equals(idOnly)) {
       var entities = authorityArchiveService.getAllIds(offset, limit, cqlQuery)
-        .map(id -> new AuthorityDto().id(id)).stream().toList();
-      return new AuthorityDtoCollection(entities, entities.size());
+        .map(id -> new AuthorityIdDto().id(id)).toList();
+      return new AuthorityIdDtoCollection(entities, entities.size());
     }
 
     var entitiesPage = authorityArchiveService.getAll(offset, limit, cqlQuery)
@@ -81,7 +82,7 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     if (expireSetting.isPresent() && expireSetting.get().value() != null
-        && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
+      && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
       log.info("Authority archives expiration is disabled for the tenant through setting");
       return Optional.empty();
     }

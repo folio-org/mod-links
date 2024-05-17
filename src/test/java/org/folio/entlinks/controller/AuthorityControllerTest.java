@@ -14,6 +14,8 @@ import org.folio.entlinks.controller.delegate.AuthorityArchiveServiceDelegate;
 import org.folio.entlinks.controller.delegate.AuthorityServiceDelegate;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoCollection;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeAll;
@@ -71,7 +73,9 @@ class AuthorityControllerTest {
 
   @Test
   void shouldRetrieveAuthoritiesIds() {
-    var collectionDto = new AuthorityDtoCollection(List.of(dto, dto), 1);
+    var collectionDto = new AuthorityIdDtoCollection(List.of(
+      new AuthorityIdDto().id(dto.getId()),
+      new AuthorityIdDto().id(dto.getId())), 2);
     when(authorityServiceDelegate.retrieveAuthorityCollection(anyInt(), anyInt(), anyString(), anyBoolean()))
         .thenReturn(collectionDto);
 
@@ -98,7 +102,9 @@ class AuthorityControllerTest {
 
   @Test
   void shouldRetrieveAuthorityArchivesIds() {
-    var collectionDto = new AuthorityDtoCollection(List.of(dto, dto), 1);
+    var collectionDto = new AuthorityIdDtoCollection(List.of(
+      new AuthorityIdDto().id(dto.getId()),
+      new AuthorityIdDto().id(dto.getId())), 1);
     when(authorityArchiveServiceDelegate.retrieveAuthorityArchives(anyInt(), anyInt(), anyString(), anyBoolean()))
         .thenReturn(collectionDto);
 
