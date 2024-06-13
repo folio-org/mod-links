@@ -1,5 +1,6 @@
 package org.folio.entlinks.controller.delegate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService.PropagationType.CREATE;
 import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService.PropagationType.DELETE;
 import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService.PropagationType.UPDATE;
@@ -15,12 +16,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthorityService;
@@ -35,6 +39,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -60,6 +66,26 @@ class AuthorityServiceDelegateTest {
   void setUp() {
     lenient().when(context.getTenantId()).thenReturn(TENANT_ID);
     lenient().when(userTenantsService.getCentralTenant(any())).thenReturn(Optional.empty());
+  }
+
+  @Test
+  void shouldRetrieveAuthorityCollection_idsOnly() {
+    var offset = 0;
+    var limit = 2;
+    var cql = "query";
+    var total = 5;
+    var page = new PageImpl<>(List.of(UUID.randomUUID(), UUID.randomUUID()), Pageable.unpaged(), total);
+
+    when(service.getAllIds(offset, limit, cql)).thenReturn(page);
+
+    var result = delegate.retrieveAuthorityCollection(offset, limit, cql, true);
+
+    assertThat(result).isInstanceOf(AuthorityIdDtoCollection.class);
+    var dtoResult = (AuthorityIdDtoCollection) result;
+    assertThat(dtoResult.getTotalRecords()).isEqualTo(total);
+    assertThat(dtoResult.getAuthorities())
+      .extracting(AuthorityIdDto::getId)
+      .containsExactlyElementsOf(page.getContent());
   }
 
   @Test

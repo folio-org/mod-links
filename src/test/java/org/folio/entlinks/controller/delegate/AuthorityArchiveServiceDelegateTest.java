@@ -1,5 +1,6 @@
 package org.folio.entlinks.controller.delegate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.entlinks.client.SettingsClient.AuthoritiesExpirationSettingValue;
 import static org.folio.entlinks.integration.SettingsService.AUTHORITIES_EXPIRE_SETTING_KEY;
 import static org.folio.entlinks.integration.SettingsService.AUTHORITIES_EXPIRE_SETTING_SCOPE;
@@ -12,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -19,6 +21,8 @@ import org.folio.entlinks.client.SettingsClient;
 import org.folio.entlinks.config.properties.AuthorityArchiveProperties;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDto;
+import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.repository.AuthorityArchiveRepository;
 import org.folio.entlinks.integration.SettingsService;
@@ -33,13 +37,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class AuthorityArchiveServiceDelegateTest {
 
   @Mock
-  private AuthorityArchiveService authorityArchiveService;
+  private AuthorityArchiveService service;
 
   @Mock
   private SettingsService settingsService;
@@ -66,6 +72,26 @@ class AuthorityArchiveServiceDelegateTest {
   private AuthorityArchiveServiceDelegate delegate;
 
   @Test
+  void shouldRetrieveAuthorityCollection_idsOnly() {
+    var offset = 0;
+    var limit = 2;
+    var cql = "query";
+    var total = 5;
+    var page = new PageImpl<>(List.of(UUID.randomUUID(), UUID.randomUUID()), Pageable.unpaged(), total);
+
+    when(service.getAllIds(offset, limit, cql)).thenReturn(page);
+
+    var result = delegate.retrieveAuthorityArchives(offset, limit, cql, true);
+
+    assertThat(result).isInstanceOf(AuthorityIdDtoCollection.class);
+    var dtoResult = (AuthorityIdDtoCollection) result;
+    assertThat(dtoResult.getTotalRecords()).isEqualTo(total);
+    assertThat(dtoResult.getAuthorities())
+      .extracting(AuthorityIdDto::getId)
+      .containsExactlyElementsOf(page.getContent());
+  }
+
+  @Test
   void shouldNotExpireAuthorityArchivesWhenOperationDisabledBySettings() {
     var setting = new SettingsClient.SettingEntry(UUID.randomUUID(), AUTHORITIES_EXPIRE_SETTING_SCOPE,
         AUTHORITIES_EXPIRE_SETTING_KEY, new AuthoritiesExpirationSettingValue(false, null));
@@ -73,7 +99,7 @@ class AuthorityArchiveServiceDelegateTest {
 
     delegate.expire();
 
-    verifyNoInteractions(authorityArchiveService);
+    verifyNoInteractions(service);
     verifyNoInteractions(authorityArchiveRepository);
   }
 
@@ -90,7 +116,7 @@ class AuthorityArchiveServiceDelegateTest {
 
     delegate.expire();
 
-    verify(authorityArchiveService).delete(archive);
+    verify(service).delete(archive);
     verify(eventPublisher).publishHardDeleteEvent(dto);
     verify(propagationService)
         .propagate(archive, ConsortiumPropagationService.PropagationType.DELETE, "tenantId");
@@ -110,7 +136,7 @@ class AuthorityArchiveServiceDelegateTest {
 
     delegate.expire();
 
-    verify(authorityArchiveService).delete(archive);
+    verify(service).delete(archive);
     verify(eventPublisher).publishHardDeleteEvent(dto);
     verify(propagationService)
         .propagate(archive, ConsortiumPropagationService.PropagationType.DELETE, "tenantId");
