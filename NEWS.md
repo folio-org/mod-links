@@ -13,6 +13,7 @@
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
 * Add checking for Authority source file references for member tenant in ECS ([MODELINKS-227](https://issues.folio.org/browse/MODELINKS-227))
 * Return only ids in response when idOnly=true ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
+* Fix totalRecords count when idOnly=true ([MODELINKS-239](https://issues.folio.org/browse/MODELINKS-239))
 
 ### Tech Dept
 * Fix issue that causes repeated update of same entity with latest Hibernate versions ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
