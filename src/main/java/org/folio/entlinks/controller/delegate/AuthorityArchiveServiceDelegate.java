@@ -41,9 +41,9 @@ public class AuthorityArchiveServiceDelegate {
   public AuthorityFullDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
                                                               Boolean idOnly) {
     if (Boolean.TRUE.equals(idOnly)) {
-      var entities = authorityArchiveService.getAllIds(offset, limit, cqlQuery)
-        .map(id -> new AuthorityIdDto().id(id)).toList();
-      return new AuthorityIdDtoCollection(entities, entities.size());
+      var idsPage = authorityArchiveService.getAllIds(offset, limit, cqlQuery);
+      var ids = idsPage.map(id -> new AuthorityIdDto().id(id)).toList();
+      return new AuthorityIdDtoCollection(ids, (int) idsPage.getTotalElements());
     }
 
     var entitiesPage = authorityArchiveService.getAll(offset, limit, cqlQuery)

@@ -66,9 +66,9 @@ public class AuthorityServiceDelegate {
   public AuthorityFullDtoCollection retrieveAuthorityCollection(Integer offset, Integer limit, String cqlQuery,
                                                                 Boolean idOnly) {
     if (Boolean.TRUE.equals(idOnly)) {
-      var entities = service.getAllIds(offset, limit, cqlQuery)
-        .map(id -> new AuthorityIdDto().id(id)).toList();
-      return new AuthorityIdDtoCollection(entities, entities.size());
+      var idsPage = service.getAllIds(offset, limit, cqlQuery);
+      var ids = idsPage.map(id -> new AuthorityIdDto().id(id)).toList();
+      return new AuthorityIdDtoCollection(ids, (int) idsPage.getTotalElements());
     }
 
     var entitiesPage = service.getAll(offset, limit, cqlQuery)
