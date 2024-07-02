@@ -1,9 +1,11 @@
 package org.folio.entlinks.service.messaging.authority.handler;
 
 import static java.util.Collections.emptyList;
+import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType.DELETE;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
 import org.folio.entlinks.service.authority.AuthorityService;
@@ -42,11 +44,17 @@ public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler
         .toList();
 
     var authorityIds = linksEvents.stream().map(LinksChangeEvent::getAuthorityId).collect(Collectors.toSet());
-    var softDeleteAuthorityIds = changes.stream().map(AuthorityChangeHolder::getAuthorityId).toList();
+    var softDeleteAuthorityIds = changes.stream()
+        .filter(change -> change.getChangeType().equals(DELETE))
+        .map(AuthorityChangeHolder::getAuthorityId)
+        .toList();
+
     // delete the links
     linkingService.deleteByAuthorityIdIn(authorityIds);
-    // hard delete the authorities
-    authorityService.deleteByIds(softDeleteAuthorityIds);
+    if (CollectionUtils.isNotEmpty(softDeleteAuthorityIds)) {
+      // hard delete authorities
+      authorityService.deleteByIds(softDeleteAuthorityIds);
+    }
     return linksEvents;
   }
 
@@ -57,7 +65,7 @@ public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler
 
   @Override
   public AuthorityChangeType supportedAuthorityChangeType() {
-    return AuthorityChangeType.DELETE;
+    return DELETE;
   }
 
 }
