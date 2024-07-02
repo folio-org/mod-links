@@ -176,6 +176,38 @@ class InstanceAuthorityLinkUpdateServiceTest {
   }
 
   @Test
+  void handleAuthoritiesChanges_positive_shouldHandleHeadingTypeChangeUpdateEventAndSendDeleteLinksChangeEvent() {
+    var id = UUID.randomUUID();
+    final var authorityEvents = List.of(
+        new AuthorityDomainEvent(
+            id,
+            new AuthorityDto().naturalId("n12345").corporateName("Beatles"),
+            new AuthorityDto().naturalId("n12345").corporateNameTitle("Beatles mono"),
+            DomainEventType.UPDATE,
+            TENANT_ID)
+    );
+    var changeEvent = new LinksChangeEvent().type(LinksChangeEvent.TypeEnum.DELETE);
+    when(linkingService.countLinksByAuthorityIds(Set.of(id))).thenReturn(Map.of(id, 1));
+    when(deleteHandler.handle(changeHolderCaptor.capture())).thenReturn(List.of(changeEvent));
+    when(folioExecutionContext.getTenantId()).thenReturn(TENANT_ID);
+
+    service.handleAuthoritiesChanges(authorityEvents);
+
+    verify(updateHandler).supportedAuthorityChangeType();
+    verify(deleteHandler).supportedAuthorityChangeType();
+    verifyNoMoreInteractions(updateHandler);
+    verify(eventProducer, times(1)).sendMessages(eventCaptor.capture());
+    var changeHolders = changeHolderCaptor.getAllValues().stream().flatMap(Collection::stream).toList();
+    assertThat(changeHolders)
+        .hasSize(1)
+        .extracting(AuthorityChangeHolder::getNumberOfLinks)
+        .containsExactlyInAnyOrder(1);
+    var messages = eventCaptor.getAllValues().stream().flatMap(Collection::stream).toList();
+    assertThat(messages).hasSize(1);
+    assertThat(messages.get(0).getType()).isEqualTo(LinksChangeEvent.TypeEnum.DELETE);
+  }
+
+  @Test
   void handleAuthoritiesChanges_positive_updateEventOnConsortiumCentralTenant() {
     final var id = UUID.randomUUID();
     final var authorityEvents = List.of(

@@ -44,6 +44,7 @@
 * Add new error code to handle authority source file deletion after authority deletion ([MODELINKS-210](https://issues.folio.org/browse/MODELINKS-210))
 * Fix authority record update and `updatedByUserId` field assignment ([MODELINKS-219](https://issues.folio.org/browse/MODELINKS-219))
 * Fix saving of Authority file with empty Base URL when another Authority file with empty Base URL already exists ([MODELINKS-216](https://issues.folio.org/browse/MODELINKS-216))
+* Fix handling of authority heading type change update event ([MODELINKS-242](https://issues.folio.org/browse/MODELINKS-242))
 
 ### Tech Dept
 * Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))
