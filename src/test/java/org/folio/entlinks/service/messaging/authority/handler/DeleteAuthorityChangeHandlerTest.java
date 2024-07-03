@@ -5,6 +5,8 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.folio.entlinks.domain.dto.LinksChangeEvent.TypeEnum;
+import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField.CORPORATE_NAME;
+import static org.folio.entlinks.service.messaging.authority.model.AuthorityChangeField.CORPORATE_NAME_TITLE;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
@@ -30,6 +33,7 @@ import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthorityService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
+import org.folio.entlinks.service.messaging.authority.model.AuthorityChange;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeType;
 import org.folio.spring.testing.type.UnitTest;
@@ -113,7 +117,7 @@ class DeleteAuthorityChangeHandlerTest {
   }
 
   @Test
-  void handle_positive_shouldDeleteLinksOnlyOnHeadingTypeChangeUpdateEvent() {
+  void handle_positive_shouldDeleteLinksOnlyWithoutDeletingAuthoritiesOnHeadingTypeChangeUpdateEvent() {
     var id = UUID.randomUUID();
     var authorityDomainEvent = new AuthorityDomainEvent(
         id,
@@ -121,7 +125,11 @@ class DeleteAuthorityChangeHandlerTest {
         new AuthorityDto().naturalId("n12345").corporateNameTitle("Beatles mono"),
         DomainEventType.UPDATE,
         TENANT_ID);
-    var authorityEvents = List.of(new AuthorityChangeHolder(authorityDomainEvent, emptyMap(), emptyMap(), 1));
+    var changes = Map.of(
+        CORPORATE_NAME, new AuthorityChange(CORPORATE_NAME, null, "Beatles"),
+        CORPORATE_NAME_TITLE, new AuthorityChange(CORPORATE_NAME, "Beatles mono", null)
+    );
+    var authorityEvents = List.of(new AuthorityChangeHolder(authorityDomainEvent, changes, emptyMap(), 1));
     var link = TestDataUtils.Link.of(1, 1);
     var instanceId = UUID.randomUUID();
     doNothing().when(linkingService).deleteByAuthorityIdIn(Set.of(id));
