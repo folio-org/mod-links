@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.config.properties.InstanceAuthorityChangeProperties;
 import org.folio.entlinks.domain.dto.LinksChangeEvent;
+import org.folio.entlinks.integration.dto.event.DomainEventType;
 import org.folio.entlinks.service.authority.AuthorityService;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingService;
 import org.folio.entlinks.service.messaging.authority.model.AuthorityChangeHolder;
@@ -45,7 +46,7 @@ public class DeleteAuthorityChangeHandler extends AbstractAuthorityChangeHandler
 
     var authorityIds = linksEvents.stream().map(LinksChangeEvent::getAuthorityId).collect(Collectors.toSet());
     var softDeleteAuthorityIds = changes.stream()
-        .filter(change -> change.getChangeType().equals(DELETE))
+        .filter(change -> DomainEventType.DELETE.equals(change.getEvent().getType()))
         .map(AuthorityChangeHolder::getAuthorityId)
         .toList();
 
