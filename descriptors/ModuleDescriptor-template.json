@@ -667,6 +667,21 @@
       ]
     }
   ],
+  "metadata": {
+    "user": {
+      "type": "system",
+      "permissions": [
+        "inventory-storage.instances.item.get",
+        "inventory-storage.instances.item.put",
+        "mapping-metadata.get",
+        "mapping-rules.get",
+        "source-storage.sourceRecords.get",
+        "users.collection.get",
+        "user-tenants.collection.get",
+        "source-storage.records.fetch"
+      ]
+    }
+  },
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",
     "dockerPull": false,
