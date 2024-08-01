@@ -1,3 +1,7 @@
+## v3.0.2 2024-08-01
+### Bug fixes
+* Fix handling of authority heading type change update event ([MODELINKS-242](https://issues.folio.org/browse/MODELINKS-242))
+
 ## v3.0.1 2024-04-11
 ### Bug fixes
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
