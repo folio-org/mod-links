@@ -33,7 +33,7 @@ import org.folio.entlinks.domain.dto.AuthorityStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
 import org.folio.entlinks.domain.dto.ExternalIdsHolder;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.domain.dto.LinkAction;
@@ -279,7 +279,7 @@ public class TestDataUtils {
           subfields.add(Map.of("t", "test"));
         }
 
-        var field = Map.of(link.getLinkingRule().getAuthorityField(), new FieldContent().subfields(subfields));
+        var field = Map.of(link.getLinkingRule().getAuthorityField(), new FieldContentValue().subfields(subfields));
         var recordContent = new ParsedRecordContent(singletonList(field), "leader");
         var parsedRecord = new StrippedParsedRecordParsedRecord(recordContent);
 

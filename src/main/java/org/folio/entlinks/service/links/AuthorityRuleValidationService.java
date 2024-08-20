@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLink;
@@ -116,7 +116,8 @@ public class AuthorityRuleValidationService {
     return validateAuthoritySubfieldsExistence(rule, containsSubfield);
   }
 
-  private boolean validateAuthoritySubfieldsExistence(FieldContent authorityField, InstanceAuthorityLinkingRule rule) {
+  private boolean validateAuthoritySubfieldsExistence(FieldContentValue authorityField,
+                                                      InstanceAuthorityLinkingRule rule) {
     var authoritySubfields = authorityField.getSubfields();
     Predicate<String> containsSubfield = subfield -> authoritySubfields.stream()
       .anyMatch(subfields -> subfields.containsKey(subfield));

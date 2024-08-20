@@ -22,7 +22,7 @@ import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthoritySearchParameter;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
@@ -165,7 +165,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
   }
 
   private ParsedRecordContent getRecord(String bibField, LinkDetails linkDetails, Map<String, String> subfields) {
-    var field = new FieldContent();
+    var field = new FieldContentValue();
     field.setLinkDetails(linkDetails);
 
     subfields.forEach((key, value) -> field.addSubfieldsItem(Map.of(key, value)));

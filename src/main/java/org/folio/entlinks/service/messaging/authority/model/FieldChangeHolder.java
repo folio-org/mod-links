@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import org.bouncycastle.util.Arrays;
 import org.folio.entlinks.domain.dto.FieldChange;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.SubfieldChange;
 import org.folio.entlinks.domain.dto.SubfieldModification;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
@@ -34,7 +34,7 @@ public class FieldChangeHolder {
     this.authSubfields = getAuthSubfields(dataField.getSubfields());
   }
 
-  public FieldChangeHolder(FieldContent fieldContent, InstanceAuthorityLinkingRule linkingRule) {
+  public FieldChangeHolder(FieldContentValue fieldContent, InstanceAuthorityLinkingRule linkingRule) {
     this.linkingRule = linkingRule;
     this.bibField = linkingRule.getBibField();
     this.authSubfields = getAuthSubfieldsForContent(fieldContent.getSubfields());
