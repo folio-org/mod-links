@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
@@ -66,13 +66,13 @@ public interface SourceContentMapper {
     return new AuthorityParsedContent(authorityId, naturalId, leader, fields, sourceFileId);
   }
 
-  private List<Map<String, FieldContent>> convertFieldsToListOfMaps(List<FieldParsedContent> fields) {
+  private List<Map<String, FieldContentValue>> convertFieldsToListOfMaps(List<FieldParsedContent> fields) {
     return fields.stream()
       .map(this::convertParsedContent)
       .toList();
   }
 
-  private List<FieldParsedContent> convertFieldsToOneMap(List<Map<String, FieldContent>> fields) {
+  private List<FieldParsedContent> convertFieldsToOneMap(List<Map<String, FieldContentValue>> fields) {
     return fields.stream()
       .flatMap(map -> map.entrySet().stream())
       .map(this::convertFieldContent)
@@ -94,7 +94,7 @@ public interface SourceContentMapper {
       .collect(groupingBy(Map.Entry::getKey, LinkedHashMap::new, mapping(Map.Entry::getValue, Collectors.toList())));
   }
 
-  private FieldParsedContent convertFieldContent(Map.Entry<String, FieldContent> fieldContent) {
+  private FieldParsedContent convertFieldContent(Map.Entry<String, FieldContentValue> fieldContent) {
     var ind1 = fieldContent.getValue().getInd1();
     var ind2 = fieldContent.getValue().getInd2();
     var linkDetails = fieldContent.getValue().getLinkDetails();
@@ -103,13 +103,13 @@ public interface SourceContentMapper {
     return new FieldParsedContent(fieldContent.getKey(), ind1, ind2, subfields, linkDetails);
   }
 
-  private Map<String, FieldContent> convertParsedContent(FieldParsedContent field) {
+  private Map<String, FieldContentValue> convertParsedContent(FieldParsedContent field) {
     var ind1 = field.getInd1();
     var ind2 = field.getInd2();
     var linkDetails = field.getLinkDetails();
     var subfields = convertSubfieldsToListOfMaps(field.getSubfields());
 
-    var fieldContent = new FieldContent().ind1(ind1).ind2(ind2)
+    var fieldContent = new FieldContentValue().ind1(ind1).ind2(ind2)
       .linkDetails(linkDetails)
       .subfields(subfields);
 

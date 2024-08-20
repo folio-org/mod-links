@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.folio.entlinks.domain.dto.ExternalIdsHolder;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
@@ -39,7 +39,7 @@ class SourceContentMapperTest {
 
     assertThat(contentCollection.getRecords()).hasSize(1);
     assertThat(contentCollection.getRecords().get(0).getLeader()).isEqualTo(content.getLeader());
-    FieldContent tag = contentCollection.getRecords().get(0).getFields().get(0).get("tag");
+    FieldContentValue tag = contentCollection.getRecords().get(0).getFields().get(0).get("tag");
     assertThat(tag.getInd1()).isEqualTo(content.getFields().get(0).getInd1());
     assertThat(tag.getInd2()).isEqualTo(content.getFields().get(0).getInd2());
     var subFieldValue = content.getFields().get(0).getSubfields().get("a").get(0);
@@ -102,7 +102,7 @@ class SourceContentMapperTest {
     List<SourceParsedContent> resultList = mapper.convertToParsedContent(contentCollection);
 
     FieldParsedContent parsedContent = resultList.get(0).getFields().get(0);
-    Map<String, FieldContent> contentMap = record.getFields().get(0);
+    Map<String, FieldContentValue> contentMap = record.getFields().get(0);
     assertThat(resultList).hasSize(1);
     assertThat(resultList.get(0).getLeader()).isEqualTo(record.getLeader());
     assertThat(parsedContent.getInd1()).isEqualTo(contentMap.get("tag").getInd1());
@@ -129,12 +129,12 @@ class SourceContentMapperTest {
 
   @NotNull
   private static ParsedRecordContent createParsedRecordContent() {
-    FieldContent fieldContent = new FieldContent();
+    FieldContentValue fieldContent = new FieldContentValue();
     fieldContent.setInd1("ind1");
     fieldContent.setInd2("ind2");
     fieldContent.setSubfields(List.of(Map.of("a", "a1", "b", "b1")));
     fieldContent.setLinkDetails(new LinkDetails());
-    Map<String, FieldContent> fields = Map.of("tag", fieldContent);
+    Map<String, FieldContentValue> fields = Map.of("tag", fieldContent);
     return new ParsedRecordContent(List.of(fields), "leader");
   }
 

@@ -9,7 +9,6 @@
       "type": "array",
       "id": "strippedParsedRecordList",
       "items": {
-        "type": "object",
         "$ref": "strippedParsedRecord.json"
       }
     },

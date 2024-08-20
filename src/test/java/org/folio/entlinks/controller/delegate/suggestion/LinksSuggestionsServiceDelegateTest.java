@@ -18,7 +18,7 @@ import org.folio.entlinks.controller.converter.SourceContentMapper;
 import org.folio.entlinks.domain.dto.ExternalIdType;
 import org.folio.entlinks.domain.dto.FetchConditions;
 import org.folio.entlinks.domain.dto.FetchParsedRecordsBatchRequest;
-import org.folio.entlinks.domain.dto.FieldContent;
+import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.FieldRange;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
@@ -202,7 +202,7 @@ class LinksSuggestionsServiceDelegateTest {
   }
 
   private ParsedRecordContent getRecord(String bibField, Map<String, String> subfields) {
-    var field = new FieldContent();
+    var field = new FieldContentValue();
     field.setSubfields(List.of(subfields));
     field.setLinkDetails(new LinkDetails().authorityNaturalId(NATURAL_ID));
 
