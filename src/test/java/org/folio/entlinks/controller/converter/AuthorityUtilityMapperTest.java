@@ -2,17 +2,25 @@ package org.folio.entlinks.controller.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.BROADER_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.EARLIER_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.LATER_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.NARROWER_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.SAFT_TERM;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.SFT_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
 import static org.folio.support.base.TestConstants.TEST_STRING;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -24,6 +32,7 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.spring.testing.type.UnitTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -181,6 +190,124 @@ class AuthorityUtilityMapperTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("additionalHeadingTypeAndValuesProvider")
+  void testExtractAuthorityAdditionalHeadingsWithNonNullValues(String propertyType, List<String> propertyValues) {
+    switch (propertyType) {
+      case BROADER_TERM -> source.setBroaderTerm(propertyValues);
+      case NARROWER_TERM -> source.setNarrowerTerm(propertyValues);
+      case EARLIER_HEADING -> source.setEarlierHeading(propertyValues);
+      case LATER_HEADING -> source.setLaterHeading(propertyValues);
+      case SAFT_TERM -> source.setSaftTerm(propertyValues);
+      case SFT_TERM -> source.setSftTerm(propertyValues);
+      default -> fail("Invalid heading type - {} cannot be mapped", propertyType);
+    }
+
+    AuthorityUtilityMapper.extractAuthorityAdditionalHeadings(source, target);
+
+    List<HeadingRef> additionalHeadings = target.getAdditionalHeadings();
+    String[] targetHeadingValues = additionalHeadings.stream().map(HeadingRef::getHeading).toArray(String[]::new);
+    assertThat(additionalHeadings).hasSize(propertyValues.size());
+    additionalHeadings.forEach(a -> assertEquals(propertyType, a.getHeadingType()));
+    assertArrayEquals(propertyValues.toArray(), targetHeadingValues);
+  }
+
+  @ParameterizedTest
+  @MethodSource("additionalHeadingTypeAndValuesProvider")
+  void testExtractAuthorityAdditionalHeadingsWithNullValues(String propertyType, List<String> propertyValues) {
+    switch (propertyType) {
+      case BROADER_TERM -> source.setBroaderTerm(null);
+      case NARROWER_TERM -> source.setNarrowerTerm(null);
+      case EARLIER_HEADING -> source.setEarlierHeading(null);
+      case LATER_HEADING -> source.setLaterHeading(null);
+      case SAFT_TERM -> source.setSaftTerm(null);
+      case SFT_TERM -> source.setSftTerm(null);
+      default -> fail("Invalid heading type - {} cannot be mapped", propertyType);
+    }
+
+    AuthorityUtilityMapper.extractAuthorityAdditionalHeadings(source, target);
+
+    assertThat(target.getAdditionalHeadings()).isEmpty();
+  }
+
+  @Test
+  void testExtractAuthorityAdditionalHeadingsWithMixedHeadingTypes() {
+    source.setBroaderTerm(List.of("boarderTerm1", "boarderTerm2"));
+    source.setNarrowerTerm(List.of("narrowerTerm"));
+    source.setEarlierHeading(List.of("earlierHeading"));
+    source.setLaterHeading(List.of("laterHeading"));
+    source.setSftTerm(List.of("sftTerm1", "sftTerm2", "sftTerm3"));
+    source.setSaftTerm(List.of("saftTerm1", "saftTerm2"));
+
+    AuthorityUtilityMapper.extractAuthorityAdditionalHeadings(source, target);
+
+    List<HeadingRef> additionalHeadings = target.getAdditionalHeadings();
+    String[] targetHeadingTypes = additionalHeadings.stream().map(HeadingRef::getHeadingType).toArray(String[]::new);
+    String[] targetHeadingValues = additionalHeadings.stream().map(HeadingRef::getHeading).toArray(String[]::new);
+    assertThat(additionalHeadings).hasSize(10);
+    assertArrayEquals(new String[]{BROADER_TERM, BROADER_TERM, NARROWER_TERM, EARLIER_HEADING, LATER_HEADING, SFT_TERM,
+      SFT_TERM, SFT_TERM, SAFT_TERM, SAFT_TERM}, targetHeadingTypes);
+    assertArrayEquals(new String[]{"boarderTerm1", "boarderTerm2", "narrowerTerm", "earlierHeading", "laterHeading",
+      "sftTerm1", "sftTerm2", "sftTerm3", "saftTerm1", "saftTerm2"}, targetHeadingValues);
+  }
+
+  @ParameterizedTest
+  @MethodSource("additionalHeadingTypeAndValuesProvider")
+  void testExtractAuthorityDtoAdditionalHeadingsWithNonNullValues(String headingType, List<String> headingValues) {
+    List<HeadingRef> additionalHeadings = headingValues.stream().map(hv -> new HeadingRef(headingType, hv)).toList();
+    target.setAdditionalHeadings(additionalHeadings);
+
+    AuthorityUtilityMapper.extractAuthorityDtoAdditionalHeadings(target, source);
+
+    switch (headingType) {
+      case BROADER_TERM -> assertArrayEquals(source.getBroaderTerm().toArray(), headingValues.toArray());
+      case NARROWER_TERM -> assertArrayEquals(source.getNarrowerTerm().toArray(), headingValues.toArray());
+      case EARLIER_HEADING -> assertArrayEquals(source.getEarlierHeading().toArray(), headingValues.toArray());
+      case LATER_HEADING -> assertArrayEquals(source.getLaterHeading().toArray(), headingValues.toArray());
+      case SFT_TERM -> assertArrayEquals(source.getSftTerm().toArray(), headingValues.toArray());
+      case SAFT_TERM -> assertArrayEquals(source.getSaftTerm().toArray(), headingValues.toArray());
+      default -> fail("Invalid saft heading type - {} cannot be mapped", headingType);
+    }
+  }
+
+  @Test
+  void testExtractAuthorityDtoAdditionalHeadingsWithNullValues() {
+
+    AuthorityUtilityMapper.extractAuthorityDtoAdditionalHeadings(target, source);
+
+    assertTrue(source.getBroaderTerm().isEmpty());
+    assertTrue(source.getNarrowerTerm().isEmpty());
+    assertTrue(source.getEarlierHeading().isEmpty());
+    assertTrue(source.getLaterHeading().isEmpty());
+    assertTrue(source.getSftTerm().isEmpty());
+    assertTrue(source.getSaftTerm().isEmpty());
+  }
+
+  @Test
+  void testExtractAuthorityDtoAdditionalHeadingsWithMixedHeadingTypes() {
+    List<HeadingRef> additionalHeadings = new ArrayList<>();
+    additionalHeadings.add(new HeadingRef(BROADER_TERM, "broaderTerm"));
+    additionalHeadings.add(new HeadingRef(NARROWER_TERM, "narrowerTerm1"));
+    additionalHeadings.add(new HeadingRef(NARROWER_TERM, "narrowerTerm2"));
+    additionalHeadings.add(new HeadingRef(EARLIER_HEADING, "earlierHeading1"));
+    additionalHeadings.add(new HeadingRef(EARLIER_HEADING, "earlierHeading2"));
+    additionalHeadings.add(new HeadingRef(LATER_HEADING, "laterHeading"));
+    additionalHeadings.add(new HeadingRef(SFT_TERM, "sftTerm1"));
+    additionalHeadings.add(new HeadingRef(SFT_TERM, "sftTerm2"));
+    additionalHeadings.add(new HeadingRef(SAFT_TERM, "saftTerm1"));
+    additionalHeadings.add(new HeadingRef(SAFT_TERM, "saftTerm2"));
+    target.setAdditionalHeadings(additionalHeadings);
+
+    AuthorityUtilityMapper.extractAuthorityDtoAdditionalHeadings(target, source);
+
+    assertArrayEquals(new String[] {"broaderTerm"}, source.getBroaderTerm().toArray());
+    assertArrayEquals(new String[] {"narrowerTerm1", "narrowerTerm2"}, source.getNarrowerTerm().toArray());
+    assertArrayEquals(new String[] {"earlierHeading1", "earlierHeading2"}, source.getEarlierHeading().toArray());
+    assertArrayEquals(new String[] {"laterHeading"}, source.getLaterHeading().toArray());
+    assertArrayEquals(new String[] {"sftTerm1", "sftTerm2"}, source.getSftTerm().toArray());
+    assertArrayEquals(new String[] {"saftTerm1", "saftTerm2"}, source.getSaftTerm().toArray());
+  }
+
   private static Stream<Arguments> headingTypeAndValueProvider() {
     return Stream.of(
         arguments(PERSONAL_NAME_HEADING, TEST_STRING),
@@ -196,4 +323,15 @@ class AuthorityUtilityMapperTest {
     );
   }
 
+  private static Stream<Arguments> additionalHeadingTypeAndValuesProvider() {
+    return Stream.of(
+        arguments(BROADER_TERM, List.of(TEST_STRING)),
+        arguments(NARROWER_TERM,  List.of(TEST_STRING, TEST_STRING)),
+        arguments(EARLIER_HEADING,  List.of(TEST_STRING)),
+        arguments(LATER_HEADING, List.of(TEST_STRING, TEST_STRING)),
+        arguments(SFT_TERM, List.of(TEST_STRING, TEST_STRING)),
+        arguments(SAFT_TERM, List.of(TEST_STRING, TEST_STRING, TEST_STRING)),
+        arguments(SAFT_TERM, List.of())
+    );
+  }
 }
