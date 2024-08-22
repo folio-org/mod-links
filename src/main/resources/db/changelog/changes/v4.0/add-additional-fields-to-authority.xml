@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+  <changeSet id="add-additional-fields-to-authority" author="Elena_Shmygaliova">
+    <preConditions>
+      <tableExists tableName="authority"/>
+    </preConditions>
+
+    <comment>Add new jsonb fields to authority table</comment>
+
+    <addColumn tableName="authority">
+      <column name="additional_headings" type="jsonb"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>

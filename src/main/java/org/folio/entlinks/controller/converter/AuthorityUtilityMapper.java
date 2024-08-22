@@ -2,14 +2,20 @@ package org.folio.entlinks.controller.converter;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.BROADER_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.EARLIER_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.LATER_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.NARROWER_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.SAFT_TERM;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.SFT_TERM;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
 
@@ -148,6 +154,29 @@ public class AuthorityUtilityMapper {
     target.setSaftHeadings(saftHeadings);
   }
 
+  public static void extractAuthorityAdditionalHeadings(AuthorityDto source, AuthorityBase target) {
+    List<HeadingRef> additionalHeadings = new ArrayList<>();
+    if (isNotEmpty(source.getBroaderTerm())) {
+      additionalHeadings.addAll(asSftHeadings(source.getBroaderTerm(), BROADER_TERM));
+    }
+    if (isNotEmpty(source.getNarrowerTerm())) {
+      additionalHeadings.addAll(asSftHeadings(source.getNarrowerTerm(), NARROWER_TERM));
+    }
+    if (isNotEmpty(source.getEarlierHeading())) {
+      additionalHeadings.addAll(asSftHeadings(source.getEarlierHeading(), EARLIER_HEADING));
+    }
+    if (isNotEmpty(source.getLaterHeading())) {
+      additionalHeadings.addAll(asSftHeadings(source.getLaterHeading(), LATER_HEADING));
+    }
+    if (isNotEmpty(source.getSftTerm())) {
+      additionalHeadings.addAll(asSftHeadings(source.getSftTerm(), SFT_TERM));
+    }
+    if (isNotEmpty(source.getSaftTerm())) {
+      additionalHeadings.addAll(asSftHeadings(source.getSaftTerm(), SAFT_TERM));
+    }
+    target.setAdditionalHeadings(additionalHeadings);
+  }
+
   public static void extractAuthorityDtoHeadingValue(AuthorityBase source, AuthorityDto target) {
     if (source.getHeadingType() == null || source.getHeading() == null) {
       return;
@@ -179,6 +208,12 @@ public class AuthorityUtilityMapper {
       return;
     }
     source.getSaftHeadings().forEach(headingRef -> extractAuthorityDtoSaftHeading(headingRef, target));
+  }
+
+  public static void extractAuthorityDtoAdditionalHeadings(AuthorityBase source, AuthorityDto target) {
+    if (isNotEmpty(source.getAdditionalHeadings())) {
+      source.getAdditionalHeadings().forEach(headingRef -> extractAuthorityDtoAdditionalHeading(headingRef, target));
+    }
   }
 
   private void extractAuthorityDtoSftHeading(HeadingRef headingRef, AuthorityDto target) {
@@ -223,5 +258,20 @@ public class AuthorityUtilityMapper {
     return headingValues.stream()
         .map(headingValue -> new HeadingRef(headingType, headingValue))
         .toList();
+  }
+
+  private void extractAuthorityDtoAdditionalHeading(HeadingRef headingRef, AuthorityDto target) {
+    if (headingRef == null || headingRef.getHeadingType() == null) {
+      return;
+    }
+    switch (headingRef.getHeadingType()) {
+      case BROADER_TERM -> target.addBroaderTermItem(headingRef.getHeading());
+      case NARROWER_TERM -> target.addNarrowerTermItem(headingRef.getHeading());
+      case EARLIER_HEADING -> target.addEarlierHeadingItem(headingRef.getHeading());
+      case LATER_HEADING -> target.addLaterHeadingItem(headingRef.getHeading());
+      case SAFT_TERM -> target.addSaftTermItem(headingRef.getHeading());
+      case SFT_TERM -> target.addSftTermItem(headingRef.getHeading());
+      default -> log.warn("Invalid additional heading type - {} cannot be mapped", headingRef.getHeadingType());
+    }
   }
 }
