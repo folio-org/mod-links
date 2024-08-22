@@ -23,4 +23,6 @@
   <include file="/changes/v3.0/add-authority-source-protocol.xml" relativeToChangelogFile="true"/>
   <include file="/changes/v3.0/add-authority-source-file-optimistic-locking.xml" relativeToChangelogFile="true"/>
   <include file="/changes/v3.0/update-auto-linking_enabled.xml" relativeToChangelogFile="true"/>
+  <include file="/changes/v3.1/add-additional-fields-to-authority.xml" relativeToChangelogFile="true"/>
+  <include file="/changes/v3.1/add-additional-fields-to-authority-archive.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

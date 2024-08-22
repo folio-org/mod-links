@@ -203,6 +203,36 @@ properties:
     description: Authority Natural ID
   metadata:
     $ref: '../common/metadata.yaml'
+  broaderTerm:
+    type: array
+    description: Terms that represents broader, more general concepts related to the authority record
+    items:
+      type: string
+  narrowerTerm:
+    type: array
+    description: Terms that represents narrower, more specific concepts derived from the authority record
+    items:
+      type: string
+  earlierHeading:
+    type: array
+    description: Heading that was previously used to represent the concept or entity described by the authority record. This field is used to track the evolution of terms or headings over time, facilitating the linking of historical and current data.
+    items:
+      type: string
+  laterHeading:
+    type: array
+    description: Heading that replaced the current heading used in the authority record. This field helps in maintaining the continuity of catalog records by linking past headings to their more current versions.
+    items:
+      type: string
+  sftTerm:
+    type: array
+    description: See from tracing term
+    items:
+      type: string
+  saftTerm:
+    type: array
+    description: See also from tracing term
+    items:
+      type: string
 required:
   - source
   - naturalId
