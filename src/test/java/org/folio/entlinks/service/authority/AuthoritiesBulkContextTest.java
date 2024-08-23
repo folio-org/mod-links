@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @UnitTest
@@ -24,7 +23,6 @@ class AuthoritiesBulkContextTest {
   }
 
   @Test
-  @Disabled
   void constructor_PropertiesInitializedCorrectly() {
     // Assert
     assertEquals("path/to/initial/file", authoritiesBulkContext.getInitialFilePath());
