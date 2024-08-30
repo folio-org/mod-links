@@ -130,12 +130,6 @@ class AuthorityServiceTest {
     existed.setSftHeadings(List.of(new HeadingRef("personalName", "sft")));
     existed.setNotes(List.of(new AuthorityNote(UUID.randomUUID(), "note", true)));
     existed.setIdentifiers(List.of(new AuthorityIdentifier("identifier", UUID.randomUUID())));
-    existed.setAdditionalHeadings(List.of(new HeadingRef("broaderTerm", "broader"),
-        new HeadingRef("narrowerTerm", "narrower"),
-        new HeadingRef("earlierHeading", "earlier"),
-        new HeadingRef("laterHeading", "later"),
-        new HeadingRef("sftTerm", "sft"),
-        new HeadingRef("saftTerm", "saft")));
     var sourceFileOld = new AuthoritySourceFile();
     sourceFileOld.setId(UUID.randomUUID());
     existed.setAuthoritySourceFile(sourceFileOld);
@@ -151,12 +145,6 @@ class AuthorityServiceTest {
     modified.setSftHeadings(List.of(new HeadingRef("personalNameNew", "sftNew")));
     modified.setNotes(List.of(new AuthorityNote(UUID.randomUUID(), "noteNew", true)));
     modified.setIdentifiers(List.of(new AuthorityIdentifier("identifierNew", UUID.randomUUID())));
-    modified.setAdditionalHeadings(List.of(new HeadingRef("broaderTerm", "broaderNew"),
-        new HeadingRef("narrowerTerm", "narrowerNew"),
-        new HeadingRef("earlierHeading", "earlierNew"),
-        new HeadingRef("laterHeading", "laterNew"),
-        new HeadingRef("sftTerm", "sftNew"),
-        new HeadingRef("saftTerm", "saftNew")));
     var sourceFileNew = new AuthoritySourceFile();
     sourceFileNew.setId(UUID.randomUUID());
     modified.setAuthoritySourceFile(sourceFileNew);
