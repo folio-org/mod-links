@@ -93,7 +93,6 @@ public interface AuthorityMapper {
     AuthorityUtilityMapper.extractAuthorityHeading(source, target);
     AuthorityUtilityMapper.extractAuthoritySftHeadings(source, target);
     AuthorityUtilityMapper.extractAuthoritySaftHeadings(source, target);
-    AuthorityUtilityMapper.extractAuthorityAdditionalHeadings(source, target);
   }
 
   @AfterMapping
@@ -101,7 +100,6 @@ public interface AuthorityMapper {
     AuthorityUtilityMapper.extractAuthorityDtoHeadingValue(source, target);
     AuthorityUtilityMapper.extractAuthorityDtoSftHeadings(source, target);
     AuthorityUtilityMapper.extractAuthorityDtoSaftHeadings(source, target);
-    AuthorityUtilityMapper.extractAuthorityDtoAdditionalHeadings(source, target);
   }
 
   default OffsetDateTime map(Timestamp timestamp) {

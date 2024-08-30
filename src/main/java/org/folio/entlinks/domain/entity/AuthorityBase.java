@@ -42,7 +42,6 @@ public class AuthorityBase extends MetadataEntity {
   public static final String DELETED_COLUMN = "deleted";
 
   private static final String CONSORTIUM_SOURCE_PREFIX = "CONSORTIUM-";
-  private static final String ADDITIONAL_HEADINGS_COLUMN = "additional_headings";
 
   @Id
   @Column(name = ID_COLUMN, nullable = false)
@@ -91,10 +90,6 @@ public class AuthorityBase extends MetadataEntity {
   @Column(name = DELETED_COLUMN)
   private boolean deleted = false;
 
-  @Column(name = ADDITIONAL_HEADINGS_COLUMN)
-  @JdbcTypeCode(SqlTypes.JSON)
-  private List<HeadingRef> additionalHeadings;
-
   public AuthorityBase(AuthorityBase other) {
     super(other);
     this.id = other.id;
@@ -121,9 +116,6 @@ public class AuthorityBase extends MetadataEntity {
         .map(AuthorityNote::new)
         .toList();
     this.deleted = other.deleted;
-    this.additionalHeadings = Optional.ofNullable(other.getSaftHeadings()).orElse(List.of()).stream()
-        .map(HeadingRef::new)
-        .toList();
   }
 
   public void makeAsConsortiumShadowCopy() {

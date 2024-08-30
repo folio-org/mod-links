@@ -24,16 +24,4 @@ public class AuthorityConstants {
   public static final String GEOGRAPHIC_NAME_HEADING = "geographicName";
 
   public static final String GENRE_TERM_HEADING = "genreTerm";
-
-  public static final String BROADER_TERM = "broaderTerm";
-
-  public static final String NARROWER_TERM = "narrowerTerm";
-
-  public static final String EARLIER_HEADING = "earlierHeading";
-
-  public static final String LATER_HEADING = "laterHeading";
-
-  public static final String SFT_TERM = "sftTerm";
-
-  public static final String SAFT_TERM = "saftTerm";
 }
