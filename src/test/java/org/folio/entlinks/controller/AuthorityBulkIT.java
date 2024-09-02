@@ -60,7 +60,7 @@ class AuthorityBulkIT extends IntegrationTestBase {
         "parentLocation/filePath/fileName_failedEntities");
     var errors = new BufferedReader(new InputStreamReader(s3Client.read("parentLocation/filePath/fileName_errors")))
         .lines()
-        .toList(); //af045f2f-e851-4613-984c-4bc13430454a asf not present
+        .toList();
     assertThat(errors)
       .hasSize(2)
       .anyMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"))
