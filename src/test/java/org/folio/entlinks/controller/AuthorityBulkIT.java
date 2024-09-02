@@ -49,7 +49,7 @@ class AuthorityBulkIT extends IntegrationTestBase {
 
     tryPost(authorityEndpoint() + "/bulk", dto)
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.errorsNumber", is(1)));
+      .andExpect(jsonPath("$.errorsNumber", is(2)));
 
     assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 1);
     var list = s3Client.list("parentLocation/filePath/");
@@ -60,10 +60,11 @@ class AuthorityBulkIT extends IntegrationTestBase {
         "parentLocation/filePath/fileName_failedEntities");
     var errors = new BufferedReader(new InputStreamReader(s3Client.read("parentLocation/filePath/fileName_errors")))
         .lines()
-        .toList();
+        .toList(); //af045f2f-e851-4613-984c-4bc13430454a asf not present
     assertThat(errors)
-      .hasSize(1)
-      .allMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"));
+      .hasSize(2)
+      .anyMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"))
+      .anyMatch(s -> s.contains("Unexpected json parsing exception")); //invalid UUID for noteTypeId
   }
 
 }
