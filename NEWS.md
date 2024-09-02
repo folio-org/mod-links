@@ -14,6 +14,7 @@
 * Add checking for Authority source file references for member tenant in ECS ([MODELINKS-227](https://issues.folio.org/browse/MODELINKS-227))
 * Return only ids in response when idOnly=true ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
 * Fix totalRecords count when idOnly=true ([MODELINKS-239](https://issues.folio.org/browse/MODELINKS-239))
+* Add parsing errors handling on bulk api ([MODELINKS-249](https://issues.folio.org/browse/MODELINKS-249))
 
 ### Tech Dept
 * Fix issue that causes repeated update of same entity with latest Hibernate versions ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
