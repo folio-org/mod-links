@@ -6,6 +6,10 @@ import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,8 +26,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.retry.annotation.EnableRetry;
 
+@EnableRetry
 @IntegrationTest
 @DatabaseCleanup(tables = {
   DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
@@ -32,7 +39,7 @@ import org.springframework.core.io.ResourceLoader;
   DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE})
 class AuthorityBulkIT extends IntegrationTestBase {
 
-  private @Autowired FolioS3Client s3Client;
+  private @SpyBean FolioS3Client s3Client;
   private @Autowired ResourceLoader loader;
 
   @BeforeAll
@@ -65,6 +72,39 @@ class AuthorityBulkIT extends IntegrationTestBase {
       .hasSize(2)
       .anyMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"))
       .anyMatch(s -> s.contains("Unexpected json parsing exception")); //invalid UUID for noteTypeId
+  }
+
+  @Test
+  @DisplayName("POST: create new Authority with defined ID and retries on s3 upload exception")
+  void createAuthority_positive_entityCreatedWithProvidedId_withS3Retries() throws Exception {
+    var resource = loader.getResource("classpath:test-data/authorities/bulkAuthorities");
+    var filename = s3Client.write("parentLocation/filePath/fileName", resource.getInputStream());
+    var dto = new AuthorityBulkRequest(filename);
+
+    doThrow(IllegalStateException.class)
+      .doCallRealMethod()
+      .when(s3Client).upload(any(), any());
+
+    tryPost(authorityEndpoint() + "/bulk", dto)
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.errorsNumber", is(2)));
+
+    assumeTrue(databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID) == 1);
+    var list = s3Client.list("parentLocation/filePath/");
+    assertThat(list)
+      .hasSize(3)
+      .containsExactly("parentLocation/filePath/fileName",
+        "parentLocation/filePath/fileName_errors",
+        "parentLocation/filePath/fileName_failedEntities");
+    var errors = new BufferedReader(new InputStreamReader(s3Client.read("parentLocation/filePath/fileName_errors")))
+        .lines()
+        .toList();
+    assertThat(errors)
+      .hasSize(2)
+      .anyMatch(s -> s.contains("constraint [authority_storage_source_file_id_foreign_key]"))
+      .anyMatch(s -> s.contains("Unexpected json parsing exception")); //invalid UUID for noteTypeId
+
+    verify(s3Client, times(3)).upload(any(), any());
   }
 
 }

@@ -2,9 +2,7 @@ package org.folio.entlinks.service.authority;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +16,6 @@ import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.utils.EntitiesErrorFileWriter;
-import org.folio.s3.client.FolioS3Client;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -26,23 +23,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthorityS3Service {
 
-  private final FolioS3Client s3Client;
+  private final BulkAuthorityS3Client s3Client;
   private final ObjectMapper objectMapper;
   private final AuthorityMapper mapper;
-
-  public List<String> readFile(String remoteFileName) {
-    log.info("readStream::Reading authorities from the file [filename: {}]", remoteFileName);
-    var inputStream = s3Client.read(remoteFileName);
-    return new BufferedReader(new InputStreamReader(inputStream))
-      .lines()
-      .toList();
-  }
 
   public int processAuthorities(AuthoritiesBulkContext bulkContext,
                                 Consumer<List<Authority>> bulkConsumer) {
     log.info("processAuthorities::Processing bulk authority request [filename: {}]", bulkContext.getInitialFilePath());
     AtomicInteger errorCounter = new AtomicInteger();
-    var stringAuthorities = readFile(bulkContext.getInitialFilePath());
+    var stringAuthorities = s3Client.readFile(bulkContext.getInitialFilePath());
     var invalidFormatAuthorities = new LinkedList<Map.Entry<String, Exception>>();
     var authorities = parseAuthorities(stringAuthorities, invalidFormatAuthorities);
     var failedAuthorities = new LinkedList<Map.Entry<Authority, Exception>>();
@@ -114,8 +103,7 @@ public class AuthorityS3Service {
       log.error("processFailures::Processing bulk authority request failed.", ex);
     }
 
-    s3Client.upload(bulkContext.getLocalFailedEntitiesFilePath(), bulkContext.getFailedEntitiesFilePath());
-    s3Client.upload(bulkContext.getLocalErrorsFilePath(), bulkContext.getErrorsFilePath());
+    s3Client.uploadErrorFiles(bulkContext);
   }
 
   private String stringAuthorityIdGetter(String initialFilePath, String stringAuthority) {
