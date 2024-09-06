@@ -14,13 +14,16 @@ import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_H
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.domain.entity.HeadingRef;
+import org.folio.entlinks.domain.entity.RelationshipType;
 
 @UtilityClass
 @Log4j2
@@ -110,6 +113,7 @@ public class AuthorityUtilityMapper {
     if (isNotEmpty(source.getSftGenreTerm())) {
       sftHeadings.addAll(asSftHeadings(source.getSftGenreTerm(), GENRE_TERM_HEADING));
     }
+    addRelationshipsToSftHeadings(source, sftHeadings);
     target.setSftHeadings(sftHeadings);
   }
 
@@ -145,7 +149,34 @@ public class AuthorityUtilityMapper {
     if (isNotEmpty(source.getSaftGenreTerm())) {
       saftHeadings.addAll(asSftHeadings(source.getSaftGenreTerm(), GENRE_TERM_HEADING));
     }
+    addRelationshipsToSaftHeadings(source, saftHeadings);
     target.setSaftHeadings(saftHeadings);
+  }
+
+  private static void addRelationshipsToSftHeadings(final AuthorityDto source, final List<HeadingRef> headingRefs) {
+    processRelationshipHeadings(source.getSftBroaderTerm(), headingRefs, RelationshipType.BROADER_TERM);
+    processRelationshipHeadings(source.getSftNarrowerTerm(), headingRefs, RelationshipType.NARROWER_TERM);
+    processRelationshipHeadings(source.getSftEarlierHeading(), headingRefs, RelationshipType.EARLIER_HEADING);
+    processRelationshipHeadings(source.getSftLaterHeading(), headingRefs, RelationshipType.LATER_HEADING);
+  }
+
+  private static void addRelationshipsToSaftHeadings(final AuthorityDto source, final List<HeadingRef> headingRefs) {
+    processRelationshipHeadings(source.getSaftBroaderTerm(), headingRefs, RelationshipType.BROADER_TERM);
+    processRelationshipHeadings(source.getSaftNarrowerTerm(), headingRefs, RelationshipType.NARROWER_TERM);
+    processRelationshipHeadings(source.getSaftEarlierHeading(), headingRefs, RelationshipType.EARLIER_HEADING);
+    processRelationshipHeadings(source.getSaftLaterHeading(), headingRefs, RelationshipType.LATER_HEADING);
+  }
+
+  private static void processRelationshipHeadings(List<String> relationshipHeadings, final List<HeadingRef> headingRefs,
+      final RelationshipType relationshipType) {
+    if (isNotEmpty(relationshipHeadings)) {
+      headingRefs.forEach(headingRef -> {
+        if (relationshipHeadings.contains(headingRef.getHeading())) {
+          Set<RelationshipType> relationshipTypeSet = getOrCreateRelationshipTypeSet(headingRef);
+          relationshipTypeSet.add(relationshipType);
+        }
+      });
+    }
   }
 
   public static void extractAuthorityDtoHeadingValue(AuthorityBase source, AuthorityDto target) {
@@ -198,6 +229,7 @@ public class AuthorityUtilityMapper {
       case GENRE_TERM_HEADING -> target.addSftGenreTermItem(headingRef.getHeading());
       default -> log.warn("Invalid sft heading type - {} cannot be mapped", headingRef.getHeadingType());
     }
+    extractSftHeadingsRelationships(headingRef, target);
   }
 
   private void extractAuthorityDtoSaftHeading(HeadingRef headingRef, AuthorityDto target) {
@@ -217,11 +249,59 @@ public class AuthorityUtilityMapper {
       case GENRE_TERM_HEADING -> target.addSaftGenreTermItem(headingRef.getHeading());
       default -> log.warn("Invalid saft heading type - {} cannot be mapped", headingRef.getHeadingType());
     }
+    extractSaftHeadingsRelationships(headingRef, target);
+  }
+
+  private static void extractSftHeadingsRelationships(HeadingRef headingRef, AuthorityDto target) {
+    if (isNotEmpty(headingRef.getRelationshipType())) {
+      headingRef.getRelationshipType().forEach(
+          relationshipType -> {
+            switch (relationshipType) {
+              case BROADER_TERM -> addIfNotExists(target.getSftBroaderTerm(), headingRef.getHeading());
+              case NARROWER_TERM ->   addIfNotExists(target.getSftNarrowerTerm(), headingRef.getHeading());
+              case EARLIER_HEADING ->  addIfNotExists(target.getSftEarlierHeading(), headingRef.getHeading());
+              case LATER_HEADING ->  addIfNotExists(target.getSftLaterHeading(), headingRef.getHeading());
+              default -> log.warn("Invalid sft relationship type - {} cannot be mapped", relationshipType);
+            }
+          }
+      );
+    }
+  }
+
+  private static void extractSaftHeadingsRelationships(HeadingRef headingRef, AuthorityDto target) {
+    if (isNotEmpty(headingRef.getRelationshipType())) {
+      headingRef.getRelationshipType().forEach(
+          relationshipType -> {
+            switch (relationshipType) {
+              case BROADER_TERM -> addIfNotExists(target.getSaftBroaderTerm(), headingRef.getHeading());
+              case NARROWER_TERM ->   addIfNotExists(target.getSaftNarrowerTerm(), headingRef.getHeading());
+              case EARLIER_HEADING ->  addIfNotExists(target.getSaftEarlierHeading(), headingRef.getHeading());
+              case LATER_HEADING ->  addIfNotExists(target.getSaftLaterHeading(), headingRef.getHeading());
+              default -> log.warn("Invalid saft relationship type - {} cannot be mapped", relationshipType);
+            }
+          }
+      );
+    }
   }
 
   private static List<HeadingRef> asSftHeadings(List<String> headingValues, String headingType) {
     return headingValues.stream()
         .map(headingValue -> new HeadingRef(headingType, headingValue))
         .toList();
+  }
+
+  private static Set<RelationshipType> getOrCreateRelationshipTypeSet(HeadingRef heading) {
+    Set<RelationshipType> relationshipTypeSet = heading.getRelationshipType();
+    if (relationshipTypeSet == null) {
+      relationshipTypeSet = new HashSet<>();
+      heading.setRelationshipType(relationshipTypeSet);
+    }
+    return relationshipTypeSet;
+  }
+
+  private static void addIfNotExists(List<String> headings, String heading) {
+    if (!headings.contains(heading)) {
+      headings.add(heading);
+    }
   }
 }

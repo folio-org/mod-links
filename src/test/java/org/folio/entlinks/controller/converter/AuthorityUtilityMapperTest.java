@@ -13,17 +13,22 @@ import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_
 import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
 import static org.folio.support.base.TestConstants.TEST_STRING;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.HeadingRef;
+import org.folio.entlinks.domain.entity.RelationshipType;
 import org.folio.spring.testing.type.UnitTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -181,6 +186,52 @@ class AuthorityUtilityMapperTest {
     }
   }
 
+  @Test
+  void testExtractAuthoritySftHeadingsWithRelationships() {
+    final AuthorityDto authorityDto = getAuthorityDtoWithSftTerms();
+    final List<HeadingRef> expectedHeadingRefs = getHeadingRefs();
+
+    AuthorityUtilityMapper.extractAuthoritySftHeadings(authorityDto, target);
+
+    List<HeadingRef> sftHeadings = target.getSftHeadings();
+    assertThat(sftHeadings).hasSize(11);
+    assertArrayEquals(expectedHeadingRefs.toArray(), sftHeadings.toArray());
+  }
+
+  @Test
+  void testExtractAuthorityDtoSftHeadingsWithRelationships() {
+    final List<HeadingRef> sftHeadings = getHeadingRefs();
+    target.setSftHeadings(sftHeadings);
+    final AuthorityDto expectedAuthorityDto = getAuthorityDtoWithSftTerms();
+
+    AuthorityUtilityMapper.extractAuthorityDtoSftHeadings(target, source);
+
+    assertEquals(expectedAuthorityDto, source);
+  }
+
+  @Test
+  void testExtractAuthoritySaftHeadingsWithRelationships() {
+    final AuthorityDto authorityDto = getAuthorityDtoWithSaftTerms();
+    final List<HeadingRef> expectedHeadingRefs = getHeadingRefs();
+
+    AuthorityUtilityMapper.extractAuthoritySaftHeadings(authorityDto, target);
+
+    List<HeadingRef> sftHeadings = target.getSaftHeadings();
+    assertThat(sftHeadings).hasSize(11);
+    assertArrayEquals(expectedHeadingRefs.toArray(), sftHeadings.toArray());
+  }
+
+  @Test
+  void testExtractAuthorityDtoSaftHeadingsWithRelationships() {
+    final List<HeadingRef> saftHeadings = getHeadingRefs();
+    target.setSaftHeadings(saftHeadings);
+    final AuthorityDto expectedAuthorityDto = getAuthorityDtoWithSaftTerms();
+
+    AuthorityUtilityMapper.extractAuthorityDtoSaftHeadings(target, source);
+
+    assertEquals(expectedAuthorityDto, source);
+  }
+
   private static Stream<Arguments> headingTypeAndValueProvider() {
     return Stream.of(
         arguments(PERSONAL_NAME_HEADING, TEST_STRING),
@@ -196,4 +247,45 @@ class AuthorityUtilityMapperTest {
     );
   }
 
+  private static List<HeadingRef> getHeadingRefs() {
+    return List.of(
+        new HeadingRef(PERSONAL_NAME_HEADING, PERSONAL_NAME_HEADING),
+        new HeadingRef(PERSONAL_NAME_HEADING, "broaderTerm1", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(CORPORATE_NAME_HEADING, CORPORATE_NAME_HEADING),
+        new HeadingRef(CORPORATE_NAME_HEADING, "broaderTerm2", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(CORPORATE_NAME_HEADING, "laterHeading", Set.of(RelationshipType.LATER_HEADING)),
+        new HeadingRef(MEETING_NAME_HEADING, MEETING_NAME_HEADING),
+        new HeadingRef(MEETING_NAME_HEADING, "narrowerTerm", Set.of(RelationshipType.NARROWER_TERM)),
+        new HeadingRef(MEETING_NAME_HEADING, "narrower-later", Set.of(RelationshipType.NARROWER_TERM,
+            RelationshipType.LATER_HEADING)),
+        new HeadingRef(TOPICAL_TERM_HEADING, TOPICAL_TERM_HEADING),
+        new HeadingRef(TOPICAL_TERM_HEADING, "broaderTerm1", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(TOPICAL_TERM_HEADING, "earlierHeading", Set.of(RelationshipType.EARLIER_HEADING)));
+  }
+
+  private static AuthorityDto getAuthorityDtoWithSftTerms() {
+    AuthorityDto authorityDto = new AuthorityDto();
+    authorityDto.setSftBroaderTerm(List.of("broaderTerm1", "broaderTerm2"));
+    authorityDto.setSftNarrowerTerm(List.of("narrowerTerm", "narrower-later"));
+    authorityDto.setSftEarlierHeading(List.of("earlierHeading"));
+    authorityDto.setSftLaterHeading(List.of("laterHeading", "narrower-later"));
+    authorityDto.setSftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
+    authorityDto.setSftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
+    authorityDto.setSftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));
+    authorityDto.setSftTopicalTerm(List.of(TOPICAL_TERM_HEADING, "broaderTerm1", "earlierHeading"));
+    return authorityDto;
+  }
+
+  private static AuthorityDto getAuthorityDtoWithSaftTerms() {
+    AuthorityDto authorityDto = new AuthorityDto();
+    authorityDto.setSaftBroaderTerm(List.of("broaderTerm1", "broaderTerm2"));
+    authorityDto.setSaftNarrowerTerm(List.of("narrowerTerm", "narrower-later"));
+    authorityDto.setSaftEarlierHeading(List.of("earlierHeading"));
+    authorityDto.setSaftLaterHeading(List.of("laterHeading", "narrower-later"));
+    authorityDto.setSaftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
+    authorityDto.setSaftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
+    authorityDto.setSaftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));
+    authorityDto.setSaftTopicalTerm(List.of(TOPICAL_TERM_HEADING, "broaderTerm1", "earlierHeading"));
+    return authorityDto;
+  }
 }

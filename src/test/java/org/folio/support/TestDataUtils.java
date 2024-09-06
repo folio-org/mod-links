@@ -412,6 +412,9 @@ public class TestDataUtils {
       dto.addSftMeetingNameItem("sftMeetingNameItem2");
       dto.addSaftMeetingNameItem("sftMeetingNameItem1");
       dto.addSaftMeetingNameItem("sftMeetingNameItem2");
+      dto.addSftNarrowerTermItem("sftPersonalName2");
+      dto.addSftNarrowerTermItem("sftMeetingNameItem1");
+      dto.addSaftBroaderTermItem("saftPersonalName1");
 
       return dto;
     }
