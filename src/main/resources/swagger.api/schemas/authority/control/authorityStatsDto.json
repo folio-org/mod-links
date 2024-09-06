@@ -14,7 +14,8 @@
       "description": "Authority ID"
     },
     "action": {
-      "$ref": "linkAction.json"
+      "$ref": "linkAction.json",
+      "description": "Type of change"
     },
     "naturalIdOld": {
       "type": "string",
@@ -61,7 +62,8 @@
       "description": "Amount of linked bib fields that was failed to update during authority update"
     },
     "metadata": {
-      "$ref": "authorityControlMetadata.json"
+      "$ref": "authorityControlMetadata.json",
+      "description": "Meta data for authority control"
     }
   }
 }
