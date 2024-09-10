@@ -29,6 +29,7 @@ import org.folio.entlinks.domain.dto.AuthorityControlMetadata;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityDtoIdentifier;
 import org.folio.entlinks.domain.dto.AuthorityDtoNote;
+import org.folio.entlinks.domain.dto.AuthorityRelatedHeading;
 import org.folio.entlinks.domain.dto.AuthorityStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDto;
 import org.folio.entlinks.domain.dto.BibStatsDtoCollection;
@@ -412,9 +413,8 @@ public class TestDataUtils {
       dto.addSftMeetingNameItem("sftMeetingNameItem2");
       dto.addSaftMeetingNameItem("sftMeetingNameItem1");
       dto.addSaftMeetingNameItem("sftMeetingNameItem2");
-      dto.addSftNarrowerTermItem("sftPersonalName2");
-      dto.addSftNarrowerTermItem("sftMeetingNameItem1");
-      dto.addSaftBroaderTermItem("saftPersonalName1");
+      dto.addSaftNarrowerTermItem(new AuthorityRelatedHeading("sftMeetingNameItem1", "saftMeetingName"));
+      dto.addSaftBroaderTermItem(new AuthorityRelatedHeading("saftPersonalName1", "saftPersonalName"));
 
       return dto;
     }
