@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.domain.dto.AuthorityRelatedHeading;
+import org.folio.entlinks.domain.dto.RelatedHeading;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.entlinks.domain.entity.RelationshipType;
@@ -244,16 +244,16 @@ class AuthorityUtilityMapperTest {
   private static AuthorityDto getAuthorityDtoWithSaftTerms() {
     AuthorityDto authorityDto = new AuthorityDto();
     authorityDto.setSaftBroaderTerm(List.of(
-        new AuthorityRelatedHeading("broaderTerm1", "saftPersonalName"),
-        new AuthorityRelatedHeading("broaderTerm2", "saftCorporateName")));
+        new RelatedHeading("broaderTerm1", "saftPersonalName"),
+        new RelatedHeading("broaderTerm2", "saftCorporateName")));
     authorityDto.setSaftNarrowerTerm(List.of(
-        new AuthorityRelatedHeading("narrowerTerm", "saftMeetingName"),
-        new AuthorityRelatedHeading("narrower-later", "saftMeetingName")));
+        new RelatedHeading("narrowerTerm", "saftMeetingName"),
+        new RelatedHeading("narrower-later", "saftMeetingName")));
     authorityDto.setSaftEarlierHeading(List.of(
-        new AuthorityRelatedHeading("earlierHeading", "saftTopicalTerm")));
+        new RelatedHeading("earlierHeading", "saftTopicalTerm")));
     authorityDto.setSaftLaterHeading(List.of(
-        new AuthorityRelatedHeading("laterHeading", "saftCorporateName"),
-        new AuthorityRelatedHeading("narrower-later", "saftMeetingName")));
+        new RelatedHeading("laterHeading", "saftCorporateName"),
+        new RelatedHeading("narrower-later", "saftMeetingName")));
     authorityDto.setSaftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
     authorityDto.setSaftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
     authorityDto.setSaftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));

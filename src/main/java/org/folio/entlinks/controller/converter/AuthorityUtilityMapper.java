@@ -22,7 +22,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.entlinks.domain.dto.AuthorityRelatedHeading;
+import org.folio.entlinks.domain.dto.RelatedHeading;
 import org.folio.entlinks.domain.entity.AuthorityBase;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.entlinks.domain.entity.RelationshipType;
@@ -161,7 +161,7 @@ public class AuthorityUtilityMapper {
     processRelationshipHeadings(source.getSaftLaterHeading(), headingRefs, RelationshipType.LATER_HEADING);
   }
 
-  private static void processRelationshipHeadings(List<AuthorityRelatedHeading> relationshipHeadings,
+  private static void processRelationshipHeadings(List<RelatedHeading> relationshipHeadings,
       final List<HeadingRef> headingRefs, final RelationshipType relationshipType) {
     if (isNotEmpty(relationshipHeadings)) {
       headingRefs.forEach(headingRef -> {
@@ -256,13 +256,13 @@ public class AuthorityUtilityMapper {
             String headingFieldName = getSaftHeadingFieldName(headingRef.getHeadingType());
             switch (relationshipType) {
               case BROADER_TERM -> target.getSaftBroaderTerm()
-                  .add(new AuthorityRelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
               case NARROWER_TERM -> target.getSaftNarrowerTerm()
-                  .add(new AuthorityRelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
               case EARLIER_HEADING -> target.getSaftEarlierHeading()
-                  .add(new AuthorityRelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
               case LATER_HEADING -> target.getSaftLaterHeading()
-                  .add(new AuthorityRelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
               default -> log.warn("Invalid saft relationship type - {} cannot be mapped", relationshipType);
             }
           }
