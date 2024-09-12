@@ -413,8 +413,8 @@ public class TestDataUtils {
       dto.addSftMeetingNameItem("sftMeetingNameItem2");
       dto.addSaftMeetingNameItem("sftMeetingNameItem1");
       dto.addSaftMeetingNameItem("sftMeetingNameItem2");
-      dto.addSaftNarrowerTermItem(new RelatedHeading("sftMeetingNameItem1", "saftMeetingName"));
-      dto.addSaftBroaderTermItem(new RelatedHeading("saftPersonalName1", "saftPersonalName"));
+      dto.addSaftNarrowerTermItem(new RelatedHeading("sftMeetingNameItem1", "meetingName"));
+      dto.addSaftBroaderTermItem(new RelatedHeading("saftPersonalName1", "personalName"));
 
       return dto;
     }
