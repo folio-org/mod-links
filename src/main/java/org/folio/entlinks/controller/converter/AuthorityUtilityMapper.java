@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.RelatedHeading;
 import org.folio.entlinks.domain.entity.AuthorityBase;
@@ -164,16 +163,15 @@ public class AuthorityUtilityMapper {
   private static void processRelationshipHeadings(List<RelatedHeading> relationshipHeadings,
       final List<HeadingRef> headingRefs, final RelationshipType relationshipType) {
     if (isNotEmpty(relationshipHeadings)) {
-      headingRefs.forEach(headingRef -> {
-        String headingFieldName = getSaftHeadingFieldName(headingRef.getHeadingType());
-        relationshipHeadings.forEach(relationshipHeading -> {
-          if (relationshipHeading.getHeadingType().equals(headingFieldName)
-              && relationshipHeading.getHeadingRef().equals(headingRef.getHeading())) {
-            Set<RelationshipType> relationshipTypeSet = getOrCreateRelationshipTypeSet(headingRef);
-            relationshipTypeSet.add(relationshipType);
-          }
-        });
-      });
+      headingRefs.forEach(headingRef ->
+          relationshipHeadings.forEach(relationshipHeading -> {
+            if (relationshipHeading.getHeadingType().equals(headingRef.getHeadingType())
+                && relationshipHeading.getHeadingRef().equals(headingRef.getHeading())) {
+              Set<RelationshipType> relationshipTypeSet = getOrCreateRelationshipTypeSet(headingRef);
+              relationshipTypeSet.add(relationshipType);
+            }
+          })
+      );
     }
   }
 
@@ -253,16 +251,15 @@ public class AuthorityUtilityMapper {
     if (isNotEmpty(headingRef.getRelationshipType())) {
       headingRef.getRelationshipType().forEach(
           relationshipType -> {
-            String headingFieldName = getSaftHeadingFieldName(headingRef.getHeadingType());
             switch (relationshipType) {
               case BROADER_TERM -> target.getSaftBroaderTerm()
-                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingRef.getHeadingType()));
               case NARROWER_TERM -> target.getSaftNarrowerTerm()
-                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingRef.getHeadingType()));
               case EARLIER_HEADING -> target.getSaftEarlierHeading()
-                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingRef.getHeadingType()));
               case LATER_HEADING -> target.getSaftLaterHeading()
-                  .add(new RelatedHeading(headingRef.getHeading(), headingFieldName));
+                  .add(new RelatedHeading(headingRef.getHeading(), headingRef.getHeadingType()));
               default -> log.warn("Invalid saft relationship type - {} cannot be mapped", relationshipType);
             }
           }
@@ -283,9 +280,5 @@ public class AuthorityUtilityMapper {
       heading.setRelationshipType(relationshipTypeSet);
     }
     return relationshipTypeSet;
-  }
-
-  private String getSaftHeadingFieldName(String headingType) {
-    return "saft" + StringUtils.capitalize(headingType);
   }
 }

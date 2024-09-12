@@ -244,16 +244,16 @@ class AuthorityUtilityMapperTest {
   private static AuthorityDto getAuthorityDtoWithSaftTerms() {
     AuthorityDto authorityDto = new AuthorityDto();
     authorityDto.setSaftBroaderTerm(List.of(
-        new RelatedHeading("broaderTerm1", "saftPersonalName"),
-        new RelatedHeading("broaderTerm2", "saftCorporateName")));
+        new RelatedHeading("broaderTerm1", "personalName"),
+        new RelatedHeading("broaderTerm2", "corporateName")));
     authorityDto.setSaftNarrowerTerm(List.of(
-        new RelatedHeading("narrowerTerm", "saftMeetingName"),
-        new RelatedHeading("narrower-later", "saftMeetingName")));
+        new RelatedHeading("narrowerTerm", "meetingName"),
+        new RelatedHeading("narrower-later", "meetingName")));
     authorityDto.setSaftEarlierHeading(List.of(
-        new RelatedHeading("earlierHeading", "saftTopicalTerm")));
+        new RelatedHeading("earlierHeading", "topicalTerm")));
     authorityDto.setSaftLaterHeading(List.of(
-        new RelatedHeading("laterHeading", "saftCorporateName"),
-        new RelatedHeading("narrower-later", "saftMeetingName")));
+        new RelatedHeading("laterHeading", "corporateName"),
+        new RelatedHeading("narrower-later", "meetingName")));
     authorityDto.setSaftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
     authorityDto.setSaftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
     authorityDto.setSaftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));
