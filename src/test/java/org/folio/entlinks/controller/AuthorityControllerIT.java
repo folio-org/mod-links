@@ -417,7 +417,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     assertEquals(dto.getIdentifiers(), created.getIdentifiers());
     assertEquals(dto.getSftPersonalName(), created.getSftPersonalName());
     assertEquals(dto.getSaftPersonalName(), created.getSaftPersonalName());
-    assertEquals(dto.getSftNarrowerTerm(), created.getSftNarrowerTerm());
+    assertEquals(dto.getSaftNarrowerTerm(), created.getSaftNarrowerTerm());
     assertEquals(dto.getSaftBroaderTerm(), created.getSaftBroaderTerm());
   }
 
@@ -523,7 +523,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     assertEquals(expected.getSaftPersonalName(), resultDto.getSaftPersonalName());
     assertEquals(expected.getSftCorporateName(), resultDto.getSftCorporateName());
     assertEquals(expected.getSaftCorporateName(), resultDto.getSaftCorporateName());
-    assertEquals(dto.getSftNarrowerTerm(), resultDto.getSftNarrowerTerm());
+    assertEquals(dto.getSaftNarrowerTerm(), resultDto.getSaftNarrowerTerm());
     assertEquals(dto.getSaftBroaderTerm(), resultDto.getSaftBroaderTerm());
 
     var event = getConsumedEvent();

@@ -50,6 +50,7 @@
 * Add possibility to filter Authority records by (un)defined fields in Cql query ([MODELINKS-214](https://issues.folio.org/browse/MODELINKS-214))
 * Set auto_linking_enabled in instance_authority_linking_rule for 6xx fields ([MODELINKS-220](https://folio-org.atlassian.net/browse/MODELINKS-220))
 * Add Authority source file Kafka topic and publisher for update event ([MODELINKS-202](https://folio-org.atlassian.net/browse/MODELINKS-202))
+* Extend authorities with additional fields for Advanced References Classification ([MODELINKS-248](https://issues.folio.org/browse/MODELINKS-248))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))
@@ -67,7 +68,6 @@
 * Fix authority record update and `updatedByUserId` field assignment ([MODELINKS-219](https://issues.folio.org/browse/MODELINKS-219))
 * Fix saving of Authority file with empty Base URL when another Authority file with empty Base URL already exists ([MODELINKS-216](https://issues.folio.org/browse/MODELINKS-216))
 * Fix handling of authority heading type change update event ([MODELINKS-242](https://issues.folio.org/browse/MODELINKS-242))
-* Extend authorities with additional fields for Advanced References Classification ([MODELINKS-248](https://issues.folio.org/browse/MODELINKS-248))
 
 ### Tech Dept
 * Create custom Mockito verifies for Hibernate entities ([MODELINKS-209](https://issues.folio.org/browse/MODELINKS-209))

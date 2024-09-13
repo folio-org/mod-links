@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.folio.entlinks.domain.dto.AuthorityDto;
+import org.folio.entlinks.domain.dto.RelatedHeading;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.entlinks.domain.entity.RelationshipType;
@@ -187,38 +188,15 @@ class AuthorityUtilityMapperTest {
   }
 
   @Test
-  void testExtractAuthoritySftHeadingsWithRelationships() {
-    final AuthorityDto authorityDto = getAuthorityDtoWithSftTerms();
-    final List<HeadingRef> expectedHeadingRefs = getHeadingRefs();
-
-    AuthorityUtilityMapper.extractAuthoritySftHeadings(authorityDto, target);
-
-    List<HeadingRef> sftHeadings = target.getSftHeadings();
-    assertThat(sftHeadings).hasSize(11);
-    assertArrayEquals(expectedHeadingRefs.toArray(), sftHeadings.toArray());
-  }
-
-  @Test
-  void testExtractAuthorityDtoSftHeadingsWithRelationships() {
-    final List<HeadingRef> sftHeadings = getHeadingRefs();
-    target.setSftHeadings(sftHeadings);
-    final AuthorityDto expectedAuthorityDto = getAuthorityDtoWithSftTerms();
-
-    AuthorityUtilityMapper.extractAuthorityDtoSftHeadings(target, source);
-
-    assertEquals(expectedAuthorityDto, source);
-  }
-
-  @Test
   void testExtractAuthoritySaftHeadingsWithRelationships() {
     final AuthorityDto authorityDto = getAuthorityDtoWithSaftTerms();
     final List<HeadingRef> expectedHeadingRefs = getHeadingRefs();
 
     AuthorityUtilityMapper.extractAuthoritySaftHeadings(authorityDto, target);
 
-    List<HeadingRef> sftHeadings = target.getSaftHeadings();
-    assertThat(sftHeadings).hasSize(11);
-    assertArrayEquals(expectedHeadingRefs.toArray(), sftHeadings.toArray());
+    List<HeadingRef> saftHeadings = target.getSaftHeadings();
+    assertThat(saftHeadings).hasSize(11);
+    assertArrayEquals(expectedHeadingRefs.toArray(), saftHeadings.toArray());
   }
 
   @Test
@@ -259,29 +237,23 @@ class AuthorityUtilityMapperTest {
         new HeadingRef(MEETING_NAME_HEADING, "narrower-later", Set.of(RelationshipType.NARROWER_TERM,
             RelationshipType.LATER_HEADING)),
         new HeadingRef(TOPICAL_TERM_HEADING, TOPICAL_TERM_HEADING),
-        new HeadingRef(TOPICAL_TERM_HEADING, "broaderTerm1", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(TOPICAL_TERM_HEADING, "broaderTerm1"),
         new HeadingRef(TOPICAL_TERM_HEADING, "earlierHeading", Set.of(RelationshipType.EARLIER_HEADING)));
-  }
-
-  private static AuthorityDto getAuthorityDtoWithSftTerms() {
-    AuthorityDto authorityDto = new AuthorityDto();
-    authorityDto.setSftBroaderTerm(List.of("broaderTerm1", "broaderTerm2"));
-    authorityDto.setSftNarrowerTerm(List.of("narrowerTerm", "narrower-later"));
-    authorityDto.setSftEarlierHeading(List.of("earlierHeading"));
-    authorityDto.setSftLaterHeading(List.of("laterHeading", "narrower-later"));
-    authorityDto.setSftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
-    authorityDto.setSftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
-    authorityDto.setSftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));
-    authorityDto.setSftTopicalTerm(List.of(TOPICAL_TERM_HEADING, "broaderTerm1", "earlierHeading"));
-    return authorityDto;
   }
 
   private static AuthorityDto getAuthorityDtoWithSaftTerms() {
     AuthorityDto authorityDto = new AuthorityDto();
-    authorityDto.setSaftBroaderTerm(List.of("broaderTerm1", "broaderTerm2"));
-    authorityDto.setSaftNarrowerTerm(List.of("narrowerTerm", "narrower-later"));
-    authorityDto.setSaftEarlierHeading(List.of("earlierHeading"));
-    authorityDto.setSaftLaterHeading(List.of("laterHeading", "narrower-later"));
+    authorityDto.setSaftBroaderTerm(List.of(
+        new RelatedHeading("broaderTerm1", "personalName"),
+        new RelatedHeading("broaderTerm2", "corporateName")));
+    authorityDto.setSaftNarrowerTerm(List.of(
+        new RelatedHeading("narrowerTerm", "meetingName"),
+        new RelatedHeading("narrower-later", "meetingName")));
+    authorityDto.setSaftEarlierHeading(List.of(
+        new RelatedHeading("earlierHeading", "topicalTerm")));
+    authorityDto.setSaftLaterHeading(List.of(
+        new RelatedHeading("laterHeading", "corporateName"),
+        new RelatedHeading("narrower-later", "meetingName")));
     authorityDto.setSaftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
     authorityDto.setSaftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
     authorityDto.setSaftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));

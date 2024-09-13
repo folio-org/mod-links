@@ -1,0 +1,12 @@
+description: An authority related heading for BroaderTerm/NarrowerTerm/LaterHeading/EarlierHeading
+type: object
+properties:
+  headingRef:
+    type: "string"
+    description: "HeadingRef value"
+  headingType:
+    type: "string"
+    description: "Heading type"
+required:
+  - headingRef
+  - headingType
