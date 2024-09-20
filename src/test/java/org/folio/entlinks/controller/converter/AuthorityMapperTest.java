@@ -8,7 +8,11 @@ import static org.folio.support.base.TestConstants.TEST_DATE;
 import static org.folio.support.base.TestConstants.TEST_ID;
 import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 import static org.folio.support.base.TestConstants.TEST_VERSION;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.folio.entlinks.domain.dto.AuthorityDto;
@@ -297,5 +301,22 @@ class AuthorityMapperTest {
     dto.setSubjectHeadings(TEST_PROPERTY_VALUE);
     dto.setSourceFileId(TEST_ID);
     return dto;
+  }
+
+  @Test
+  void serializedDtoShouldNotContainEmptyArraysForExtendedFields() throws JsonProcessingException {
+
+    String serializedDto = new ObjectMapper().writeValueAsString(new AuthorityDto());
+
+    assertTrue(serializedDto.contains("\"saftGenreTerm\""),
+        "JSON should contain 'saftGenreTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftBroaderTerm\""),
+        "JSON should not contain 'saftBroaderTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftNarrowerTerm\""),
+        "JSON should not contain 'saftNarrowerTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftEarlierHeading\""),
+        "JSON should not contain 'saftEarlierHeading' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftLaterHeading\""),
+        "JSON should not contain 'saftLaterHeading' key when it's an empty array");
   }
 }
