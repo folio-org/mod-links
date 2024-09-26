@@ -1,8 +1,11 @@
 inventory-storage.instances.item.get
 inventory-storage.instances.item.put
-mapping-metadata.get
+mapping-metadata.item.get",
+mapping-metadata.type.item.get",
 mapping-rules.get
-source-storage.sourceRecords.get
+source-storage.stream.source-records.collection.get
+source-storage.source-records.item.get
+source-storage.source-records.collection.get
 users.collection.get
 user-tenants.collection.get
-source-storage.records.fetch
+source-storage.parsed-records.fetch.collection.post
