@@ -64,9 +64,10 @@
             "instance-authority-links.instances.collection.put"
           ],
           "modulePermissions": [
-            "source-storage.records.fetch",
+            "source-storage.parsed-records.fetch.collection.post",
             "search.authorities.collection.get",
-            "mapping-metadata.get",
+            "mapping-metadata.item.get",
+            "mapping-metadata.type.item.get",
             "inventory-storage.instances.item.get",
             "inventory-storage.instances.item.put",
             "user-tenants.collection.get"
@@ -159,7 +160,7 @@
             "instance-authority-links.suggestions.post"
           ],
           "modulePermissions": [
-            "source-storage.records.fetch",
+            "source-storage.parsed-records.fetch.collection.post",
             "user-tenants.collection.get"
           ]
         }
