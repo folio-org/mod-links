@@ -32,9 +32,10 @@ inventory-storage.modes-of-issuance.collection.get
 inventory-storage.nature-of-content-terms.collection.get
 inventory-storage.statistical-code-types.collection.get
 inventory-storage.statistical-codes.collection.get
-mapping-metadata.get
+mapping-metadata.item.get
+mapping-metadata.type.item.get
 mapping-rules.get
 source-storage.sourceRecords.get
 users.collection.get
 user-tenants.collection.get
-source-storage.records.fetch
+source-storage.parsed-records.fetch.collection.post
