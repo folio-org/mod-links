@@ -4,7 +4,7 @@
 
 ### New APIs versions
 * Provides `API_NAME vX.Y`
-* Requires `API_NAME vX.Y`
+* Requires `instance-storage v10.0 or v11.0`
 
 ### Features
 * Description ([ISSUE](https://folio-org.atlassian.net//browse/ISSUE))
