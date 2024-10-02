@@ -1,5 +1,8 @@
 package org.folio.entlinks.integration.kafka;
 
+import static org.folio.spring.tools.kafka.KafkaUtils.getTenantTopicName;
+import static org.folio.spring.tools.kafka.KafkaUtils.toKafkaHeaders;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,14 +14,13 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.codehaus.plexus.util.StringUtils;
 import org.folio.entlinks.integration.dto.event.BaseEvent;
 import org.folio.entlinks.utils.DateUtils;
-import org.folio.entlinks.utils.KafkaUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @Log4j2
 @RequiredArgsConstructor
-public class EventProducer<T extends BaseEvent> {
+public class EventProducer<T> {
 
   private final KafkaTemplate<String, T> template;
   private final String topicName;
@@ -31,7 +33,7 @@ public class EventProducer<T extends BaseEvent> {
     log.debug("Sending event to Kafka [topic: {}, body: {}]", topicName, msgBody);
     if (headers.length % 2 != 0) {
       throw new IllegalArgumentException(
-          String.format("Wrong number of %s header key and value pairs are provided", headers.length));
+        String.format("Wrong number of %s header key and value pairs are provided", headers.length));
     }
     var headersMap = new HashMap<String, Collection<String>>();
     for (int i = 0; i < headers.length; i += 2) {
@@ -42,17 +44,26 @@ public class EventProducer<T extends BaseEvent> {
   }
 
   public void sendMessages(List<T> msgBodies) {
-    log.info("Sending events to Kafka [topic: {}, number: {}]", topicName, msgBodies.size());
-    log.trace("Sending events to Kafka [topic: {}, bodies: {}]", topicName, msgBodies);
+    if (log.isTraceEnabled()) {
+      log.trace("Sending events to Kafka [topic: {}, bodies: {}]", topicName, msgBodies);
+    } else {
+      log.info("Sending events to Kafka [topic: {}, number: {}]", topicName, msgBodies.size());
+    }
     msgBodies.stream()
       .map(this::toProducerRecord)
       .forEach(template::send);
   }
 
+  private ProducerRecord<String, T> toProducerRecord(T msgBody) {
+    return toProducerRecord(null, msgBody, Collections.emptyMap());
+  }
+
   private ProducerRecord<String, T> toProducerRecord(String key, T msgBody,
                                                      Map<String, Collection<String>> headersMap) {
-    msgBody.setTenant(context.getTenantId());
-    msgBody.setTs(DateUtils.currentTsInString());
+    if (msgBody instanceof BaseEvent baseEvent) {
+      baseEvent.setTenant(context.getTenantId());
+      baseEvent.setTs(DateUtils.currentTsInString());
+    }
 
     ProducerRecord<String, T> producerRecord;
     if (StringUtils.isBlank(key)) {
@@ -61,20 +72,16 @@ public class EventProducer<T extends BaseEvent> {
       producerRecord = new ProducerRecord<>(topicName(), key, msgBody);
     }
 
-    KafkaUtils.toKafkaHeaders(context.getOkapiHeaders())
+    toKafkaHeaders(context.getOkapiHeaders())
       .forEach(header -> producerRecord.headers().add(header));
 
-    KafkaUtils.toKafkaHeaders(headersMap)
+    toKafkaHeaders(headersMap)
       .forEach(header -> producerRecord.headers().add(header));
 
     return producerRecord;
   }
 
-  private ProducerRecord<String, T> toProducerRecord(T msgBody) {
-    return toProducerRecord(null, msgBody, Collections.emptyMap());
-  }
-
   private String topicName() {
-    return org.folio.spring.tools.kafka.KafkaUtils.getTenantTopicName(topicName, context.getTenantId());
+    return getTenantTopicName(topicName, context.getTenantId());
   }
 }

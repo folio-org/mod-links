@@ -39,6 +39,10 @@
     {
       "id": "consortia",
       "version": "1.0"
+    },
+    {
+      "id": "specification-storage",
+      "version": "1.0"
     }
   ],
   "provides": [
