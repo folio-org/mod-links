@@ -14,6 +14,7 @@ import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.event.DomainEvent;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
 import org.folio.entlinks.integration.kafka.EventProducer;
+import org.folio.rspec.domain.dto.UpdateRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -150,13 +151,19 @@ public class KafkaConfiguration {
   }
 
   @Bean
-  public <T> ProducerFactory<String, DomainEvent<T>> domainProducerFactory(KafkaProperties kafkaProperties) {
+  public <T> ProducerFactory<String, T> domainProducerFactory(KafkaProperties kafkaProperties) {
     return getProducerConfigProps(kafkaProperties);
   }
 
   @Bean
   public <T> KafkaTemplate<String, DomainEvent<T>> domainKafkaTemplate(
     ProducerFactory<String, DomainEvent<T>> domainProducerFactory) {
+    return new KafkaTemplate<>(domainProducerFactory);
+  }
+
+  @Bean
+  public KafkaTemplate<String, UpdateRequestEvent> specificationRequestKafkaTemplate(
+    ProducerFactory<String, UpdateRequestEvent> domainProducerFactory) {
     return new KafkaTemplate<>(domainProducerFactory);
   }
 
@@ -170,6 +177,12 @@ public class KafkaConfiguration {
   public <T> EventProducer<DomainEvent<T>> authoritySourceFileDomainMessageProducerService(
     KafkaTemplate<String, DomainEvent<T>> template) {
     return new EventProducer<>(template, "authority.authority-source-file");
+  }
+
+  @Bean("subfieldUpdateRequestEventMessageProducer")
+  public EventProducer<UpdateRequestEvent> specificationRequestEventMessageProducerService(
+    KafkaTemplate<String, UpdateRequestEvent> template) {
+    return new EventProducer<>(template, "specification-storage.specification.update");
   }
 
   private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(

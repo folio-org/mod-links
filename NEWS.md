@@ -7,7 +7,7 @@
 * Requires `instance-storage v10.0 or v11.0`
 
 ### Features
-* Description ([ISSUE](https://folio-org.atlassian.net//browse/ISSUE))
+* Define $9 subfield definitions for MARC bibliographic records ([MODELINKS-255](https://folio-org.atlassian.net//browse/MODELINKS-255))
 
 ### Bug fixes
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))

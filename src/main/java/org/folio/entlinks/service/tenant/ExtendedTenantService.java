@@ -21,6 +21,7 @@ public class ExtendedTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final KafkaAdminService kafkaAdminService;
   private final ReferenceDataLoader referenceDataLoader;
+  private final MarcSpecificationUpdateService specificationUpdateService;
 
   public ExtendedTenantService(JdbcTemplate jdbcTemplate,
                                FolioExecutionContext context,
@@ -28,12 +29,14 @@ public class ExtendedTenantService extends TenantService {
                                FolioSpringLiquibase folioSpringLiquibase,
                                FolioExecutionContext folioExecutionContext,
                                PrepareSystemUserService folioPrepareSystemUserService,
-                               ReferenceDataLoader referenceDataLoader) {
+                               ReferenceDataLoader referenceDataLoader,
+                               MarcSpecificationUpdateService specificationUpdateService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.folioPrepareSystemUserService = folioPrepareSystemUserService;
     this.folioExecutionContext = folioExecutionContext;
     this.kafkaAdminService = kafkaAdminService;
     this.referenceDataLoader = referenceDataLoader;
+    this.specificationUpdateService = specificationUpdateService;
   }
 
   @Override
@@ -42,6 +45,11 @@ public class ExtendedTenantService extends TenantService {
     kafkaAdminService.createTopics(folioExecutionContext.getTenantId());
     kafkaAdminService.restartEventListeners();
     folioPrepareSystemUserService.setupSystemUser();
+    try {
+      specificationUpdateService.sendSpecificationRequests();
+    } catch (Exception e) {
+      log.warn("Failed to send MARC specification updates requests", e);
+    }
   }
 
   @Override

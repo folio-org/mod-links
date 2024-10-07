@@ -32,7 +32,7 @@ spring:
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
   kafka:
-    bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:29092}
     consumer:
       max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:50}
     security:
