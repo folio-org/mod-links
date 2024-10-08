@@ -57,6 +57,9 @@ folio:
       - name: authority.authority-source-file
         numPartitions: 1
         replicationFactor:
+      - name: specification-storage.specification.update
+        numPartitions: 1
+        replicationFactor:
     listener:
       authority:
         concurrency: 1

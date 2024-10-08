@@ -4,9 +4,10 @@
 
 ### New APIs versions
 * Provides `API_NAME vX.Y`
-* Requires `API_NAME vX.Y`
+* Requires `instance-storage v10.0 or v11.0`
 
 ### Features
+* Define $9 subfield definitions for MARC bibliographic records ([MODELINKS-255](https://folio-org.atlassian.net//browse/MODELINKS-255))
 * Update `source-storage-source-records to v3.2` and rename permissions ([MODELINKS-257](https://folio-org.atlassian.net/browse/MODELINKS-257))
 
 ### Bug fixes

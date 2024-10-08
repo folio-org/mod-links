@@ -29,6 +29,8 @@ class ExtendedTenantServiceTest {
   private KafkaAdminService kafkaAdminService;
   @Mock
   private PrepareSystemUserService prepareSystemUserService;
+  @Mock
+  private MarcSpecificationUpdateService specificationUpdateService;
 
   @Test
   void initializeTenant_positive() {
@@ -36,12 +38,14 @@ class ExtendedTenantServiceTest {
     doNothing().when(prepareSystemUserService).setupSystemUser();
     doNothing().when(kafkaAdminService).createTopics(TENANT_ID);
     doNothing().when(kafkaAdminService).restartEventListeners();
+    doNothing().when(specificationUpdateService).sendSpecificationRequests();
 
     tenantService.afterTenantUpdate(tenantAttributes());
 
     verify(prepareSystemUserService).setupSystemUser();
     verify(kafkaAdminService).createTopics(TENANT_ID);
     verify(kafkaAdminService).restartEventListeners();
+    verify(specificationUpdateService).sendSpecificationRequests();
   }
 
   @Test

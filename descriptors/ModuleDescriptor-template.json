@@ -20,7 +20,7 @@
     },
     {
       "id": "instance-storage",
-      "version": "10.0"
+      "version": "10.0 11.0"
     },
     {
       "id": "mapping-rules-provider",
@@ -38,6 +38,10 @@
     },
     {
       "id": "consortia",
+      "version": "1.0"
+    },
+    {
+      "id": "specification-storage",
       "version": "1.0"
     }
   ],
