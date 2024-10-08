@@ -7,7 +7,7 @@
 * Requires `API_NAME vX.Y`
 
 ### Features
-* Description ([ISSUE](https://folio-org.atlassian.net//browse/ISSUE))
+* Update `source-storage-source-records to v3.2` and rename permissions ([MODELINKS-257](https://folio-org.atlassian.net/browse/MODELINKS-257))
 
 ### Bug fixes
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))
