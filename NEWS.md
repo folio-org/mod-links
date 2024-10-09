@@ -7,6 +7,7 @@
 * Requires `instance-storage v10.0 or v11.0`
 
 ### Features
+* Update instance-authority linking rules to include v, x, y, z subfields ([MODELINKS-252](https://folio-org.atlassian.net//browse/MODELINKS-252))
 * Define $9 subfield definitions for MARC bibliographic records ([MODELINKS-255](https://folio-org.atlassian.net//browse/MODELINKS-255))
 
 ### Bug fixes

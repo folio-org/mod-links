@@ -309,7 +309,11 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
         subfieldChangeEmpty("c"),
         subfieldChange("d", "1756-1791."),
         subfieldChangeEmpty("j"),
-        subfieldChange("q", "(Jules)")
+        subfieldChange("q", "(Jules)"),
+        subfieldChangeEmpty("v"),
+        subfieldChangeEmpty("x"),
+        subfieldChangeEmpty("y"),
+        subfieldChangeEmpty("z")
       )),
       new FieldChange().field("600").subfields(List.of(
         subfieldChange("a", "Lansing, John"),
@@ -329,7 +333,11 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
         subfieldChange("q", "(Jules)"),
         subfieldChangeEmpty("r"),
         subfieldChangeEmpty("s"),
-        subfieldChange("t", "Black Eagles")
+        subfieldChange("t", "Black Eagles"),
+        subfieldChangeEmpty("v"),
+        subfieldChangeEmpty("x"),
+        subfieldChangeEmpty("y"),
+        subfieldChangeEmpty("z")
       )),
       new FieldChange().field("700").subfields(List.of(
         subfieldChange("a", "Lansing, John"),
@@ -349,7 +357,11 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
         subfieldChange("q", "(Jules)"),
         subfieldChangeEmpty("r"),
         subfieldChangeEmpty("s"),
-        subfieldChange("t", "Black Eagles")
+        subfieldChange("t", "Black Eagles"),
+        subfieldChangeEmpty("v"),
+        subfieldChangeEmpty("x"),
+        subfieldChangeEmpty("y"),
+        subfieldChangeEmpty("z")
       )),
       new FieldChange().field("800").subfields(List.of(
         subfieldChange("a", "Lansing, John"),
@@ -369,7 +381,11 @@ class AuthorityEventListenerIT extends IntegrationTestBase {
         subfieldChange("q", "(Jules)"),
         subfieldChangeEmpty("r"),
         subfieldChangeEmpty("s"),
-        subfieldChange("t", "Black Eagles")
+        subfieldChange("t", "Black Eagles"),
+        subfieldChangeEmpty("v"),
+        subfieldChangeEmpty("x"),
+        subfieldChangeEmpty("y"),
+        subfieldChangeEmpty("z")
       )),
       new FieldChange().field("240").subfields(List.of(
         subfieldChange("a", "Black Eagles"),

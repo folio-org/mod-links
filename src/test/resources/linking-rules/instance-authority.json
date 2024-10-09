@@ -9,7 +9,11 @@
       "c",
       "d",
       "j",
-      "q"
+      "q",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "validation": {
       "existence": [
@@ -27,7 +31,11 @@
     "authoritySubfields": [
       "a",
       "b",
-      "c"
+      "c",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "validation": {
       "existence": [
@@ -46,7 +54,11 @@
       "a",
       "c",
       "e",
-      "q"
+      "q",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "validation": {
       "existence": [
@@ -75,7 +87,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -199,7 +215,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -223,7 +243,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -245,7 +269,11 @@
       "t",
       "d",
       "g",
-      "n"
+      "n",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -267,7 +295,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -278,7 +310,11 @@
     "authoritySubfields": [
       "a",
       "b",
-      "g"
+      "g",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -288,7 +324,11 @@
     "authorityField": "151",
     "authoritySubfields": [
       "a",
-      "g"
+      "g",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -297,7 +337,11 @@
     "bibField": "655",
     "authorityField": "155",
     "authoritySubfields": [
-      "a"
+      "a",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -323,7 +367,11 @@
       "r",
       "s",
       "t",
-      "g"
+      "g",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -347,7 +395,11 @@
       "t",
       "d",
       "g",
-      "n"
+      "n",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -369,7 +421,11 @@
       "t",
       "d",
       "g",
-      "n"
+      "n",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -391,7 +447,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -417,7 +477,11 @@
       "r",
       "s",
       "t",
-      "g"
+      "g",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -441,7 +505,11 @@
       "t",
       "d",
       "g",
-      "n"
+      "n",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -463,7 +531,11 @@
       "t",
       "d",
       "g",
-      "n"
+      "n",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   },
@@ -485,7 +557,11 @@
       "p",
       "r",
       "s",
-      "t"
+      "t",
+      "v",
+      "x",
+      "y",
+      "z"
     ],
     "autoLinkingEnabled": true
   }
