@@ -14,6 +14,7 @@ import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
 import org.folio.entlinks.integration.dto.event.DomainEvent;
 import org.folio.entlinks.integration.kafka.AuthorityChangeFilterStrategy;
 import org.folio.entlinks.integration.kafka.EventProducer;
+import org.folio.rspec.domain.dto.SpecificationUpdatedEvent;
 import org.folio.rspec.domain.dto.UpdateRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -47,7 +48,7 @@ public class KafkaConfiguration {
   @Bean
   public ConcurrentKafkaListenerContainerFactory<String, AuthorityDomainEvent> authorityListenerFactory(
     ConsumerFactory<String, AuthorityDomainEvent> consumerFactory) {
-    var factory = listenerFactory(consumerFactory);
+    var factory = listenerFactory(consumerFactory, true);
     factory.setRecordFilterStrategy(new AuthorityChangeFilterStrategy());
     return factory;
   }
@@ -65,6 +66,31 @@ public class KafkaConfiguration {
   }
 
   /**
+   * Creates and configures {@link org.springframework.kafka.core.ConsumerFactory} as Spring bean.
+   *
+   * <p>Key type - {@link String}, value - {@link SpecificationUpdatedEvent}.</p>
+   *
+   * @return typed {@link org.springframework.kafka.core.ConsumerFactory} object as Spring bean.
+   */
+  @Bean
+  public ConsumerFactory<String, SpecificationUpdatedEvent> specificationConsumerFactory(
+    KafkaProperties kafkaProperties) {
+    return consumerFactoryForEvent(kafkaProperties, SpecificationUpdatedEvent.class);
+  }
+
+  /**
+   * Creates and configures {@link org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory} as
+   * Spring bean for consuming link update report events from Apache Kafka.
+   *
+   * @return {@link org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory} object as Spring bean.
+   */
+  @Bean
+  public ConcurrentKafkaListenerContainerFactory<String, SpecificationUpdatedEvent> specificationListenerFactory(
+    ConsumerFactory<String, SpecificationUpdatedEvent> consumerFactory) {
+    return listenerFactory(consumerFactory, false);
+  }
+
+  /**
    * Creates and configures {@link org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory} as
    * Spring bean for consuming link update report events from Apache Kafka.
    *
@@ -73,7 +99,7 @@ public class KafkaConfiguration {
   @Bean
   public ConcurrentKafkaListenerContainerFactory<String, LinkUpdateReport> statsListenerFactory(
     ConsumerFactory<String, LinkUpdateReport> consumerFactory) {
-    return listenerFactory(consumerFactory);
+    return listenerFactory(consumerFactory, true);
   }
 
   /**
@@ -186,9 +212,9 @@ public class KafkaConfiguration {
   }
 
   private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(
-    ConsumerFactory<String, T> consumerFactory) {
+    ConsumerFactory<String, T> consumerFactory, boolean isBatch) {
     var factory = new ConcurrentKafkaListenerContainerFactory<String, T>();
-    factory.setBatchListener(true);
+    factory.setBatchListener(isBatch);
     factory.setConsumerFactory(consumerFactory);
     factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
     return factory;
@@ -204,6 +230,6 @@ public class KafkaConfiguration {
 
   private <T> ProducerFactory<String, T> getProducerConfigProps(KafkaProperties kafkaProperties) {
     return new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties(null),
-        new StringSerializer(), new JsonSerializer<>(objectMapper));
+      new StringSerializer(), new JsonSerializer<>(objectMapper));
   }
 }

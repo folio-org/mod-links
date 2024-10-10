@@ -69,6 +69,10 @@ folio:
         concurrency: 1
         topic-pattern: (${folio.environment}\.)(.*\.)links\.instance-authority-stats
         group-id: ${folio.environment}-mod-entities-links-stats-group
+      specification-storage:
+        concurrency: 1
+        topic-pattern: (${folio.environment}\.)(.*\.)specification-storage\.specification\.updated
+        group-id: ${folio.environment}-mod-entities-specification-storage-group
   retry:
     enabled: true
   tenant:
