@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="MODELINKS-252@@default-data:linking-rules:add-additional-subfields" author="pavlo_smahin">
+    <preConditions>
+      <tableExists tableName="instance_authority_linking_rule"/>
+    </preConditions>
+
+    <comment>Add v,x,y,z subfields to linking rules</comment>
+
+    <sql>
+      UPDATE instance_authority_linking_rule
+      SET authority_subfields = authority_subfields || 'vxyz'
+      WHERE bib_field != '240';
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.tenant;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.integration.kafka.EventProducer;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
@@ -15,6 +16,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class MarcSpecificationUpdateService {
@@ -27,6 +29,7 @@ public class MarcSpecificationUpdateService {
 
   @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 5000))
   public void sendSpecificationRequests() {
+    log.info("Sending specification update requests");
     var requestEvents = linkingRulesService.getLinkingRules().stream()
       .map(InstanceAuthorityLinkingRule::getBibField)
       .distinct()
