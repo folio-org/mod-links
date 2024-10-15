@@ -57,6 +57,9 @@ folio:
       - name: authority.authority-source-file
         numPartitions: 1
         replicationFactor:
+      - name: specification-storage.specification.update
+        numPartitions: 1
+        replicationFactor:
     listener:
       authority:
         concurrency: 1
@@ -66,6 +69,10 @@ folio:
         concurrency: 1
         topic-pattern: (${folio.environment}\.)(.*\.)links\.instance-authority-stats
         group-id: ${folio.environment}-mod-entities-links-stats-group
+      specification-storage:
+        concurrency: 1
+        topic-pattern: (${folio.environment}\.)(.*\.)specification-storage\.specification\.updated
+        group-id: ${folio.environment}-mod-entities-specification-storage-group
   retry:
     enabled: true
   tenant:

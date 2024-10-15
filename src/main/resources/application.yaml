@@ -32,7 +32,7 @@ spring:
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
   kafka:
-    bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:29092}
     consumer:
       max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:50}
     security:
@@ -95,6 +95,10 @@ folio:
         concurrency: ${KAFKA_INSTANCE_AUTHORITY_STATS_CONSUMER_CONCURRENCY:1}
         topic-pattern: (${folio.environment}\.)(.*\.)links\.instance-authority-stats
         group-id: ${folio.environment}-mod-entities-links-stats-group
+      specification-storage:
+        concurrency: 1
+        topic-pattern: (${folio.environment}\.)(.*\.)specification-storage\.specification\.updated
+        group-id: ${folio.environment}-mod-entities-specification-storage-group
   instance-authority:
     change:
       numPartitions: ${KAFKA_INSTANCE_AUTHORITY_CHANGE_PARTITIONS:100}
