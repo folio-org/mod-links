@@ -9,11 +9,7 @@
       "c",
       "d",
       "j",
-      "q",
-      "v",
-      "x",
-      "y",
-      "z"
+      "q"
     ],
     "validation": {
       "existence": [
@@ -31,11 +27,7 @@
     "authoritySubfields": [
       "a",
       "b",
-      "c",
-      "v",
-      "x",
-      "y",
-      "z"
+      "c"
     ],
     "validation": {
       "existence": [
@@ -54,11 +46,7 @@
       "a",
       "c",
       "e",
-      "q",
-      "v",
-      "x",
-      "y",
-      "z"
+      "q"
     ],
     "validation": {
       "existence": [
@@ -87,11 +75,7 @@
       "p",
       "r",
       "s",
-      "t",
-      "v",
-      "x",
-      "y",
-      "z"
+      "t"
     ],
     "autoLinkingEnabled": true
   },
@@ -367,11 +351,7 @@
       "r",
       "s",
       "t",
-      "g",
-      "v",
-      "x",
-      "y",
-      "z"
+      "g"
     ],
     "autoLinkingEnabled": true
   },
@@ -395,11 +375,7 @@
       "t",
       "d",
       "g",
-      "n",
-      "v",
-      "x",
-      "y",
-      "z"
+      "n"
     ],
     "autoLinkingEnabled": true
   },
@@ -421,11 +397,7 @@
       "t",
       "d",
       "g",
-      "n",
-      "v",
-      "x",
-      "y",
-      "z"
+      "n"
     ],
     "autoLinkingEnabled": true
   },
@@ -447,11 +419,7 @@
       "p",
       "r",
       "s",
-      "t",
-      "v",
-      "x",
-      "y",
-      "z"
+      "t"
     ],
     "autoLinkingEnabled": true
   },
@@ -477,11 +445,7 @@
       "r",
       "s",
       "t",
-      "g",
-      "v",
-      "x",
-      "y",
-      "z"
+      "g"
     ],
     "autoLinkingEnabled": true
   },
@@ -505,11 +469,7 @@
       "t",
       "d",
       "g",
-      "n",
-      "v",
-      "x",
-      "y",
-      "z"
+      "n"
     ],
     "autoLinkingEnabled": true
   },
@@ -531,11 +491,7 @@
       "t",
       "d",
       "g",
-      "n",
-      "v",
-      "x",
-      "y",
-      "z"
+      "n"
     ],
     "autoLinkingEnabled": true
   },
@@ -557,11 +513,7 @@
       "p",
       "r",
       "s",
-      "t",
-      "v",
-      "x",
-      "y",
-      "z"
+      "t"
     ],
     "autoLinkingEnabled": true
   }

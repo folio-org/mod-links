@@ -9,12 +9,12 @@
       <tableExists tableName="instance_authority_linking_rule"/>
     </preConditions>
 
-    <comment>Add v,x,y,z subfields to linking rules</comment>
+    <comment>Add v,x,y,z subfields to 6XX linking rules</comment>
 
     <sql>
       UPDATE instance_authority_linking_rule
       SET authority_subfields = authority_subfields || 'vxyz'
-      WHERE bib_field != '240';
+      WHERE bib_field like ('6%')
     </sql>
   </changeSet>
 
