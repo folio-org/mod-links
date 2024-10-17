@@ -9,6 +9,7 @@
 ### Features
 * Update instance-authority 6XX linking rules to include v, x, y, z subfields ([MODELINKS-252](https://folio-org.atlassian.net//browse/MODELINKS-252))
 * Define $9 subfield definitions for MARC bibliographic records ([MODELINKS-255](https://folio-org.atlassian.net//browse/MODELINKS-255))
+* Update `source-storage-source-records to v3.2` and rename permissions ([MODELINKS-257](https://folio-org.atlassian.net/browse/MODELINKS-257))
 
 ### Bug fixes
 * Do not delete kafka topics if tenant collection topic feature is enabled ([MODELINKS-233](https://folio-org.atlassian.net/browse/MODELINKS-233))

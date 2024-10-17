@@ -16,7 +16,7 @@
     },
     {
       "id": "source-storage-source-records",
-      "version": "3.1"
+      "version": "3.2"
     },
     {
       "id": "instance-storage",
@@ -68,7 +68,7 @@
             "instance-authority-links.instances.collection.put"
           ],
           "modulePermissions": [
-            "source-storage.records.fetch",
+            "source-storage.parsed-records.fetch.collection.post",
             "search.authorities.collection.get",
             "mapping-metadata.get",
             "inventory-storage.instances.item.get",
@@ -163,7 +163,7 @@
             "instance-authority-links.suggestions.post"
           ],
           "modulePermissions": [
-            "source-storage.records.fetch",
+            "source-storage.parsed-records.fetch.collection.post",
             "user-tenants.collection.get"
           ]
         }
@@ -677,12 +677,12 @@
       "permissions": [
         "inventory-storage.instances.item.get",
         "inventory-storage.instances.item.put",
-        "mapping-metadata.get",
+        "mapping-metadata.type.item.get",
         "mapping-rules.get",
-        "source-storage.sourceRecords.get",
+        "source-storage.source-records.item.get",
         "users.collection.get",
         "user-tenants.collection.get",
-        "source-storage.records.fetch"
+        "source-storage.parsed-records.fetch.collection.post"
       ]
     }
   },
