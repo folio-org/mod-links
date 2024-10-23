@@ -53,6 +53,7 @@
 * Set auto_linking_enabled in instance_authority_linking_rule for 6xx fields ([MODELINKS-220](https://folio-org.atlassian.net/browse/MODELINKS-220))
 * Add Authority source file Kafka topic and publisher for update event ([MODELINKS-202](https://folio-org.atlassian.net/browse/MODELINKS-202))
 * Extend authorities with additional fields for Advanced References Classification ([MODELINKS-248](https://issues.folio.org/browse/MODELINKS-248))
+* Extend Authority with saft* fields having custom mapping ([MODELINKS-267](https://issues.folio.org/browse/MODELINKS-267))
 
 ### Bug fixes
 * Fix secure setup of system users by default ([MODELINKS-135](https://issues.folio.org/browse/MODELINKS-135))

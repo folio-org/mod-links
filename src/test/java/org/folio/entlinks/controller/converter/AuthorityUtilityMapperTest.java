@@ -3,15 +3,25 @@ package org.folio.entlinks.controller.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING_TRUNC;
 import static org.folio.support.base.TestConstants.TEST_STRING;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -89,7 +99,7 @@ class AuthorityUtilityMapperTest {
   }
 
   @ParameterizedTest
-  @MethodSource("headingTypeAndValueProvider")
+  @MethodSource("saftHeadingTypeAndValueProvider")
   void testExtractAuthoritySaftHeadingsWithNonNullValues(String propertyType, String propertyValue) {
     switch (propertyType) {
       case PERSONAL_NAME_HEADING -> source.setSaftPersonalName(Collections.singletonList(propertyValue));
@@ -102,6 +112,19 @@ class AuthorityUtilityMapperTest {
       case TOPICAL_TERM_HEADING -> source.setSaftTopicalTerm(Collections.singletonList(propertyValue));
       case GEOGRAPHIC_NAME_HEADING -> source.setSaftGeographicName(Collections.singletonList(propertyValue));
       case GENRE_TERM_HEADING -> source.setSaftGenreTerm(Collections.singletonList(propertyValue));
+      case PERSONAL_NAME_HEADING_TRUNC -> source.setSaftPersonalNameTrunc(Collections.singletonList(propertyValue));
+      case PERSONAL_NAME_TITLE_HEADING_TRUNC ->
+          source.setSaftPersonalNameTitleTrunc(Collections.singletonList(propertyValue));
+      case CORPORATE_NAME_HEADING_TRUNC -> source.setSaftCorporateNameTrunc(Collections.singletonList(propertyValue));
+      case CORPORATE_NAME_TITLE_HEADING_TRUNC ->
+          source.setSaftCorporateNameTitleTrunc(Collections.singletonList(propertyValue));
+      case MEETING_NAME_HEADING_TRUNC -> source.setSaftMeetingNameTrunc(Collections.singletonList(propertyValue));
+      case MEETING_NAME_TITLE_HEADING_TRUNC ->
+          source.setSaftMeetingNameTitleTrunc(Collections.singletonList(propertyValue));
+      case UNIFORM_TITLE_HEADING_TRUNC -> source.setSaftUniformTitleTrunc(Collections.singletonList(propertyValue));
+      case TOPICAL_TERM_HEADING_TRUNC -> source.setSaftTopicalTermTrunc(Collections.singletonList(propertyValue));
+      case GEOGRAPHIC_NAME_HEADING_TRUNC -> source.setSaftGeographicNameTrunc(Collections.singletonList(propertyValue));
+      case GENRE_TERM_HEADING_TRUNC -> source.setSaftGenreTermTrunc(Collections.singletonList(propertyValue));
       default -> fail("Invalid saft heading type - {} cannot be mapped", propertyType);
     }
 
@@ -139,7 +162,7 @@ class AuthorityUtilityMapperTest {
   }
 
   @ParameterizedTest
-  @MethodSource("headingTypeAndValueProvider")
+  @MethodSource("saftHeadingTypeAndValueProvider")
   void testExtractAuthorityDtoSaftHeadings(String headingType, String headingValue) {
 
     List<HeadingRef> saftHeadings = new ArrayList<>();
@@ -159,6 +182,18 @@ class AuthorityUtilityMapperTest {
       case TOPICAL_TERM_HEADING -> assertTrue(source.getSaftTopicalTerm().contains(headingValue));
       case GEOGRAPHIC_NAME_HEADING -> assertTrue(source.getSaftGeographicName().contains(headingValue));
       case GENRE_TERM_HEADING -> assertTrue(source.getSaftGenreTerm().contains(headingValue));
+      case PERSONAL_NAME_HEADING_TRUNC -> assertTrue(source.getSaftPersonalNameTrunc().contains(headingValue));
+      case PERSONAL_NAME_TITLE_HEADING_TRUNC ->
+          assertTrue(source.getSaftPersonalNameTitleTrunc().contains(headingValue));
+      case CORPORATE_NAME_HEADING_TRUNC -> assertTrue(source.getSaftCorporateNameTrunc().contains(headingValue));
+      case CORPORATE_NAME_TITLE_HEADING_TRUNC ->
+          assertTrue(source.getSaftCorporateNameTitleTrunc().contains(headingValue));
+      case MEETING_NAME_HEADING_TRUNC -> assertTrue(source.getSaftMeetingNameTrunc().contains(headingValue));
+      case MEETING_NAME_TITLE_HEADING_TRUNC -> assertTrue(source.getSaftMeetingNameTitleTrunc().contains(headingValue));
+      case UNIFORM_TITLE_HEADING_TRUNC -> assertTrue(source.getSaftUniformTitleTrunc().contains(headingValue));
+      case TOPICAL_TERM_HEADING_TRUNC -> assertTrue(source.getSaftTopicalTermTrunc().contains(headingValue));
+      case GEOGRAPHIC_NAME_HEADING_TRUNC -> assertTrue(source.getSaftGeographicNameTrunc().contains(headingValue));
+      case GENRE_TERM_HEADING_TRUNC -> assertTrue(source.getSaftGenreTermTrunc().contains(headingValue));
       default -> fail("Invalid saft heading type - {} cannot be mapped", headingType);
     }
   }
@@ -225,39 +260,64 @@ class AuthorityUtilityMapperTest {
     );
   }
 
+  private static Stream<Arguments> saftHeadingTypeAndValueProvider() {
+    return Stream.of(
+        arguments(PERSONAL_NAME_HEADING, TEST_STRING),
+        arguments(PERSONAL_NAME_TITLE_HEADING, TEST_STRING),
+        arguments(CORPORATE_NAME_HEADING, TEST_STRING),
+        arguments(CORPORATE_NAME_TITLE_HEADING, TEST_STRING),
+        arguments(MEETING_NAME_HEADING, TEST_STRING),
+        arguments(MEETING_NAME_TITLE_HEADING, TEST_STRING),
+        arguments(UNIFORM_TITLE_HEADING, TEST_STRING),
+        arguments(TOPICAL_TERM_HEADING, TEST_STRING),
+        arguments(GEOGRAPHIC_NAME_HEADING, TEST_STRING),
+        arguments(GENRE_TERM_HEADING, TEST_STRING),
+        arguments(PERSONAL_NAME_HEADING_TRUNC, TEST_STRING),
+        arguments(PERSONAL_NAME_TITLE_HEADING_TRUNC, TEST_STRING),
+        arguments(CORPORATE_NAME_HEADING_TRUNC, TEST_STRING),
+        arguments(CORPORATE_NAME_TITLE_HEADING_TRUNC, TEST_STRING),
+        arguments(MEETING_NAME_HEADING_TRUNC, TEST_STRING),
+        arguments(MEETING_NAME_TITLE_HEADING_TRUNC, TEST_STRING),
+        arguments(UNIFORM_TITLE_HEADING_TRUNC, TEST_STRING),
+        arguments(TOPICAL_TERM_HEADING_TRUNC, TEST_STRING),
+        arguments(GEOGRAPHIC_NAME_HEADING_TRUNC, TEST_STRING),
+        arguments(GENRE_TERM_HEADING_TRUNC, TEST_STRING)
+    );
+  }
+
   private static List<HeadingRef> getHeadingRefs() {
     return List.of(
-        new HeadingRef(PERSONAL_NAME_HEADING, PERSONAL_NAME_HEADING),
-        new HeadingRef(PERSONAL_NAME_HEADING, "broaderTerm1", Set.of(RelationshipType.BROADER_TERM)),
-        new HeadingRef(CORPORATE_NAME_HEADING, CORPORATE_NAME_HEADING),
-        new HeadingRef(CORPORATE_NAME_HEADING, "broaderTerm2", Set.of(RelationshipType.BROADER_TERM)),
-        new HeadingRef(CORPORATE_NAME_HEADING, "laterHeading", Set.of(RelationshipType.LATER_HEADING)),
-        new HeadingRef(MEETING_NAME_HEADING, MEETING_NAME_HEADING),
-        new HeadingRef(MEETING_NAME_HEADING, "narrowerTerm", Set.of(RelationshipType.NARROWER_TERM)),
-        new HeadingRef(MEETING_NAME_HEADING, "narrower-later", Set.of(RelationshipType.NARROWER_TERM,
+        new HeadingRef(PERSONAL_NAME_HEADING_TRUNC, PERSONAL_NAME_HEADING_TRUNC),
+        new HeadingRef(PERSONAL_NAME_HEADING_TRUNC, "broaderTerm1", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(CORPORATE_NAME_HEADING_TRUNC, CORPORATE_NAME_HEADING_TRUNC),
+        new HeadingRef(CORPORATE_NAME_HEADING_TRUNC, "broaderTerm2", Set.of(RelationshipType.BROADER_TERM)),
+        new HeadingRef(CORPORATE_NAME_HEADING_TRUNC, "laterHeading", Set.of(RelationshipType.LATER_HEADING)),
+        new HeadingRef(MEETING_NAME_HEADING_TRUNC, MEETING_NAME_HEADING_TRUNC),
+        new HeadingRef(MEETING_NAME_HEADING_TRUNC, "narrowerTerm", Set.of(RelationshipType.NARROWER_TERM)),
+        new HeadingRef(MEETING_NAME_HEADING_TRUNC, "narrower-later", Set.of(RelationshipType.NARROWER_TERM,
             RelationshipType.LATER_HEADING)),
-        new HeadingRef(TOPICAL_TERM_HEADING, TOPICAL_TERM_HEADING),
-        new HeadingRef(TOPICAL_TERM_HEADING, "broaderTerm1"),
-        new HeadingRef(TOPICAL_TERM_HEADING, "earlierHeading", Set.of(RelationshipType.EARLIER_HEADING)));
+        new HeadingRef(TOPICAL_TERM_HEADING_TRUNC, TOPICAL_TERM_HEADING_TRUNC),
+        new HeadingRef(TOPICAL_TERM_HEADING_TRUNC, "broaderTerm1"),
+        new HeadingRef(TOPICAL_TERM_HEADING_TRUNC, "earlierHeading", Set.of(RelationshipType.EARLIER_HEADING)));
   }
 
   private static AuthorityDto getAuthorityDtoWithSaftTerms() {
     AuthorityDto authorityDto = new AuthorityDto();
     authorityDto.setSaftBroaderTerm(List.of(
-        new RelatedHeading("broaderTerm1", "personalName"),
-        new RelatedHeading("broaderTerm2", "corporateName")));
+        new RelatedHeading("broaderTerm1", PERSONAL_NAME_HEADING_TRUNC),
+        new RelatedHeading("broaderTerm2", CORPORATE_NAME_HEADING_TRUNC)));
     authorityDto.setSaftNarrowerTerm(List.of(
-        new RelatedHeading("narrowerTerm", "meetingName"),
-        new RelatedHeading("narrower-later", "meetingName")));
+        new RelatedHeading("narrowerTerm", MEETING_NAME_HEADING_TRUNC),
+        new RelatedHeading("narrower-later", MEETING_NAME_HEADING_TRUNC)));
     authorityDto.setSaftEarlierHeading(List.of(
-        new RelatedHeading("earlierHeading", "topicalTerm")));
+        new RelatedHeading("earlierHeading", TOPICAL_TERM_HEADING_TRUNC)));
     authorityDto.setSaftLaterHeading(List.of(
-        new RelatedHeading("laterHeading", "corporateName"),
-        new RelatedHeading("narrower-later", "meetingName")));
-    authorityDto.setSaftPersonalName(List.of(PERSONAL_NAME_HEADING, "broaderTerm1"));
-    authorityDto.setSaftCorporateName(List.of(CORPORATE_NAME_HEADING, "broaderTerm2", "laterHeading"));
-    authorityDto.setSaftMeetingName(List.of(MEETING_NAME_HEADING, "narrowerTerm", "narrower-later"));
-    authorityDto.setSaftTopicalTerm(List.of(TOPICAL_TERM_HEADING, "broaderTerm1", "earlierHeading"));
+        new RelatedHeading("laterHeading", CORPORATE_NAME_HEADING_TRUNC),
+        new RelatedHeading("narrower-later", MEETING_NAME_HEADING_TRUNC)));
+    authorityDto.setSaftPersonalNameTrunc(List.of(PERSONAL_NAME_HEADING_TRUNC, "broaderTerm1"));
+    authorityDto.setSaftCorporateNameTrunc(List.of(CORPORATE_NAME_HEADING_TRUNC, "broaderTerm2", "laterHeading"));
+    authorityDto.setSaftMeetingNameTrunc(List.of(MEETING_NAME_HEADING_TRUNC, "narrowerTerm", "narrower-later"));
+    authorityDto.setSaftTopicalTermTrunc(List.of(TOPICAL_TERM_HEADING_TRUNC, "broaderTerm1", "earlierHeading"));
     return authorityDto;
   }
 }

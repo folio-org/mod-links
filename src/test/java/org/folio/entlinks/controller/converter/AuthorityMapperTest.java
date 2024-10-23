@@ -318,5 +318,25 @@ class AuthorityMapperTest {
         "JSON should not contain 'saftEarlierHeading' key when it's an empty array");
     assertFalse(serializedDto.contains("\"saftLaterHeading\""),
         "JSON should not contain 'saftLaterHeading' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftGenreTermTrunc\""),
+        "JSON should not contain 'saftGenreTermTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftGeographicNameTrunc\""),
+        "JSON should not contain 'saftGeographicNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftTopicalTermTrunc\""),
+        "JSON should not contain 'saftTopicalTermTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftUniformTitleTrunc\""),
+        "JSON should not contain 'saftUniformTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftMeetingNameTitleTrunc\""),
+        "JSON should not contain 'saftMeetingNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftMeetingNameTrunc\""),
+        "JSON should not contain 'saftMeetingNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftCorporateNameTitleTrunc\""),
+        "JSON should not contain 'saftCorporateNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftCorporateNameTrunc\""),
+        "JSON should not contain 'saftCorporateNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftPersonalNameTitleTrunc\""),
+        "JSON should not contain 'saftPersonalNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftPersonalNameTrunc\""),
+        "JSON should not contain 'saftPersonalNameTrunc' key when it's an empty array");
   }
 }

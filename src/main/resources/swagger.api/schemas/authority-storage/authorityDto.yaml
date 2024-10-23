@@ -168,6 +168,66 @@ properties:
     items:
       $ref: './relatedHeading.yaml'
     x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftPersonalNameTrunc:
+    type: array
+    description: See also from tracing personal name
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftPersonalNameTitleTrunc:
+    type: array
+    description: See also from tracing personal name title
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftCorporateNameTrunc:
+    type: array
+    description: See also from tracing corporate name
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftCorporateNameTitleTrunc:
+    type: array
+    description: See also from tracing corporate name title
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftMeetingNameTrunc:
+    type: array
+    description: See also from tracing meeting name
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftMeetingNameTitleTrunc:
+    type: array
+    description: See also from tracing meeting name title
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftUniformTitleTrunc:
+    type: array
+    description: See also from tracing uniform title
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftTopicalTermTrunc:
+    type: array
+    description: See also from tracing topical term
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftGenreTermTrunc:
+    type: array
+    description: See also from tracing genre/form term
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
+  saftGeographicNameTrunc:
+    type: array
+    description: See also from tracing geographic name
+    items:
+      type: string
+    x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)"
   identifiers:
     type: array
     description: An extensible set of name-value pairs of identifiers associated with the resource
