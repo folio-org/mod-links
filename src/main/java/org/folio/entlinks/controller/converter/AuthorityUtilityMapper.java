@@ -3,15 +3,25 @@ package org.folio.entlinks.controller.converter;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.CORPORATE_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GENRE_TERM_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.GEOGRAPHIC_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.MEETING_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.PERSONAL_NAME_TITLE_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.TOPICAL_TERM_HEADING_TRUNC;
 import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING;
+import static org.folio.entlinks.domain.entity.AuthorityConstants.UNIFORM_TITLE_HEADING_TRUNC;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -149,18 +159,52 @@ public class AuthorityUtilityMapper {
     if (isNotEmpty(source.getSaftGenreTerm())) {
       saftHeadings.addAll(asSftHeadings(source.getSaftGenreTerm(), GENRE_TERM_HEADING));
     }
+    extractAuthoritySaftHeadingsTruncated(source, saftHeadings);
     addRelationshipsToSaftHeadings(source, saftHeadings);
     target.setSaftHeadings(saftHeadings);
   }
 
-  private static void addRelationshipsToSaftHeadings(final AuthorityDto source, final List<HeadingRef> headingRefs) {
+  private void extractAuthoritySaftHeadingsTruncated(AuthorityDto source, List<HeadingRef> saftHeadings) {
+    if (isNotEmpty(source.getSaftPersonalNameTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftPersonalNameTrunc(), PERSONAL_NAME_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftPersonalNameTitleTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftPersonalNameTitleTrunc(), PERSONAL_NAME_TITLE_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftCorporateNameTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftCorporateNameTrunc(), CORPORATE_NAME_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftCorporateNameTitleTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftCorporateNameTitleTrunc(), CORPORATE_NAME_TITLE_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftMeetingNameTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftMeetingNameTrunc(), MEETING_NAME_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftMeetingNameTitleTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftMeetingNameTitleTrunc(), MEETING_NAME_TITLE_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftUniformTitleTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftUniformTitleTrunc(), UNIFORM_TITLE_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftTopicalTermTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftTopicalTermTrunc(), TOPICAL_TERM_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftGeographicNameTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftGeographicNameTrunc(), GEOGRAPHIC_NAME_HEADING_TRUNC));
+    }
+    if (isNotEmpty(source.getSaftGenreTermTrunc())) {
+      saftHeadings.addAll(asSftHeadings(source.getSaftGenreTermTrunc(), GENRE_TERM_HEADING_TRUNC));
+    }
+  }
+
+  private void addRelationshipsToSaftHeadings(final AuthorityDto source, final List<HeadingRef> headingRefs) {
     processRelationshipHeadings(source.getSaftBroaderTerm(), headingRefs, RelationshipType.BROADER_TERM);
     processRelationshipHeadings(source.getSaftNarrowerTerm(), headingRefs, RelationshipType.NARROWER_TERM);
     processRelationshipHeadings(source.getSaftEarlierHeading(), headingRefs, RelationshipType.EARLIER_HEADING);
     processRelationshipHeadings(source.getSaftLaterHeading(), headingRefs, RelationshipType.LATER_HEADING);
   }
 
-  private static void processRelationshipHeadings(List<RelatedHeading> relationshipHeadings,
+  private void processRelationshipHeadings(List<RelatedHeading> relationshipHeadings,
       final List<HeadingRef> headingRefs, final RelationshipType relationshipType) {
     if (isNotEmpty(relationshipHeadings)) {
       headingRefs.forEach(headingRef ->
@@ -242,12 +286,22 @@ public class AuthorityUtilityMapper {
       case TOPICAL_TERM_HEADING -> target.addSaftTopicalTermItem(headingRef.getHeading());
       case GEOGRAPHIC_NAME_HEADING -> target.addSaftGeographicNameItem(headingRef.getHeading());
       case GENRE_TERM_HEADING -> target.addSaftGenreTermItem(headingRef.getHeading());
+      case PERSONAL_NAME_HEADING_TRUNC -> target.addSaftPersonalNameTruncItem(headingRef.getHeading());
+      case PERSONAL_NAME_TITLE_HEADING_TRUNC -> target.addSaftPersonalNameTitleTruncItem(headingRef.getHeading());
+      case CORPORATE_NAME_HEADING_TRUNC -> target.addSaftCorporateNameTruncItem(headingRef.getHeading());
+      case CORPORATE_NAME_TITLE_HEADING_TRUNC -> target.addSaftCorporateNameTitleTruncItem(headingRef.getHeading());
+      case MEETING_NAME_HEADING_TRUNC -> target.addSaftMeetingNameTruncItem(headingRef.getHeading());
+      case MEETING_NAME_TITLE_HEADING_TRUNC -> target.addSaftMeetingNameTitleTruncItem(headingRef.getHeading());
+      case UNIFORM_TITLE_HEADING_TRUNC -> target.addSaftUniformTitleTruncItem(headingRef.getHeading());
+      case TOPICAL_TERM_HEADING_TRUNC -> target.addSaftTopicalTermTruncItem(headingRef.getHeading());
+      case GEOGRAPHIC_NAME_HEADING_TRUNC -> target.addSaftGeographicNameTruncItem(headingRef.getHeading());
+      case GENRE_TERM_HEADING_TRUNC -> target.addSaftGenreTermTruncItem(headingRef.getHeading());
       default -> log.warn("Invalid saft heading type - {} cannot be mapped", headingRef.getHeadingType());
     }
     extractSaftHeadingsRelationships(headingRef, target);
   }
 
-  private static void extractSaftHeadingsRelationships(HeadingRef headingRef, AuthorityDto target) {
+  private void extractSaftHeadingsRelationships(HeadingRef headingRef, AuthorityDto target) {
     if (isNotEmpty(headingRef.getRelationshipType())) {
       headingRef.getRelationshipType().forEach(
           relationshipType -> {
