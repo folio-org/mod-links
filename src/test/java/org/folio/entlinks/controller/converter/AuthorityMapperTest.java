@@ -8,7 +8,11 @@ import static org.folio.support.base.TestConstants.TEST_DATE;
 import static org.folio.support.base.TestConstants.TEST_ID;
 import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 import static org.folio.support.base.TestConstants.TEST_VERSION;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.folio.entlinks.domain.dto.AuthorityDto;
@@ -297,5 +301,47 @@ class AuthorityMapperTest {
     dto.setSubjectHeadings(TEST_PROPERTY_VALUE);
     dto.setSourceFileId(TEST_ID);
     return dto;
+  }
+
+  @Test
+  void serializedDtoShouldNotContainEmptyArraysForExtendedFields() throws JsonProcessingException {
+    AuthorityDto authorityDto = new AuthorityDto();
+    authorityDto.setSaftBroaderTerm(List.of());
+    authorityDto.setSaftNarrowerTerm(List.of());
+    authorityDto.setSaftGenreTermTrunc(List.of());
+    authorityDto.setSaftTopicalTermTrunc(List.of());
+
+    String serializedDto = new ObjectMapper().writeValueAsString(authorityDto);
+
+    assertTrue(serializedDto.contains("\"saftGenreTerm\""),
+        "JSON should contain 'saftGenreTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftBroaderTerm\""),
+        "JSON should not contain 'saftBroaderTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftNarrowerTerm\""),
+        "JSON should not contain 'saftNarrowerTerm' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftEarlierHeading\""),
+        "JSON should not contain 'saftEarlierHeading' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftLaterHeading\""),
+        "JSON should not contain 'saftLaterHeading' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftGenreTermTrunc\""),
+        "JSON should not contain 'saftGenreTermTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftGeographicNameTrunc\""),
+        "JSON should not contain 'saftGeographicNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftTopicalTermTrunc\""),
+        "JSON should not contain 'saftTopicalTermTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftUniformTitleTrunc\""),
+        "JSON should not contain 'saftUniformTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftMeetingNameTitleTrunc\""),
+        "JSON should not contain 'saftMeetingNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftMeetingNameTrunc\""),
+        "JSON should not contain 'saftMeetingNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftCorporateNameTitleTrunc\""),
+        "JSON should not contain 'saftCorporateNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftCorporateNameTrunc\""),
+        "JSON should not contain 'saftCorporateNameTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftPersonalNameTitleTrunc\""),
+        "JSON should not contain 'saftPersonalNameTitleTrunc' key when it's an empty array");
+    assertFalse(serializedDto.contains("\"saftPersonalNameTrunc\""),
+        "JSON should not contain 'saftPersonalNameTrunc' key when it's an empty array");
   }
 }

@@ -495,6 +495,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     expected.setCorporateName("headingCorporateName");
     expected.setSftCorporateName(List.of("sftCorporateName"));
     expected.setSaftCorporateName(List.of("saftCorporateName"));
+    expected.setSaftCorporateNameTrunc(List.of("saftCorporateNameTrunc"));
 
     var headers = defaultHeaders();
     headers.put(XOkapiHeaders.USER_ID, List.of(UPDATER_USER_ID));
@@ -521,6 +522,9 @@ class AuthorityControllerIT extends IntegrationTestBase {
     assertEquals(expected.getSaftPersonalName(), resultDto.getSaftPersonalName());
     assertEquals(expected.getSftCorporateName(), resultDto.getSftCorporateName());
     assertEquals(expected.getSaftCorporateName(), resultDto.getSaftCorporateName());
+    assertEquals(expected.getSaftCorporateNameTrunc(), resultDto.getSaftCorporateNameTrunc());
+    assertEquals(dto.getSaftNarrowerTerm(), resultDto.getSaftNarrowerTerm());
+    assertEquals(dto.getSaftBroaderTerm(), resultDto.getSaftBroaderTerm());
 
     var event = getConsumedEvent();
     awaitUntilAsserted(() ->

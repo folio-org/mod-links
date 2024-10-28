@@ -40,6 +40,7 @@ import org.folio.entlinks.domain.dto.LinkAction;
 import org.folio.entlinks.domain.dto.LinkUpdateReport;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.RecordType;
+import org.folio.entlinks.domain.dto.RelatedHeading;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordCollection;
 import org.folio.entlinks.domain.dto.StrippedParsedRecordParsedRecord;
@@ -412,6 +413,10 @@ public class TestDataUtils {
       dto.addSftMeetingNameItem("sftMeetingNameItem2");
       dto.addSaftMeetingNameItem("sftMeetingNameItem1");
       dto.addSaftMeetingNameItem("sftMeetingNameItem2");
+      dto.addSaftMeetingNameTruncItem("sftMeetingNameTruncItem1");
+      dto.addSaftPersonalNameTruncItem("saftPersonalTruncName");
+      dto.addSaftNarrowerTermItem(new RelatedHeading("sftMeetingNameTruncItem1", "meetingNameTrunc"));
+      dto.addSaftBroaderTermItem(new RelatedHeading("saftPersonalTruncName", "personalNameTrunc"));
 
       return dto;
     }

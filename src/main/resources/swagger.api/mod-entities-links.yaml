@@ -511,6 +511,9 @@ components:
     linkStatus:
       $ref: schemas/authority/control/linkStatus.json
 
+    authorityRelatedHeading:
+      $ref: schemas/authority-storage/relatedHeading.yaml
+
     authorityDto:
       $ref: schemas/authority-storage/authorityDto.yaml
 
