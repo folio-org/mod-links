@@ -42,8 +42,7 @@ public class LinksSuggestionService {
    *
    * @param marcBibsContent        list of bib records {@link SourceParsedContent}
    * @param marcAuthoritiesContent list of authorities {@link AuthorityParsedContent} that can be suggested as link
-   * @param rules                  linking rules
-   *                               <p>Key - bib tag, Value - list of {@link InstanceAuthorityLinkingRule}</p>
+   * @param rules                  linking rules: Key - bib tag, Value - list of {@link InstanceAuthorityLinkingRule}
    * @param linkingMatchSubfield   bib field's subfield code to use as a matching point for links
    */
   public void fillLinkDetailsWithSuggestedAuthorities(List<SourceParsedContent> marcBibsContent,
