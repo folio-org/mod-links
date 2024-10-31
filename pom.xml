@@ -36,6 +36,7 @@
 
     <awaitility.version>4.2.2</awaitility.version>
 
+    <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
     <maven-openapi-generator-plugin.version>7.9.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
@@ -432,6 +433,19 @@
       </plugin>
 
       <plugin>
+        <groupId>org.folio</groupId>
+        <artifactId>folio-module-descriptor-validator</artifactId>
+        <version>${folio-module-descriptor-validator.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven-failsafe-plugin.version}</version>
@@ -477,6 +491,14 @@
       <url>https://repository.folio.org/repository/maven-folio</url>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>folio-nexus</id>
+      <name>FOLIO Maven repository</name>
+      <url>https://repository.folio.org/repository/maven-folio</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <distributionManagement>
     <repository>
