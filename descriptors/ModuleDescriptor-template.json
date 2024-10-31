@@ -473,7 +473,7 @@
       ]
     },
     {
-      "permissionName": "mod-settings.global.read.authority-storage.gchoreet",
+      "permissionName": "mod-settings.global.read.authority-storage.get",
       "displayName": "Entities links settings - Read configuration",
       "description": "To read the configuration from mod settings.",
       "replaces": [
