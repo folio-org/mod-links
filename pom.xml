@@ -467,7 +467,7 @@
     <url>https://github.com/folio-org/${project.artifactId}</url>
     <connection>scm:git:git://github.com/folio-org/${project.artifactId}.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/${project.artifactId}.git</developerConnection>
-    <tag>release/v2.4</tag>
+    <tag>release/v3.1</tag>
   </scm>
 
   <repositories>
