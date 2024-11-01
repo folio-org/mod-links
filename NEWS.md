@@ -1,9 +1,6 @@
-## v3.1.0 YYYY-mm-DD - In progress
-### Breaking changes
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+## v3.1.0 2024-11-01
 
 ### New APIs versions
-* Provides `API_NAME vX.Y`
 * Requires `instance-storage v10.0 or v11.0`
 
 ### Features
@@ -20,11 +17,6 @@
 
 ### Tech Dept
 * Fix issue that causes repeated update of same entity with latest Hibernate versions ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
-
-### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME` `VERSION`
-* Remove `LIB_NAME`
 
 ## v3.0.0 2024-03-19
 ### Breaking changes
