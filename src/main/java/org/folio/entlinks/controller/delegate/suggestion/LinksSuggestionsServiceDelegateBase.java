@@ -25,7 +25,7 @@ import org.folio.entlinks.integration.dto.FieldParsedContent;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.entlinks.service.consortium.ConsortiumTenantExecutor;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
-import org.folio.entlinks.service.links.LinksSuggestionService;
+import org.folio.entlinks.service.links.LinksSuggestionsService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Service;
 public abstract class LinksSuggestionsServiceDelegateBase<T> implements LinksSuggestionServiceDelegate {
 
   private final InstanceAuthorityLinkingRulesService linkingRulesService;
-  private final LinksSuggestionService suggestionService;
+  private final LinksSuggestionsService suggestionService;
   private final SourceStorageClient sourceStorageClient;
   private final SourceContentMapper contentMapper;
   private final ConsortiumTenantExecutor executor;
@@ -69,7 +69,7 @@ public abstract class LinksSuggestionsServiceDelegateBase<T> implements LinksSug
     return contentMapper.convertToParsedContentCollection(marcBibsContent);
   }
 
-  protected abstract String getSearchSubfield();
+  protected abstract char getSearchSubfield();
 
   protected abstract List<Authority> findExistingAuthorities(Set<T> ids);
 
