@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.StrippedParsedRecord;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class AuthorityRuleValidationService {
 
   public AuthorityRuleValidationResult validateAuthorityData(Map<UUID, List<InstanceAuthorityLink>> linksByAuthorityId,
@@ -110,8 +108,7 @@ public class AuthorityRuleValidationService {
 
   private boolean validateAuthoritySubfieldsExistence(FieldParsedContent authorityField,
                                                       InstanceAuthorityLinkingRule rule) {
-    var authoritySubfields = authorityField.getSubfields();
-    Predicate<String> containsSubfield = authoritySubfields::containsKey;
+    Predicate<String> containsSubfield = subfield -> authorityField.hasSubfield(subfield.charAt(0));
 
     return validateAuthoritySubfieldsExistence(rule, containsSubfield);
   }

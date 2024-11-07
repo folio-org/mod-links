@@ -1,3 +1,9 @@
+## v3.1.1 2024-11-21
+### Features
+* Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
+
+---
+
 ## v3.1.0 2024-11-01
 
 ### New APIs versions

@@ -3,18 +3,18 @@ package org.folio.entlinks.controller.delegate.suggestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import org.folio.entlinks.client.SourceStorageClient;
 import org.folio.entlinks.controller.converter.SourceContentMapper;
 import org.folio.entlinks.domain.dto.LinkDetails;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.ParsedSubfield;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
-import org.folio.entlinks.service.links.LinksSuggestionService;
+import org.folio.entlinks.service.links.LinksSuggestionsService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ class LinksSuggestionsByAuthorityNaturalIdTest {
   @Mock
   private InstanceAuthorityLinkingRulesService linkingRulesService;
   @Mock
-  private LinksSuggestionService suggestionService;
+  private LinksSuggestionsService suggestionService;
   @Mock
   private AuthorityRepository authorityRepository;
   @Mock
@@ -43,7 +43,9 @@ class LinksSuggestionsByAuthorityNaturalIdTest {
   void extractIds_positive() {
     var expectedNaturalIds = List.of("test0", "test1", "test2");
 
-    var subfields = Map.of("0", expectedNaturalIds.subList(0, 2));
+    var subfields = expectedNaturalIds.subList(0, 2).stream()
+      .map(s -> new ParsedSubfield('0', s))
+      .toList();
     var linkDetails = new LinkDetails().authorityNaturalId(expectedNaturalIds.get(2));
     var field = new FieldParsedContent("100", "/", "/", subfields, linkDetails);
 
@@ -53,14 +55,14 @@ class LinksSuggestionsByAuthorityNaturalIdTest {
 
   @Test
   void extractIds_negative_noSubfieldsAndNullLinkDetails() {
-    var field = new FieldParsedContent("100", "/", "/", new HashMap<>(), null);
+    var field = new FieldParsedContent("100", "/", "/", new ArrayList<>(), null);
     var actual = delegate.extractIds(field);
     assertThat(actual).isEmpty();
   }
 
   @Test
   void extractIds_negative_noSubfieldsAndNullNaturalId() {
-    var field = new FieldParsedContent("100", "/", "/", new HashMap<>(), new LinkDetails());
+    var field = new FieldParsedContent("100", "/", "/", new ArrayList<>(), new LinkDetails());
     var actual = delegate.extractIds(field);
     assertThat(actual).isEmpty();
   }
