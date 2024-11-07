@@ -7,6 +7,7 @@ import static org.folio.entlinks.domain.dto.LinkStatus.ACTUAL;
 import static org.folio.entlinks.domain.dto.LinkStatus.ERROR;
 import static org.folio.entlinks.domain.dto.LinkStatus.NEW;
 import static org.folio.support.JsonTestUtils.asJson;
+import static org.folio.support.TestUtils.mapOf;
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.linksSuggestionsEndpoint;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -83,30 +84,32 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldActualizeLinkAndSubfields() {
-    var givenSubfields = Map.of("a", "old $a value", "0", FULL_BASE_URL + NATURAL_ID);
+  void suggestLinksForMarcRecord_shouldActualizeLinkAndSubfields() {
+    var givenSubfields = mapOf("a", "old $a value", "0", FULL_BASE_URL + NATURAL_ID, "z", "old $z value");
     var givenLinkDetails = getLinkDetails(ACTUAL, NATURAL_ID);
     var givenRecord = getRecord("100", givenLinkDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(ACTUAL, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = mapOf("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID, "z", "old $z value");
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
     doPost(linksSuggestionsEndpoint(), requestBody)
       .andExpect(status().isOk())
       .andExpect(content().json(asJson(new ParsedRecordContentCollection()
-        .records(List.of(expectedRecord)), objectMapper)));
+        .records(List.of(expectedRecord)), objectMapper), true));
   }
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLink() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLink() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -118,12 +121,13 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLinkByAuthorityId() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLinkByAuthorityId() {
     var givenSubfields = Map.of("9", LINKABLE_AUTHORITY_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -135,7 +139,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenNoSuggestionsFound() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenNoSuggestionsFound() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("110", null, givenSubfields);
 
@@ -152,7 +156,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenNoAuthoritiesFound() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenNoAuthoritiesFound() {
     var givenSubfields = Map.of("0", "noAuthority");
     var givenRecord = getRecord("100", null, givenSubfields);
 
@@ -169,7 +173,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenAutoLinkingDisabled() {
     databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, false);
 
     var givenSubfields = Map.of("0", NATURAL_ID);
@@ -180,7 +184,8 @@ class LinksSuggestionsIT extends IntegrationTestBase {
     var expectedErrorRecord = getRecord("600", expectedErrorDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord, disabledAutoLinkingRecord));
@@ -194,7 +199,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenTwoSuggestionsFound() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenTwoSuggestionsFound() {
     var naturalId = "twoAuthority";
     var authority1 = TestDataUtils.AuthorityTestData.authority(0, 0);
     authority1.setId(UUID.fromString("517f3355-081c-4aae-9209-ccb305f25f7e"));
@@ -220,12 +225,13 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLink_whenAutoLinkingIgnored() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLink_whenAutoLinkingIgnored() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("600", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID, 8);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("600", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -237,12 +243,13 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLink_whenBibField_is_600() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLink_whenBibField_is_600() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("600", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW, NATURAL_ID, 8);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("600", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -254,7 +261,7 @@ class LinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenAutoLinkingDisabled_andOnlyOneRecord() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenAutoLinkingDisabled_andOnlyOneRecord() {
     databaseHelper.updateAutoLinking(TENANT_ID, RULE_ID_OF_600_FIELD, false);
 
     var givenSubfields = Map.of("0", NATURAL_ID);

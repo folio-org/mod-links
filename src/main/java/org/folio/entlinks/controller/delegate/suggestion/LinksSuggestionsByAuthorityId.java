@@ -15,9 +15,11 @@ import org.folio.entlinks.controller.converter.SourceContentMapper;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.ParsedSubfield;
 import org.folio.entlinks.service.consortium.ConsortiumTenantExecutor;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
-import org.folio.entlinks.service.links.LinksSuggestionService;
+import org.folio.entlinks.service.links.LinksSuggestionsService;
+import org.folio.entlinks.utils.FieldUtils;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -26,11 +28,10 @@ public class LinksSuggestionsByAuthorityId extends LinksSuggestionsServiceDelega
 
   private static final Pattern UUID_REGEX =
     Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-  private static final String ID_SUBFIELD = "9";
   private final AuthorityRepository authorityRepository;
 
   public LinksSuggestionsByAuthorityId(InstanceAuthorityLinkingRulesService linkingRulesService,
-                                       LinksSuggestionService suggestionService,
+                                       LinksSuggestionsService suggestionService,
                                        AuthorityRepository repository,
                                        SourceStorageClient sourceStorageClient,
                                        SourceContentMapper contentMapper,
@@ -40,16 +41,17 @@ public class LinksSuggestionsByAuthorityId extends LinksSuggestionsServiceDelega
   }
 
   @Override
-  protected String getSearchSubfield() {
-    return ID_SUBFIELD;
+  protected char getSearchSubfield() {
+    return FieldUtils.ID_SUBFIELD_CODE;
   }
 
   @Override
   protected Set<UUID> extractIds(FieldParsedContent field) {
     var ids = new HashSet<UUID>();
-    var subfieldValues = field.getSubfields().get(ID_SUBFIELD);
+    var subfieldValues = field.getIdSubfields();
     if (isNotEmpty(subfieldValues)) {
       ids.addAll(subfieldValues.stream()
+        .map(ParsedSubfield::value)
         .filter(id -> UUID_REGEX.matcher(id).matches())
         .map(UUID::fromString)
         .collect(Collectors.toSet()));

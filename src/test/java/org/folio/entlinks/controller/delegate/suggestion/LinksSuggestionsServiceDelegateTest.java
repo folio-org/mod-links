@@ -3,6 +3,7 @@ package org.folio.entlinks.controller.delegate.suggestion;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyChar;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,7 @@ import org.folio.entlinks.domain.entity.InstanceAuthorityLinkingRule;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
 import org.folio.entlinks.service.consortium.ConsortiumTenantExecutor;
 import org.folio.entlinks.service.links.InstanceAuthorityLinkingRulesService;
-import org.folio.entlinks.service.links.LinksSuggestionService;
+import org.folio.entlinks.service.links.LinksSuggestionsService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +55,7 @@ class LinksSuggestionsServiceDelegateTest {
 
   private @Spy SourceContentMapper contentMapper = Mappers.getMapper(SourceContentMapper.class);
   private @Mock InstanceAuthorityLinkingRulesService linkingRulesService;
-  private @Mock LinksSuggestionService suggestionService;
+  private @Mock LinksSuggestionsService suggestionService;
   private @Mock AuthorityRepository authorityRepository;
   private @Mock SourceStorageClient sourceStorageClient;
   private @Mock ConsortiumTenantExecutor executor;
@@ -90,7 +91,7 @@ class LinksSuggestionsServiceDelegateTest {
     verify(executor).executeAsCentralTenant(any());
     verify(suggestionService)
         .fillLinkDetailsWithSuggestedAuthorities(any(),
-            eq(List.of()), eq(Map.of("100", rules)), eq("0"), eq(false));
+            eq(List.of()), eq(Map.of("100", rules)), eq('0'), eq(false));
   }
 
   @Test
@@ -120,7 +121,7 @@ class LinksSuggestionsServiceDelegateTest {
     verify(sourceStorageClient).fetchParsedRecordsInBatch(fetchRequest);
     verify(suggestionService)
       .fillLinkDetailsWithSuggestedAuthorities(any(),
-          eq(List.of()), eq(Map.of("100", rules)), eq("0"), eq(false));
+          eq(List.of()), eq(Map.of("100", rules)), eq('0'), eq(false));
     verifyNoInteractions(executor);
   }
 
@@ -194,7 +195,7 @@ class LinksSuggestionsServiceDelegateTest {
 
     verify(authorityRepository).findByNaturalIdInAndDeletedFalse(emptySet());
     verifyNoInteractions(sourceStorageClient);
-    verify(suggestionService).fillErrorDetailsWithDisabledAutoLinking(any(), any());
+    verify(suggestionService).fillErrorDetailsWithDisabledAutoLinking(any(), anyChar());
   }
 
   private ParsedRecordContent getRecord(String bibField) {

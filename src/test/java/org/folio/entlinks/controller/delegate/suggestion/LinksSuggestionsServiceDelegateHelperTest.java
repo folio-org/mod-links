@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
-class LinksSuggestionServiceDelegateHelperTest {
+class LinksSuggestionsServiceDelegateHelperTest {
 
   @Mock
   private LinksSuggestionsByAuthorityNaturalId linksSuggestionsByAuthorityNaturalId;
