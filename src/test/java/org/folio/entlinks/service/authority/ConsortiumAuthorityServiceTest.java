@@ -40,10 +40,9 @@ class ConsortiumAuthorityServiceTest {
     when(repository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(authority));
 
     // Act
-    consortiumAuthorityService.updateInner(authority, forced, authorityConsumer);
+    consortiumAuthorityService.updateInner(authority, forced);
 
     // Assert
-    verify(authorityConsumer).accept(any(), any());
     verify(repository).findByIdAndDeletedFalse(any());
   }
 
@@ -56,7 +55,7 @@ class ConsortiumAuthorityServiceTest {
 
     // Act
     assertThrows(ConsortiumIllegalActionException.class,
-      () -> consortiumAuthorityService.updateInner(authority, forced, authorityConsumer));
+      () -> consortiumAuthorityService.updateInner(authority, forced));
 
     // Assert
     verifyNoInteractions(authorityConsumer); // Should not call updateInner
@@ -70,10 +69,9 @@ class ConsortiumAuthorityServiceTest {
     when(repository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(authority));
 
     // Act
-    consortiumAuthorityService.deleteByIdInner(id, forced, authorityCallback);
+    consortiumAuthorityService.deleteByIdInner(id, forced);
 
     // Assert
-    verify(authorityCallback).accept(any());
     verify(repository).findByIdAndDeletedFalse(any());
   }
 
@@ -86,7 +84,7 @@ class ConsortiumAuthorityServiceTest {
 
     // Act
     assertThrows(ConsortiumIllegalActionException.class,
-      () -> consortiumAuthorityService.deleteByIdInner(id, forced, authorityCallback));
+      () -> consortiumAuthorityService.deleteByIdInner(id, forced));
 
     // Assert
     verifyNoInteractions(authorityCallback);

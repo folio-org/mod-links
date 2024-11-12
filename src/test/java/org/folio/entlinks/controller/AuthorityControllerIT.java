@@ -183,7 +183,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   void getCollectionOfIdsOnly_positive_authorityArchivesFound() throws Exception {
     var createdEntities = createAuthorityArchives();
     var expectedCollection = new AuthorityDtoCollection(
-      createdEntities.stream().map(archive -> new AuthorityDto().id(archive.getId())).collect(Collectors.toList()),
+      createdEntities.stream().map(archive -> new AuthorityDto().id(archive.getId())).toList(),
       createdEntities.size()
     );
 
@@ -638,7 +638,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     doDelete(authorityEndpoint(authority.getId()));
     var event = getConsumedEvent();
     assertEquals(AuthorityDeleteEventSubType.SOFT_DELETE, event.value().getDeleteEventSubType());
-    verifyConsumedAuthorityEvent(event, DELETE, expectedDto);
+    verifyConsumedAuthorityEvent(event, DELETE, expectedDto.version(1));
 
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));

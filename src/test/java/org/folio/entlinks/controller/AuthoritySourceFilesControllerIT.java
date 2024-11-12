@@ -30,7 +30,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +48,6 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.base.IntegrationTestBase;
@@ -60,7 +58,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -707,12 +704,6 @@ class AuthoritySourceFilesControllerIT extends IntegrationTestBase {
 
   private ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {
     return jsonPath("$.errors.[0].message", errorMessageMatcher);
-  }
-
-  private HttpHeaders tenantHeaders(String tenant) {
-    var httpHeaders = defaultHeaders();
-    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
-    return httpHeaders;
   }
 
   private AuthorityDto requestAuthority(UUID id, String tenantId)
