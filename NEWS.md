@@ -2,6 +2,9 @@
 ### Features
 * Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
 
+### Tech Dept
+* Add migration for deleted authorities ([MODELINKS-270](https://folio-org.atlassian.net/browse/MODELINKS-270))
+
 ---
 
 ## v3.1.0 2024-11-01
