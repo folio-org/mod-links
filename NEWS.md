@@ -3,6 +3,7 @@
 * Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
 
 ### Tech Dept
+* Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))
 * Add migration for deleted authorities ([MODELINKS-270](https://folio-org.atlassian.net/browse/MODELINKS-270))
 
 ---
