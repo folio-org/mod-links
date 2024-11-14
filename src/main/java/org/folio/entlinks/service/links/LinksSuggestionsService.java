@@ -15,10 +15,12 @@ import static org.folio.entlinks.utils.FieldUtils.isSystemSubfield;
 
 import com.google.common.primitives.Chars;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.config.constants.ErrorCode;
@@ -186,10 +188,11 @@ public class LinksSuggestionsService {
     }
 
     var controlledSubfieldCodes = Chars.asList(rule.getAuthoritySubfields());
+    var subfieldModifications = rule.getSubfieldModifications();
     var controlledSubfields = getControlledSubfields(authorityField.get(), controlledSubfieldCodes,
-      rule.getSubfieldModifications());
+      subfieldModifications);
     var systemSubfields = getSystemSubfields(authority);
-    var uncontrolledSubfields = getUncontrolledSubfields(bibSubfields, controlledSubfieldCodes);
+    var uncontrolledSubfields = getUncontrolledSubfields(bibSubfields, controlledSubfieldCodes, subfieldModifications);
 
     var newBibSubfields = new ArrayList<ParsedSubfield>();
     newBibSubfields.addAll(controlledSubfields);
@@ -224,9 +227,16 @@ public class LinksSuggestionsService {
   }
 
   private List<ParsedSubfield> getUncontrolledSubfields(List<ParsedSubfield> bibSubfields,
-                                                        List<Character> controlledSubfieldCodes) {
+                                                        List<Character> controlledSubfieldCodes,
+                                                        List<SubfieldModification> subfieldModifications) {
     var bibSubfieldsUncontrolled = new ArrayList<>(bibSubfields);
+    var modificationSubfieldCodes = subfieldModifications == null
+                                    ? Collections.<Character>emptySet()
+                                    : subfieldModifications.stream()
+                                      .map(subfieldModification -> subfieldModification.getTarget().charAt(0))
+                                      .collect(Collectors.toSet());
     bibSubfieldsUncontrolled.removeIf(subfield -> controlledSubfieldCodes.contains(subfield.code())
+                                                  || modificationSubfieldCodes.contains(subfield.code())
                                                   || isSystemSubfield(subfield.code()));
     return bibSubfieldsUncontrolled;
   }
