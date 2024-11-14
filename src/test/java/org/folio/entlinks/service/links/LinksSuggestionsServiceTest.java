@@ -153,6 +153,34 @@ class LinksSuggestionsServiceTest {
 
   @ParameterizedTest
   @ValueSource(chars = {NATURAL_ID_SUBFIELD_CODE, ID_SUBFIELD_CODE})
+  void fillLinkDetailsWithSuggestedAuthorities_shouldUpdateAndRemoveControlledSubfieldWithModification(
+    char linkingMatchSubfield) {
+    var rules = getMapRule("100", "100");
+    var initialBibSubfields = new HashMap<String, String>();
+    initialBibSubfields.put("b", "b value");
+    var bib = getBibParsedRecordContent("100", initialBibSubfields, null);
+    var authority = getAuthorityParsedRecordContent("100");
+    when(authoritySourceFileService.getById(SOURCE_FILE_ID)).thenReturn(authoritySourceFile);
+
+    linksSuggestionsService
+      .fillLinkDetailsWithSuggestedAuthorities(List.of(bib), List.of(authority), rules, linkingMatchSubfield, false);
+
+    var bibField = bib.getFields().get(0);
+    var linkDetails = bibField.getLinkDetails();
+    assertEquals(LinkStatus.NEW, linkDetails.getStatus());
+    assertEquals(AUTHORITY_ID, linkDetails.getAuthorityId());
+    assertEquals(NATURAL_ID, linkDetails.getAuthorityNaturalId());
+    assertEquals(1, linkDetails.getLinkingRuleId());
+    assertNull(linkDetails.getErrorCause());
+
+    assertEquals(1, bibField.getSubfields('b').size());
+    assertEquals("test", bibField.getSubfields('b').get(0).value());
+    assertEquals(AUTHORITY_ID.toString(), bibField.getSubfields('9').get(0).value());
+    assertEquals(BASE_URL + NATURAL_ID, bibField.getSubfields('0').get(0).value());
+  }
+
+  @ParameterizedTest
+  @ValueSource(chars = {NATURAL_ID_SUBFIELD_CODE, ID_SUBFIELD_CODE})
   void fillLinkDetailsWithSuggestedAuthorities_shouldFillLinkDetails_withActualLink(char linkingMatchSubfield) {
     var rules = getMapRule("100", "100");
     var bib = getBibParsedRecordContent("100", getActualLinksDetails());
