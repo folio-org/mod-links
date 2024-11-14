@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+  <changeSet id="MODELINKS-270@@create-index|table:authority|column:deleted" author="pavlo_smahin">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists indexName="idx_authority_deleted" />
+      </not>
+    </preConditions>
+
+    <comment>Create index for deleted column in authority table</comment>
+
+    <createIndex tableName="authority" indexName="idx_authority_deleted">
+      <column name="deleted"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="MODELINKS-270@@migration|deleted-authority-to-archive" author="pavlo_smahin">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="1">
+        SELECT COUNT(1)
+        FROM authority a
+        WHERE a.deleted = TRUE
+        LIMIT 1;
+      </sqlCheck>
+    </preConditions>
+
+    <comment>Move deleted authorities to authority_archive</comment>
+
+    <sql>
+      INSERT INTO authority_archive
+      SELECT *
+      FROM authority
+      WHERE deleted = TRUE ON CONFLICT DO NOTHING;
+      DELETE
+      FROM authority
+      WHERE deleted = TRUE;
+    </sql>
+  </changeSet>
+
+
+</databaseChangeLog>
