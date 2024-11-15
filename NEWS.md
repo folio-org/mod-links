@@ -1,6 +1,7 @@
 ## v3.1.1 2024-11-21
 ### Features
 * Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
+* Keep subfield order in authority control logic ([MODELINKS-277](https://folio-org.atlassian.net/browse/MODELINKS-277))
 * Filter full specification updated event based on specification `family` and `profile` ([MODELINKS-276](https://folio-org.atlassian.net/browse/MODELINKS-276))
 
 ### Tech Dept
