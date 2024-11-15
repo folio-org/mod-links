@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.tenant;
+package org.folio.entlinks.integration.internal;
 
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.verify;
