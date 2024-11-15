@@ -1,4 +1,4 @@
-package org.folio.entlinks.service.tenant;
+package org.folio.entlinks.integration.internal;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
