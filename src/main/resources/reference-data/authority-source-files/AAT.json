@@ -3,7 +3,8 @@
   "name": "Art & architecture thesaurus (AAT)",
   "codes": [
     "aat",
-    "aatg"
+    "aatg",
+    "aatfg"
   ],
   "type": "Subjects",
   "baseUrl": "http://vocab.getty.edu/aat/",
