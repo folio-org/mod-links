@@ -10,6 +10,7 @@
 * Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
 * Keep subfield order in authority control logic ([MODELINKS-277](https://folio-org.atlassian.net/browse/MODELINKS-277))
 * Filter full specification updated event based on specification `family` and `profile` ([MODELINKS-276](https://folio-org.atlassian.net/browse/MODELINKS-276))
+* Add aatfg to the list of prefixes for Art & Architecture authority file ([MODELINKS-272](https://folio-org.atlassian.net/browse/MODELINKS-272))
 
 ### Bug fixes
 * Fix context mix-up on data propagation ([MODELINKS-273](https://folio-org.atlassian.net/browse/MODELINKS-273))
