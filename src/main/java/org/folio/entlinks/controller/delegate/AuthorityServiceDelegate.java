@@ -83,7 +83,8 @@ public class AuthorityServiceDelegate {
 
   public AuthorityDto createAuthority(AuthorityDto authorityDto) {
     var entity = mapper.toEntity(authorityDto);
-    var created = service.create(entity, createConsumer());
+    var created = service.create(entity);
+    createConsumer().accept(created);
     return mapper.toDto(created);
   }
 
@@ -93,22 +94,20 @@ public class AuthorityServiceDelegate {
         List.of(new Parameter("id").value(String.valueOf(authorityDto.getId()))));
     }
     var modifiedEntity = mapper.toEntity(authorityDto);
-    service.update(modifiedEntity, updateConsumer());
+    var updateResult = service.update(modifiedEntity, false);
+    updateConsumer().accept(updateResult.newEntity(), updateResult.oldEntity());
   }
 
   public void deleteAuthorityById(UUID id) {
-    service.deleteById(id, authority -> {
-      eventPublisher.publishSoftDeleteEvent(mapper.toDto(authority));
-      propagationService.propagate(authority, DELETE, context.getTenantId());
-    });
-
+    var authority = service.deleteById(id);
+    eventPublisher.publishSoftDeleteEvent(mapper.toDto(authority));
+    propagationService.propagate(authority, DELETE, context.getTenantId());
   }
 
   @SneakyThrows
   public AuthorityBulkResponse createAuthorities(AuthorityBulkRequest createRequest) {
     var bulkContext = new AuthoritiesBulkContext(createRequest.getRecordsFileName());
-    var errorsCount = authorityS3Service.processAuthorities(bulkContext,
-      authorities -> service.upsert(authorities, createConsumer(), updateConsumer()));
+    var errorsCount = authorityS3Service.processAuthorities(bulkContext, this::upsertAuthorities);
 
     var authorityBulkCreateResponse = new AuthorityBulkResponse()
       .errorsNumber(errorsCount);
@@ -118,6 +117,16 @@ public class AuthorityServiceDelegate {
         .errorsFileName(bulkContext.getErrorsFilePath());
     }
     return authorityBulkCreateResponse;
+  }
+
+  private void upsertAuthorities(List<Authority> authorities) {
+    service.upsert(authorities).forEach(authorityUpdateResult -> {
+      if (authorityUpdateResult.oldEntity() == null) {
+        createConsumer().accept(authorityUpdateResult.newEntity());
+      } else {
+        updateConsumer().accept(authorityUpdateResult.newEntity(), authorityUpdateResult.oldEntity());
+      }
+    });
   }
 
   @NotNull

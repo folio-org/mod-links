@@ -12,7 +12,7 @@
 * Filter full specification updated event based on specification `family` and `profile` ([MODELINKS-276](https://folio-org.atlassian.net/browse/MODELINKS-276))
 
 ### Bug fixes
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Fix context mix-up on data propagation ([MODELINKS-273](https://folio-org.atlassian.net/browse/MODELINKS-273))
 
 ### Tech Dept
 * Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))

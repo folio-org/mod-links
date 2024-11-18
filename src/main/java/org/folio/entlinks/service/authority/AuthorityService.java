@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -73,43 +71,18 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
 
   @Override
   public Authority create(Authority entity) {
-    return createInner(entity, null);
-  }
-
-  @Override
-  public Authority create(Authority entity, Consumer<Authority> authorityCallback) {
-    return createInner(entity, authorityCallback);
+    return createInner(entity);
   }
 
   @Override
   @Transactional
-  public Authority update(Authority modified) {
-    return updateInner(modified, false, null);
+  public AuthorityUpdateResult update(Authority modified, boolean forced) {
+    return updateInner(modified, forced);
   }
 
   @Override
   @Transactional
-  public Authority update(Authority modified, boolean forced) {
-    return updateInner(modified, forced, null);
-  }
-
-  @Override
-  @Transactional
-  public Authority update(Authority modified, BiConsumer<Authority, Authority> authorityConsumer) {
-    return updateInner(modified, false, authorityConsumer);
-  }
-
-  @Override
-  @Transactional
-  public Authority update(Authority modified, boolean forced,
-                          BiConsumer<Authority, Authority> authorityConsumer) {
-    return updateInner(modified, forced, authorityConsumer);
-  }
-
-  @Override
-  @Transactional
-  public List<Authority> upsert(List<Authority> authorities, Consumer<Authority> authorityCreateCallback,
-                                BiConsumer<Authority, Authority> authorityUpdateCallback) {
+  public List<AuthorityUpdateResult> upsert(List<Authority> authorities) {
     var existingRecordsMap = getAllByIds(authorities.stream().map(Authority::getId).toList());
     final var detachedExistingRecordsMap = Maps.transformEntries(existingRecordsMap,
       (key, value) -> new Authority(value));
@@ -128,48 +101,21 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
 
     var authoritiesToSave = new ArrayList<>(newRecords);
     authoritiesToSave.addAll(existingRecordsMap.values());
-    var result = repository.saveAll(authoritiesToSave);
-
-    if (authorityCreateCallback != null) {
-      newRecords.forEach(authorityCreateCallback);
-    }
-
-    if (authorityUpdateCallback != null) {
-      for (var modifiedRecord : modifiedRecords) {
-        authorityUpdateCallback.accept(modifiedRecord, detachedExistingRecordsMap.get(modifiedRecord.getId()));
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Performs soft-delete of {@link Authority} records.
-   *
-   * @param id authority record id of {@link UUID} type
-   */
-  @Override
-  @Transactional
-  public void deleteById(UUID id) {
-    deleteByIdInner(id, false, null);
+    return repository.saveAll(authoritiesToSave).stream()
+      .map(authority -> new AuthorityUpdateResult(detachedExistingRecordsMap.get(authority.getId()), authority))
+      .toList();
   }
 
   @Override
   @Transactional
   public void deleteById(UUID id, boolean forced) {
-    deleteByIdInner(id, forced, null);
+    deleteByIdInner(id, forced);
   }
 
   @Override
   @Transactional
-  public void deleteById(UUID id, Consumer<Authority> authorityCallback) {
-    deleteByIdInner(id, false, authorityCallback);
-  }
-
-  @Override
-  @Transactional
-  public void deleteById(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
-    deleteByIdInner(id, forced, authorityCallback);
+  public Authority deleteById(UUID id) {
+    return deleteByIdInner(id, false);
   }
 
   /**
@@ -183,19 +129,14 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     repository.deleteAllByIdInBatch(ids);
   }
 
-  protected Authority createInner(Authority entity, Consumer<Authority> authorityCallback) {
+  protected Authority createInner(Authority entity) {
     log.debug("create:: Attempting to create Authority [entity: {}]", entity);
     initId(entity);
-    var saved = repository.save(entity);
 
-    if (authorityCallback != null) {
-      authorityCallback.accept(saved);
-    }
-    return saved;
+    return repository.save(entity);
   }
 
-  protected Authority updateInner(Authority modified, boolean forced,
-                                  BiConsumer<Authority, Authority> authorityConsumer) {
+  protected AuthorityUpdateResult updateInner(Authority modified, boolean forced) {
     log.debug("update:: Attempting to update Authority [authority: {}]", modified);
     var id = modified.getId();
     var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
@@ -205,24 +146,17 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     copyModifiableFields(existing, modified);
 
     var saved = repository.saveAndFlush(existing);
-    if (authorityConsumer != null) {
-      authorityConsumer.accept(saved, detachedExisting);
-    }
-    return saved;
+    return new AuthorityUpdateResult(detachedExisting, saved);
   }
 
-  protected void deleteByIdInner(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
+  protected Authority deleteByIdInner(UUID id, boolean forced) {
     log.debug("deleteById:: Attempt to delete Authority by [id: {}]", id);
 
     var existed = repository.findByIdAndDeletedFalse(id)
       .orElseThrow(() -> new AuthorityNotFoundException(id));
     existed.setDeleted(true);
 
-    if (authorityCallback != null) {
-      authorityCallback.accept(existed);
-    }
-
-    repository.save(existed);
+    return repository.save(existed);
   }
 
   private static void olCheck(Authority modified, Authority existing, UUID id) {

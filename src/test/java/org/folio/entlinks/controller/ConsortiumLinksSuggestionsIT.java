@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +27,6 @@ import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -37,7 +35,6 @@ import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpHeaders;
 
 @IntegrationTest
 @DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_TABLE, DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
@@ -182,11 +179,5 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
         .authorityId(UUID.fromString(LINKABLE_AUTHORITY_ID))
         .authorityNaturalId(NATURAL_ID)
         .status(linkStatus);
-  }
-
-  private HttpHeaders tenantHeaders(String tenant) {
-    var httpHeaders = defaultHeaders();
-    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
-    return httpHeaders;
   }
 }

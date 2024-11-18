@@ -26,12 +26,10 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.folio.entlinks.domain.dto.AuthorityDto;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.base.IntegrationTestBase;
@@ -230,12 +228,6 @@ class ConsortiumAuthorityPropagationServiceIT extends IntegrationTestBase {
       .getResponse()
       .getContentAsString();
     return objectMapper.readValue(response, AuthorityDto.class);
-  }
-
-  private HttpHeaders tenantHeaders(String tenant) {
-    var httpHeaders = defaultHeaders();
-    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
-    return httpHeaders;
   }
 
 }
