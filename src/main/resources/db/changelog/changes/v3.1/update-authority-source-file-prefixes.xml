@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="MODELINKS-272@@default-data:authority-source-file:add-aatfg-code" author="pavlo_smahin">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="1">
+        SELECT count(1) FROM authority_source_file
+        WHERE id = 'cb58492d-018e-442d-9ce3-35aabfc524aa';
+      </sqlCheck>
+    </preConditions>
+
+    <comment>Add aatfg code to AAT source file</comment>
+
+    <sql>
+      INSERT INTO authority_source_file_code(id, authority_source_file_id, code)
+      VALUES (nextval('authority_source_file_code_id_seq'), 'cb58492d-018e-442d-9ce3-35aabfc524aa', 'aatfg')
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
