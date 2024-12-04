@@ -139,5 +139,6 @@ management:
       enabled: true
       levels:
         root: DEBUG
-        org.springframework.web: DEBUG
+        org.springframework: DEBUG
+        org.folio.entlinks: DEBUG
 server.port: 8081

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.entlinks.controller.delegate.AuthorityArchiveServiceDelegate;
 import org.folio.entlinks.controller.delegate.AuthorityServiceDelegate;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+@Log4j2
 @Validated
 @RestController
 @AllArgsConstructor
@@ -90,7 +92,8 @@ public class AuthorityController implements AuthorityStorageApi {
     value = "/authority-storage/expire/authorities",
     produces = {"application/json"}
   )
-  public ResponseEntity<Void> expireAuthorities() {
+  public ResponseEntity<Void> expireAuthorities( @RequestHeader HttpHeaders headers) {
+    log.info("AuthorityController::expireAuthorities Received headers: {}", headers);
     authorityArchiveServiceDelegate.expire();
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
