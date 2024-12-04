@@ -137,4 +137,7 @@ management:
   endpoint:
     loggers:
       enabled: true
+      levels:
+        root: DEBUG
+        org.springframework.web: DEBUG
 server.port: 8081
