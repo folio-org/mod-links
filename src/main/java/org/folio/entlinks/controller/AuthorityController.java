@@ -92,7 +92,7 @@ public class AuthorityController implements AuthorityStorageApi {
     value = "/authority-storage/expire/authorities",
     produces = {"application/json"}
   )
-  public ResponseEntity<Void> expireAuthorities( @RequestHeader HttpHeaders headers) {
+  public ResponseEntity<Void> expireAuthorities(@RequestHeader HttpHeaders headers) {
     log.info("AuthorityController::expireAuthorities Received headers: {}", headers);
     authorityArchiveServiceDelegate.expire();
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
