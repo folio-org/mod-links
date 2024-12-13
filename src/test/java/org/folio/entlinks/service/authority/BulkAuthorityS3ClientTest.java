@@ -2,6 +2,7 @@ package org.folio.entlinks.service.authority;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Code partially generated using GitHub Copilot.
+ * */
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class BulkAuthorityS3ClientTest {
@@ -40,6 +44,33 @@ class BulkAuthorityS3ClientTest {
     assertEquals(1, resultList.size());
     var stringAuthority = resultList.get(0);
     assertThat(stringAuthority).contains(AUTHORITY_UUID, "Test Authority");
+  }
+
+  @Test
+  void readFile_ReturnsEmptyListWhenFileIsEmpty() {
+    // Arrange
+    var remoteFileName = "empty-file";
+    var inputStream = new ByteArrayInputStream(new byte[0]);
+    when(s3Client.read(remoteFileName)).thenReturn(inputStream);
+
+    // Act
+    var resultList = client.readFile(remoteFileName);
+
+    // Assert
+    assertThat(resultList).isEmpty();
+  }
+
+  @Test
+  void readFile_ThrowsIllegalStateExceptionWhenIoExceptionOccurs() {
+    // Arrange
+    var remoteFileName = "error-file";
+    when(s3Client.read(remoteFileName)).thenAnswer(invocation -> {
+      throw new IOException("Test IOException");
+    });
+
+    // Act & Assert
+    var exception = assertThrows(IllegalStateException.class, () -> client.readFile(remoteFileName));
+    assertThat(exception).hasMessageContaining("Error reading file: " + remoteFileName);
   }
 
   @Test
