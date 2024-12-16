@@ -1,6 +1,7 @@
 package org.folio.entlinks.service.authority;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,9 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+/**
+ * Code partially generated using GitHub Copilot.
+ * */
 @Log4j2
 @Component
 @RequiredArgsConstructor
@@ -23,10 +27,13 @@ public class BulkAuthorityS3Client {
     backoff = @Backoff(delayExpression = "${folio.remote-storage.retryDelayMs}"))
   public List<String> readFile(String remoteFileName) {
     log.info("readFile::Reading lines from the file [filename: {}]", remoteFileName);
-    var inputStream = s3Client.read(remoteFileName);
-    return new BufferedReader(new InputStreamReader(inputStream))
-      .lines()
-      .toList();
+    try (var inputStream = s3Client.read(remoteFileName);
+         var reader = new BufferedReader(new InputStreamReader(inputStream))) {
+      return reader.lines().toList();
+    } catch (IOException e) {
+      log.error("readFile::Error reading file [filename: {}]", remoteFileName, e);
+      throw new IllegalStateException("Error reading file: " + remoteFileName, e);
+    }
   }
 
   @Retryable(
