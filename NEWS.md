@@ -1,3 +1,9 @@
+## v3.1.2 2024-12-17
+### Bug fixes
+* Close input stream on s3 file read ([MODELINKS-278](https://folio-org.atlassian.net/browse/MODELINKS-278))
+
+---
+
 ## v3.1.1 2024-11-21
 ### Features
 * Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
@@ -7,7 +13,6 @@
 
 ### Bug fixes
 * Fix context mix-up on data propagation ([MODELINKS-273](https://folio-org.atlassian.net/browse/MODELINKS-273))
-* Close input stream on s3 file read ([MODELINKS-278](https://folio-org.atlassian.net/browse/MODELINKS-278))
 
 ### Tech Dept
 * Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))
