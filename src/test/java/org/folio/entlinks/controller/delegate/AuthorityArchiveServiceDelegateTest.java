@@ -73,7 +73,8 @@ class AuthorityArchiveServiceDelegateTest {
   @Mock
   private FolioExecutionContext context;
 
-  private @Mock ConsortiumTenantsService tenantsService;
+  @Mock
+  private ConsortiumTenantsService tenantsService;
 
   @InjectMocks
   private AuthorityArchiveServiceDelegate delegate;
