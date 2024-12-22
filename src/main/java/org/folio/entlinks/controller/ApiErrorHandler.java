@@ -29,6 +29,7 @@ import org.folio.entlinks.exception.type.ErrorType;
 import org.folio.tenant.domain.dto.Error;
 import org.folio.tenant.domain.dto.Errors;
 import org.folio.tenant.domain.dto.Parameter;
+import org.hibernate.TransientObjectException;
 import org.hibernate.TransientPropertyValueException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -146,6 +147,13 @@ public class ApiErrorHandler {
         if (AuthoritySourceFile.class.getName().equals(transientEntityName)
             && "authoritySourceFile".equals(propertyName)) {
           return buildResponseEntity(NOT_EXISTED_AUTHORITY_SOURCE_FILE, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
+        }
+      } else {
+        if (innerCause instanceof TransientObjectException toe) {
+          var message = toe.getMessage();
+          if (message.contains(AuthoritySourceFile.class.getName())) {
+            return buildResponseEntity(NOT_EXISTED_AUTHORITY_SOURCE_FILE, VALIDATION_ERROR, UNPROCESSABLE_ENTITY);
+          }
         }
       }
     }
