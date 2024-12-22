@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.folio.support.DatabaseHelper.AUTHORITY_ARCHIVE_TABLE;
+import static org.folio.support.DatabaseHelper.AUTHORITY_DATA_STAT_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
@@ -46,10 +47,11 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 
 @IntegrationTest
 @DatabaseCleanup(tables = {
-  AUTHORITY_ARCHIVE_TABLE,
-  AUTHORITY_SOURCE_FILE_TABLE,
   AUTHORITY_SOURCE_FILE_CODE_TABLE,
-  AUTHORITY_TABLE},
+  AUTHORITY_DATA_STAT_TABLE,
+  AUTHORITY_TABLE,
+  AUTHORITY_ARCHIVE_TABLE,
+  AUTHORITY_SOURCE_FILE_TABLE},
     tenants = {CENTRAL_TENANT_ID, TENANT_ID})
 class AuthorityControllerEcsIT extends IntegrationTestBase {
   private KafkaMessageListenerContainer<String, AuthorityDomainEvent> container;
