@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.ConsortiumIllegalActionException;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,13 @@ import org.springframework.stereotype.Service;
 public class ConsortiumAuthorityService extends AuthorityService {
 
   private final AuthorityRepository repository;
+  private final AuthoritySourceFileRepository sourceFileRepository;
 
-  public ConsortiumAuthorityService(AuthorityRepository repository) {
-    super(repository);
+  public ConsortiumAuthorityService(AuthorityRepository repository,
+                                    AuthoritySourceFileRepository sourceFileRepository) {
+    super(repository, sourceFileRepository);
     this.repository = repository;
+    this.sourceFileRepository = sourceFileRepository;
   }
 
   @Override

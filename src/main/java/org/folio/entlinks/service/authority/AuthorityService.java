@@ -17,7 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
+import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.data.OffsetRequest;
 import org.springframework.context.annotation.Primary;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthorityService implements AuthorityServiceI<Authority> {
 
   private final AuthorityRepository repository;
+  private final AuthoritySourceFileRepository sourceFileRepository;
 
   @Override
   public Page<Authority> getAll(Integer offset, Integer limit, String cql) {
@@ -138,10 +141,9 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
 
   protected AuthorityUpdateResult updateInner(Authority modified, boolean forced) {
     log.debug("update:: Attempting to update Authority [authority: {}]", modified);
-    var id = modified.getId();
-    var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
+
+    var existing = validateOnUpdateAndGetExisting(modified.getId(), modified);
     var detachedExisting = new Authority(existing);
-    olCheck(modified, existing, id);
 
     copyModifiableFields(existing, modified);
 
@@ -157,6 +159,20 @@ public class AuthorityService implements AuthorityServiceI<Authority> {
     existed.setDeleted(true);
 
     return repository.save(existed);
+  }
+
+  private Authority validateOnUpdateAndGetExisting(UUID id, Authority modified) {
+    var existing = repository.findByIdAndDeletedFalse(id).orElseThrow(() -> new AuthorityNotFoundException(id));
+
+    var sourceFileId = Optional.ofNullable(modified.getAuthoritySourceFile())
+        .map(AuthoritySourceFile::getId)
+        .orElse(null);
+    if (sourceFileId != null && !sourceFileRepository.existsById(sourceFileId)) {
+      throw new AuthoritySourceFileNotFoundException(sourceFileId);
+    }
+
+    olCheck(modified, existing, id);
+    return existing;
   }
 
   private static void olCheck(Authority modified, Authority existing, UUID id) {
