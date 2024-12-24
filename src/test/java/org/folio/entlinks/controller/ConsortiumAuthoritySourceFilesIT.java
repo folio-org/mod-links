@@ -1,8 +1,6 @@
 package org.folio.entlinks.controller;
 
 import static org.folio.entlinks.controller.ConsortiumLinksSuggestionsIT.COLLEGE_TENANT_ID;
-import static org.folio.spring.integration.XOkapiHeaders.TENANT;
-import static org.folio.spring.integration.XOkapiHeaders.USER_ID;
 import static org.folio.support.DatabaseHelper.AUTHORITY_ARCHIVE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE;
 import static org.folio.support.DatabaseHelper.AUTHORITY_SOURCE_FILE_TABLE;
@@ -18,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.SneakyThrows;
@@ -68,13 +65,7 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID)));
 
-    var authorityDto = new AuthorityDto()
-      .id(UUID.fromString(AUTHORITY_ID))
-      .sourceFileId(sourceFileId)
-      .naturalId("n12345")
-      .source("MARC")
-      .personalName("Sylvester Stallone")
-      .subjectHeadings("a");
+    var authorityDto = authorityDto(sourceFileId);
 
     // create authority in member tenant
     doPost(authorityEndpoint(), authorityDto, tenantHeaders(COLLEGE_TENANT_ID));
@@ -88,7 +79,7 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_ARCHIVE_TABLE, COLLEGE_TENANT_ID)));
 
-    // try ti delete in central tenant the authority source file with reference in member tenant
+    // try to delete in central tenant the authority source file with reference in member tenant
     tryDelete(authoritySourceFilesEndpoint(sourceFileId), tenantHeaders(CENTRAL_TENANT_ID))
       .andExpect(status().isUnprocessableEntity())
       .andExpect(exceptionMatch(AuthorityArchiveConstraintException.class))
@@ -106,15 +97,15 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
     var dto = new AuthoritySourceFilePostDto()
         .id(sourceFileId).name("authority source file").code("code").type("type");
 
-    var headers = tenantHeaders(CENTRAL_TENANT_ID);
-    headers.put(USER_ID, Collections.singletonList(UPDATER_USER_ID));
     // create source file with user id = UPDATER_USER_ID
-    doPost(authoritySourceFilesEndpoint(), dto, headers);
+    doPost(authoritySourceFilesEndpoint(), dto, tenantAndUserIdHeaders(CENTRAL_TENANT_ID, UPDATER_USER_ID));
 
     awaitUntilAsserted(() ->
         assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, COLLEGE_TENANT_ID)));
-    headers.put(TENANT, Collections.singletonList(COLLEGE_TENANT_ID));
-    tryGet(authoritySourceFilesEndpoint(), headers)
+    awaitUntilAsserted(() ->
+        assertEquals(1, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_CODE_TABLE, COLLEGE_TENANT_ID)));
+
+    tryGet(authoritySourceFilesEndpoint(), tenantHeaders(CENTRAL_TENANT_ID))
         .andExpect(status().isOk())
         .andExpect(jsonPath("totalRecords", is(1)))
         .andExpect(jsonPath("authoritySourceFiles[0]._version", is(0)))
@@ -125,10 +116,9 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
         .andExpect(jsonPath("authoritySourceFiles[0].metadata.updatedByUserId", is(UPDATER_USER_ID)));
 
     var patch = new AuthoritySourceFilePatchDto(0).name("updated").code("codeUpdated");
-    headers = tenantHeaders(CENTRAL_TENANT_ID);
-    headers.put(USER_ID, Collections.singletonList(UPDATER_USER_ID));
     // update source file with user id = UPDATER_USER_ID
-    tryPatch(authoritySourceFilesEndpoint(sourceFileId), patch, headers)
+    tryPatch(authoritySourceFilesEndpoint(sourceFileId), patch,
+        tenantAndUserIdHeaders(CENTRAL_TENANT_ID, UPDATER_USER_ID))
         .andExpect(status().isNoContent());
 
     awaitUntilAsserted(() ->
@@ -137,8 +127,8 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
     awaitUntilAsserted(() ->
         assertEquals(1, databaseHelper.countRowsWhere(AUTHORITY_SOURCE_FILE_CODE_TABLE, COLLEGE_TENANT_ID,
             "code = 'codeUpdated'")));
-    headers.put(TENANT, Collections.singletonList(COLLEGE_TENANT_ID));
-    tryGet(authoritySourceFilesEndpoint(), headers)
+
+    tryGet(authoritySourceFilesEndpoint(), tenantHeaders(CENTRAL_TENANT_ID))
         .andExpect(status().isOk())
         .andExpect(jsonPath("totalRecords", is(1)))
         .andExpect(jsonPath("authoritySourceFiles[0]._version", is(1)))
@@ -147,6 +137,28 @@ class ConsortiumAuthoritySourceFilesIT extends IntegrationTestBase {
         .andExpect(jsonPath("authoritySourceFiles[0].codes[0]", is(patch.getCode())))
         .andExpect(jsonPath("authoritySourceFiles[0].metadata.createdByUserId", is(UPDATER_USER_ID)))
         .andExpect(jsonPath("authoritySourceFiles[0].metadata.updatedByUserId", is(UPDATER_USER_ID)));
+
+    // delete source file
+    doDelete(authoritySourceFilesEndpoint(sourceFileId), tenantHeaders(CENTRAL_TENANT_ID));
+
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_CODE_TABLE, CENTRAL_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, CENTRAL_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_CODE_TABLE, COLLEGE_TENANT_ID)));
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.countRows(AUTHORITY_SOURCE_FILE_TABLE, COLLEGE_TENANT_ID)));
+  }
+
+  private AuthorityDto authorityDto(UUID sourceFileId) {
+    return new AuthorityDto()
+        .id(UUID.fromString(AUTHORITY_ID))
+        .sourceFileId(sourceFileId)
+        .naturalId("n12345")
+        .source("MARC")
+        .personalName("Sylvester Stallone")
+        .subjectHeadings("a");
   }
 
   private ResultMatcher errorMessageMatch(Matcher<String> errorMessageMatcher) {

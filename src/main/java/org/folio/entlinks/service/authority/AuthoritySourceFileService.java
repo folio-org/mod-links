@@ -2,6 +2,7 @@ package org.folio.entlinks.service.authority;
 
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
+import static org.folio.entlinks.utils.JdbcUtils.getSchemaName;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
@@ -15,13 +16,13 @@ import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileJdbcRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.data.OffsetRequest;
 import org.folio.tenant.domain.dto.Parameter;
 import org.springframework.context.annotation.Primary;
@@ -42,10 +43,10 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
 
   private static final String AUTHORITY_SEQUENCE_NAME_TEMPLATE = "hrid_authority_local_file_%s_seq";
   private final AuthoritySourceFileRepository repository;
+  private final AuthoritySourceFileJdbcRepository jdbcRepository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
   private final JdbcTemplate jdbcTemplate;
-  private final FolioModuleMetadata moduleMetadata;
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
@@ -125,14 +126,8 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
   @Override
   public void deleteById(UUID id) {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
-    var authoritySourceFile = repository.findById(id)
-      .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    if (!FOLIO.equals(authoritySourceFile.getSource())) {
-      repository.deleteById(id);
-    } else {
-      throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
-        List.of(new Parameter("source").value(authoritySourceFile.getSource().name())));
-    }
+    validateOnDelete(id);
+    repository.deleteById(id);
   }
 
   @Override
@@ -164,7 +159,7 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
     }
 
     var command = String.format("select exists (select true from %s.%s a where a.source_file_id='%s' limit 1)",
-        moduleMetadata.getDBSchemaName(tenantId), tableName, sourceFileId);
+        getSchemaName(folioExecutionContext), tableName, sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
 
@@ -262,18 +257,12 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
 
   @Override
   public void createSequence(String sequenceName, int startNumber) {
-    var command = String.format("""
-            CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-            """,
-        sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    jdbcTemplate.execute(command);
+    jdbcRepository.createSequence(sequenceName, startNumber);
   }
 
   @Override
   public void deleteSequence(String sequenceName) {
-    var command = String.format("DROP SEQUENCE IF EXISTS %s.%s;",
-        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
-    jdbcTemplate.execute(command);
+    jdbcRepository.dropSequence(sequenceName);
   }
 
   protected void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
@@ -283,6 +272,14 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
       var modifiedStartNumber = (int) modified.getHridStartNumber();
       deleteSequence(sequenceName);
       createSequence(sequenceName, modifiedStartNumber);
+    }
+  }
+
+  protected void validateOnDelete(UUID id) {
+    var sourceFile = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
+    if (FOLIO.equals(sourceFile.getSource())) {
+      throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
+        List.of(new Parameter("source").value(sourceFile.getSource().name())));
     }
   }
 }

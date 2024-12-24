@@ -14,7 +14,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -30,6 +29,7 @@ import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileSource;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileJdbcRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
@@ -57,6 +57,8 @@ class AuthoritySourceFileServiceTest {
 
   @Mock
   private AuthoritySourceFileRepository repository;
+  @Mock
+  private AuthoritySourceFileJdbcRepository jdbcRepository;
   @Mock
   private AuthorityRepository authorityRepository;
 
@@ -209,7 +211,6 @@ class AuthoritySourceFileServiceTest {
         .map(AuthoritySourceFileCode::getCode).toList();
 
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(moduleMetadata.getDBSchemaName(any())).thenReturn("test");
     when(repository.saveAndFlush(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
@@ -219,19 +220,8 @@ class AuthoritySourceFileServiceTest {
     assertThat(actual).isEqualTo(expected);
     verify(repository).findById(id);
     verify(repository).saveAndFlush(argThat(authoritySourceFileMatch(expected)));
-
-    var argumentCaptor = ArgumentCaptor.forClass(String.class);
-    verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
-
-    List<String> capturedArguments = argumentCaptor.getAllValues();
-
-    assertThat(capturedArguments.get(0)).isEqualTo(
-        String.format("DROP SEQUENCE IF EXISTS %s.%s;", "test", existing.getSequenceName()));
-    assertThat(capturedArguments.get(1)).isEqualTo(
-        String.format("""
-                CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-                """,
-            existing.getSequenceName(), modified.getHridStartNumber(), "test"));
+    verify(jdbcRepository).createSequence(eq(existing.getSequenceName()), eq(modified.getHridStartNumber()));
+    verify(jdbcRepository).dropSequence(eq(existing.getSequenceName()));
   }
 
   @ValueSource(ints = 1)
@@ -254,7 +244,6 @@ class AuthoritySourceFileServiceTest {
         .map(AuthoritySourceFileCode::getCode).toList();
 
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(moduleMetadata.getDBSchemaName(any())).thenReturn("test");
     when(repository.saveAndFlush(expected)).thenReturn(expected);
     when(mapper.toDtoCodes(existing.getAuthoritySourceFileCodes())).thenReturn(existingDtoCodes);
     when(mapper.toDtoCodes(modified.getAuthoritySourceFileCodes())).thenReturn(modifiedDtoCodes);
@@ -265,18 +254,8 @@ class AuthoritySourceFileServiceTest {
     verify(repository).findById(id);
     verify(repository).saveAndFlush(argThat(authoritySourceFileMatch(expected)));
 
-    var argumentCaptor = ArgumentCaptor.forClass(String.class);
-    verify(jdbcTemplate, times(2)).execute(argumentCaptor.capture());
-
-    List<String> capturedArguments = argumentCaptor.getAllValues();
-
-    assertThat(capturedArguments.get(0)).isEqualTo(
-        String.format("DROP SEQUENCE IF EXISTS %s.%s;", "test", existing.getSequenceName()));
-    assertThat(capturedArguments.get(1)).isEqualTo(
-        String.format("""
-                CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-                """,
-            existing.getSequenceName(), modified.getHridStartNumber(), "test"));
+    verify(jdbcRepository).createSequence(eq(existing.getSequenceName()), eq(modified.getHridStartNumber()));
+    verify(jdbcRepository).dropSequence(eq(existing.getSequenceName()));
   }
 
   @Test
@@ -465,6 +444,8 @@ class AuthoritySourceFileServiceTest {
     var expected = true;
     var tenant = "tenant";
     var schema = "schema";
+    when(context.getTenantId()).thenReturn(tenant);
+    when(context.getFolioModuleMetadata()).thenReturn(moduleMetadata);
     when(moduleMetadata.getDBSchemaName(tenant)).thenReturn(schema);
     when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class))).thenReturn(true);
     var captor = ArgumentCaptor.forClass(String.class);

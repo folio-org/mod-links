@@ -1,20 +1,16 @@
 package org.folio.entlinks.service.authority;
 
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.folio.entlinks.utils.JdbcUtils.getFullPath;
-
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import lombok.extern.log4j.Log4j2;
 import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileJdbcRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
-import org.folio.entlinks.utils.JdbcUtils;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -27,20 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Log4j2
 public class PropagationAuthoritySourceFileService extends AuthoritySourceFileService {
 
-  private final JdbcTemplate jdbcTemplate;
+  private final AuthoritySourceFileJdbcRepository jdbcRepository;
   private final AuthoritySourceFileRepository repository;
-  private final FolioExecutionContext folioExecutionContext;
 
   public PropagationAuthoritySourceFileService(AuthoritySourceFileRepository repository,
+                                               AuthoritySourceFileJdbcRepository jdbcRepository,
                                                AuthorityRepository authorityRepository,
                                                AuthoritySourceFileMapper mapper,
                                                JdbcTemplate jdbcTemplate,
-                                               FolioModuleMetadata moduleMetadata,
                                                FolioExecutionContext folioExecutionContext) {
-    super(repository, authorityRepository, mapper, jdbcTemplate, moduleMetadata, folioExecutionContext);
-    this.jdbcTemplate = jdbcTemplate;
+    super(repository, jdbcRepository, authorityRepository, mapper, jdbcTemplate, folioExecutionContext);
+    this.jdbcRepository = jdbcRepository;
     this.repository = repository;
-    this.folioExecutionContext = folioExecutionContext;
   }
 
   /**
@@ -57,20 +51,7 @@ public class PropagationAuthoritySourceFileService extends AuthoritySourceFileSe
   public AuthoritySourceFile create(AuthoritySourceFile entity) {
     log.debug("create:: Attempting to create AuthoritySourceFile [entity: {}]", entity);
 
-    var sourceType = getFullPath(folioExecutionContext, "authority_source_file_source");
-    var sqlValues = JdbcUtils.getParamPlaceholder(3)
-        + "::" + sourceType + ","
-        + JdbcUtils.getParamPlaceholder(9);
-    var sql = """
-                INSERT INTO %s (id, name, source, type, base_url_protocol, base_url, hrid_start_number, _version,
-                created_date, updated_date, created_by_user_id, updated_by_user_id)
-                VALUES (%s);
-        """;
-    jdbcTemplate.update(sql.formatted(getFullPath(folioExecutionContext, "authority_source_file"), sqlValues),
-        entity.getId(), entity.getName(),
-        entity.getSource().name(), entity.getType(), entity.getBaseUrlProtocol(), entity.getBaseUrl(),
-        entity.getHridStartNumber(), 0, entity.getCreatedDate(), entity.getUpdatedDate(), entity.getCreatedByUserId(),
-        entity.getUpdatedByUserId());
+    jdbcRepository.insert(entity);
 
     return entity;
   }
@@ -104,31 +85,20 @@ public class PropagationAuthoritySourceFileService extends AuthoritySourceFileSe
 
     updateSequenceStartNumber(existingEntity, modified);
 
-    var sourceType = getFullPath(folioExecutionContext, "authority_source_file_source");
-    var sql = """
-                UPDATE %s
-                SET name=?, source=?::%s, type=?, base_url_protocol=?, base_url=?, hrid_start_number=?,
-                created_date=?, updated_date=?, created_by_user_id=?, updated_by_user_id=?, _version=?
-                WHERE id = ? and _version = ?;
-        """;
-
-    jdbcTemplate.update(sql.formatted(getFullPath(folioExecutionContext, "authority_source_file"), sourceType),
-        modified.getName(), modified.getSource().name(), modified.getType(),
-        modified.getBaseUrlProtocol(), modified.getBaseUrl(), modified.getHridStartNumber(),
-        modified.getCreatedDate(), modified.getUpdatedDate(), modified.getCreatedByUserId(),
-        modified.getUpdatedByUserId(), modified.getVersion(), id, existingEntity.getVersion());
-
-    if (isNotEmpty(modified.getAuthoritySourceFileCodes())) {
-      var sourceFileCode = modified.getAuthoritySourceFileCodes().iterator().next();
-      sql = "INSERT INTO %s (authority_source_file_id, code) VALUES (?, ?);";
-      jdbcTemplate.update(sql.formatted(getFullPath(folioExecutionContext, "authority_source_file_code")),
-          sourceFileCode.getAuthoritySourceFile().getId(), sourceFileCode.getCode());
-    }
+    jdbcRepository.update(modified, existingEntity.getVersion());
 
     if (publishConsumer != null) {
       publishConsumer.accept(modified, existingEntity);
     }
 
     return modified;
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
+    validateOnDelete(id);
+
+    jdbcRepository.delete(id);
   }
 }
