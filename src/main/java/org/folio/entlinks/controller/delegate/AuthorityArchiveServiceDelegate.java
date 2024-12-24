@@ -49,7 +49,7 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     var entitiesPage = authorityArchiveService.getAll(offset, limit, cqlQuery)
-        .map(AuthorityBase.class::cast);
+      .map(AuthorityBase.class::cast);
     return authorityMapper.toAuthorityCollection(entitiesPage);
   }
 
@@ -85,18 +85,18 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     if (expireSetting.isPresent() && expireSetting.get().value() != null
-        && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
+      && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
       log.info("Authority archives expiration is disabled for the tenant through setting");
       return Optional.empty();
     }
 
     return expireSetting
-        .map(SettingsClient.SettingEntry::value)
-        .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
-        .or(() -> {
-          log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
-              authorityArchiveProperties.getRetentionPeriodInDays());
-          return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
-        });
+      .map(SettingsClient.SettingEntry::value)
+      .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
+      .or(() -> {
+        log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
+          authorityArchiveProperties.getRetentionPeriodInDays());
+        return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
+      });
   }
 }
