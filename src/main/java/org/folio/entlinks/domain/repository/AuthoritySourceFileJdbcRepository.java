@@ -2,11 +2,11 @@ package org.folio.entlinks.domain.repository;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.entlinks.utils.JdbcUtils.getFullPath;
+import static org.folio.entlinks.utils.JdbcUtils.getParamPlaceholder;
 import static org.folio.entlinks.utils.JdbcUtils.getSchemaName;
 
 import java.util.UUID;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
-import org.folio.entlinks.utils.JdbcUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -28,9 +28,7 @@ public class AuthoritySourceFileJdbcRepository {
 
   public void insert(AuthoritySourceFile entity) {
     var sourceType = getFullPath(folioExecutionContext, "authority_source_file_source");
-    var sqlValues = JdbcUtils.getParamPlaceholder(3)
-        + "::" + sourceType + ","
-        + JdbcUtils.getParamPlaceholder(9);
+    var sqlValues = "%s::%s,%s".formatted(getParamPlaceholder(3), sourceType, getParamPlaceholder(9));
 
     var sql = """
                 INSERT INTO %s (id, name, source, type, base_url_protocol, base_url, hrid_start_number, _version,

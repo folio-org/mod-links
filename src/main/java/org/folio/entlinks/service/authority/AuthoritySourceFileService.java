@@ -2,7 +2,6 @@ package org.folio.entlinks.service.authority;
 
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.FOLIO;
 import static org.folio.entlinks.domain.entity.AuthoritySourceFileSource.LOCAL;
-import static org.folio.entlinks.utils.JdbcUtils.getSchemaName;
 import static org.folio.entlinks.utils.ServiceUtils.initId;
 
 import java.util.List;
@@ -159,7 +158,7 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
     }
 
     var command = String.format("select exists (select true from %s.%s a where a.source_file_id='%s' limit 1)",
-        getSchemaName(folioExecutionContext), tableName, sourceFileId);
+        folioExecutionContext.getFolioModuleMetadata().getDBSchemaName(tenantId), tableName, sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
 

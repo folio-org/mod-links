@@ -444,7 +444,6 @@ class AuthoritySourceFileServiceTest {
     var expected = true;
     var tenant = "tenant";
     var schema = "schema";
-    when(context.getTenantId()).thenReturn(tenant);
     when(context.getFolioModuleMetadata()).thenReturn(moduleMetadata);
     when(moduleMetadata.getDBSchemaName(tenant)).thenReturn(schema);
     when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class))).thenReturn(true);
