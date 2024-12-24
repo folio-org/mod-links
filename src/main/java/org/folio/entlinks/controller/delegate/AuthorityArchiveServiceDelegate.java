@@ -18,7 +18,6 @@ import org.folio.entlinks.exception.FolioIntegrationException;
 import org.folio.entlinks.integration.SettingsService;
 import org.folio.entlinks.service.authority.AuthorityArchiveService;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
-import org.folio.entlinks.service.consortium.ConsortiumTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityArchivePropagationService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumPropagationService;
 import org.folio.spring.FolioExecutionContext;
@@ -40,7 +39,6 @@ public class AuthorityArchiveServiceDelegate {
   private final ConsortiumAuthorityArchivePropagationService propagationService;
   private final AuthorityMapper authorityMapper;
   private final FolioExecutionContext context;
-  private final ConsortiumTenantsService tenantsService;
 
   public AuthorityFullDtoCollection retrieveAuthorityArchives(Integer offset, Integer limit, String cqlQuery,
                                                               Boolean idOnly) {
@@ -51,49 +49,26 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     var entitiesPage = authorityArchiveService.getAll(offset, limit, cqlQuery)
-      .map(AuthorityBase.class::cast);
+        .map(AuthorityBase.class::cast);
     return authorityMapper.toAuthorityCollection(entitiesPage);
   }
 
   @Transactional(readOnly = true)
   public void expire() {
     var retention = fetchAuthoritiesRetentionDuration();
+
     if (retention.isEmpty()) {
       return;
     }
+
     var tillDate = LocalDateTime.now().minusDays(retention.get());
-    if (isConsortiumTenant()) {
-      consortiumTenantProcess(tillDate);
-    } else {
-      tenantProcess(tillDate);
-    }
-  }
-
-  private boolean isConsortiumTenant() {
-    var consortiumTenants = tenantsService.getConsortiumTenants(context.getTenantId());
-    return !consortiumTenants.isEmpty();
-  }
-
-  private void tenantProcess(LocalDateTime tillDate) {
     try (Stream<AuthorityArchive> archives = authorityArchiveRepository.streamByUpdatedTillDateAndSourcePrefix(
         tillDate, CONSORTIUM_SOURCE_PREFIX)) {
       archives.forEach(this::process);
     }
   }
 
-  private void consortiumTenantProcess(LocalDateTime tillDate) {
-    try (Stream<AuthorityArchive> archives = authorityArchiveRepository.streamByUpdatedTillDate(tillDate)) {
-      archives.forEach(this::consortiumProcess);
-    }
-  }
-
   private void process(AuthorityArchive archive) {
-    authorityArchiveService.delete(archive);
-    var dto = authorityMapper.toDto(archive);
-    eventPublisher.publishHardDeleteEvent(dto);
-  }
-
-  private void consortiumProcess(AuthorityArchive archive) {
     authorityArchiveService.delete(archive);
     var dto = authorityMapper.toDto(archive);
     eventPublisher.publishHardDeleteEvent(dto);
@@ -110,18 +85,18 @@ public class AuthorityArchiveServiceDelegate {
     }
 
     if (expireSetting.isPresent() && expireSetting.get().value() != null
-      && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
+        && Boolean.FALSE.equals(expireSetting.get().value().expirationEnabled())) {
       log.info("Authority archives expiration is disabled for the tenant through setting");
       return Optional.empty();
     }
 
     return expireSetting
-      .map(SettingsClient.SettingEntry::value)
-      .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
-      .or(() -> {
-        log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
-          authorityArchiveProperties.getRetentionPeriodInDays());
-        return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
-      });
+        .map(SettingsClient.SettingEntry::value)
+        .map(SettingsClient.AuthoritiesExpirationSettingValue::retentionInDays)
+        .or(() -> {
+          log.warn("No Retention setting was defined for Authorities Expiration, using the default one: {} days",
+              authorityArchiveProperties.getRetentionPeriodInDays());
+          return Optional.of(authorityArchiveProperties.getRetentionPeriodInDays());
+        });
   }
 }
