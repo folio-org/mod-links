@@ -2,6 +2,7 @@ package org.folio.support.base;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
@@ -29,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +177,14 @@ public class IntegrationTestBase {
 
   protected static HttpHeaders tenantHeaders(String tenant) {
     var httpHeaders = defaultHeaders();
-    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
+    httpHeaders.put(XOkapiHeaders.TENANT, singletonList(tenant));
+    return httpHeaders;
+  }
+
+  protected static HttpHeaders tenantAndUserIdHeaders(String tenant, String userId) {
+    var httpHeaders = defaultHeaders();
+    httpHeaders.put(XOkapiHeaders.TENANT, singletonList(tenant));
+    httpHeaders.put(XOkapiHeaders.USER_ID, singletonList(userId));
     return httpHeaders;
   }
 
@@ -251,6 +258,11 @@ public class IntegrationTestBase {
   @SneakyThrows
   protected static ResultActions tryPatch(String uri, Object body, Object... args) {
     return tryDoHttpMethod(patch(uri, args), body);
+  }
+
+  @SneakyThrows
+  protected static ResultActions tryPatch(String uri, Object body, HttpHeaders headers, Object... args) {
+    return tryDoHttpMethod(patch(uri, args), body, headers);
   }
 
   @SneakyThrows

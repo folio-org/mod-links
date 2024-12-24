@@ -15,15 +15,16 @@ import org.folio.entlinks.controller.converter.AuthoritySourceFileMapper;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileJdbcRepository;
 import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthoritySourceFileHridException;
 import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.data.OffsetRequest;
 import org.folio.tenant.domain.dto.Parameter;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,19 +34,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Primary
+@Service("authoritySourceFileService")
 @AllArgsConstructor
 @Log4j2
-public class AuthoritySourceFileService {
+public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
 
   private static final String AUTHORITY_SEQUENCE_NAME_TEMPLATE = "hrid_authority_local_file_%s_seq";
   private final AuthoritySourceFileRepository repository;
+  private final AuthoritySourceFileJdbcRepository jdbcRepository;
   private final AuthorityRepository authorityRepository;
   private final AuthoritySourceFileMapper mapper;
   private final JdbcTemplate jdbcTemplate;
-  private final FolioModuleMetadata moduleMetadata;
   private final FolioExecutionContext folioExecutionContext;
 
+  @Override
   public Page<AuthoritySourceFile> getAll(Integer offset, Integer limit, String cql) {
     log.debug("getAll:: Attempts to find all AuthoritySourceFile by [offset: {}, limit: {}, cql: {}]", offset, limit,
       cql);
@@ -57,27 +60,14 @@ public class AuthoritySourceFileService {
     return repository.findByCql(cql, new OffsetRequest(offset, limit));
   }
 
-  /**
-   * Retrieves {@link AuthoritySourceFile} by the given id.
-   *
-   * @param id {@link UUID} ID of the authority source file being retrieved
-   * @return retrieved {@link AuthoritySourceFile}
-   *
-   *   Note: This method assumes the authority source file exists for the given ID and thus throws exception in case
-   *   no authority source file is found
-   */
+  @Override
   public AuthoritySourceFile getById(UUID id) {
     log.debug("getById:: Loading AuthoritySourceFile by ID [id: {}]", id);
 
     return repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
   }
 
-  /**
-   * Searches for the Authority Source File for the given ID.
-   *
-   * @param id {@link UUID} ID of the authority source file being searched
-   * @return found {@link AuthoritySourceFile} instance or null if it is not found
-   */
+  @Override
   public AuthoritySourceFile findById(UUID id) {
     log.debug("findById:: Querying for AuthoritySourceFile by ID [id: {}]", id);
 
@@ -88,12 +78,7 @@ public class AuthoritySourceFileService {
     return repository.findById(id).orElse(null);
   }
 
-  /**
-   * Searches for the Authority Source File for the given name.
-   *
-   * @param name Name of the authority source file being searched
-   * @return found {@link AuthoritySourceFile} instance or null if it is not found
-   */
+  @Override
   public AuthoritySourceFile findByName(String name) {
     log.debug("findById:: Querying for AuthoritySourceFile by name [name: {}]", name);
 
@@ -104,6 +89,7 @@ public class AuthoritySourceFileService {
     return repository.findByName(name).orElse(null);
   }
 
+  @Override
   @Transactional
   public AuthoritySourceFile create(AuthoritySourceFile entity) {
     log.debug("create:: Attempting to create AuthoritySourceFile [entity: {}]", entity);
@@ -115,6 +101,7 @@ public class AuthoritySourceFileService {
     return repository.save(entity);
   }
 
+  @Override
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Retryable(
     retryFor = OptimisticLockingException.class,
@@ -124,6 +111,7 @@ public class AuthoritySourceFileService {
     return updateInner(id, modified, null);
   }
 
+  @Override
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Retryable(
     retryFor = OptimisticLockingException.class,
@@ -134,18 +122,14 @@ public class AuthoritySourceFileService {
     return updateInner(id, modified, publishConsumer);
   }
 
+  @Override
   public void deleteById(UUID id) {
     log.debug("deleteById:: Attempt to delete AuthoritySourceFile by [id: {}]", id);
-    var authoritySourceFile = repository.findById(id)
-      .orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
-    if (!FOLIO.equals(authoritySourceFile.getSource())) {
-      repository.deleteById(id);
-    } else {
-      throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
-        List.of(new Parameter("source").value(authoritySourceFile.getSource().name())));
-    }
+    validateOnDelete(id);
+    repository.deleteById(id);
   }
 
+  @Override
   public String nextHrid(UUID id) {
     log.debug("nextHrid:: Attempting to get next AuthoritySourceFile HRID [id: {}]", id);
     var sourceFile = getById(id);
@@ -162,17 +146,19 @@ public class AuthoritySourceFileService {
     }
   }
 
+  @Override
   public boolean authoritiesExistForSourceFile(UUID sourceFileId) {
     return authorityRepository.existsAuthorityByAuthoritySourceFileId(sourceFileId);
   }
 
+  @Override
   public boolean authoritiesExistForSourceFile(UUID sourceFileId, String tenantId, String tableName) {
     if (sourceFileId == null || tenantId == null) {
       return false;
     }
 
     var command = String.format("select exists (select true from %s.%s a where a.source_file_id='%s' limit 1)",
-        moduleMetadata.getDBSchemaName(tenantId), tableName, sourceFileId);
+        folioExecutionContext.getFolioModuleMetadata().getDBSchemaName(tenantId), tableName, sourceFileId);
     return Boolean.TRUE.equals(jdbcTemplate.queryForObject(command, Boolean.class));
   }
 
@@ -268,27 +254,31 @@ public class AuthoritySourceFileService {
     }
   }
 
+  @Override
   public void createSequence(String sequenceName, int startNumber) {
-    var command = String.format("""
-            CREATE SEQUENCE %s MINVALUE %d INCREMENT BY 1 OWNED BY %s.authority_source_file.sequence_name;
-            """,
-        sequenceName, startNumber, moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()));
-    jdbcTemplate.execute(command);
+    jdbcRepository.createSequence(sequenceName, startNumber);
   }
 
+  @Override
   public void deleteSequence(String sequenceName) {
-    var command = String.format("DROP SEQUENCE IF EXISTS %s.%s;",
-        moduleMetadata.getDBSchemaName(folioExecutionContext.getTenantId()), sequenceName);
-    jdbcTemplate.execute(command);
+    jdbcRepository.dropSequence(sequenceName);
   }
 
-  private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
+  protected void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
     if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())
         && existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
       var sequenceName = existing.getSequenceName();
       var modifiedStartNumber = (int) modified.getHridStartNumber();
       deleteSequence(sequenceName);
       createSequence(sequenceName, modifiedStartNumber);
+    }
+  }
+
+  protected void validateOnDelete(UUID id) {
+    var sourceFile = repository.findById(id).orElseThrow(() -> new AuthoritySourceFileNotFoundException(id));
+    if (FOLIO.equals(sourceFile.getSource())) {
+      throw new RequestBodyValidationException("Cannot delete Authority source file with source 'folio'",
+        List.of(new Parameter("source").value(sourceFile.getSource().name())));
     }
   }
 }
