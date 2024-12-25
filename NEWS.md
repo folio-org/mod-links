@@ -1,3 +1,8 @@
+## v3.1.2 2025-01-07
+### Bug fixes
+* Shadow copies of deleted Shared MARC authority from Central tenant are not deleted from Member tenants after specified retention period ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
+---
+
 ## v3.1.2 2024-12-17
 ### Bug fixes
 * Close input stream on s3 file read ([MODELINKS-278](https://folio-org.atlassian.net/browse/MODELINKS-278))
