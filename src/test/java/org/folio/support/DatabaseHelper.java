@@ -94,6 +94,17 @@ public class DatabaseHelper {
     });
   }
 
+  public int queryAuthorityVersion(String tenant, UUID id) {
+    var sql = "SELECT * from " + getDbPath(tenant, AUTHORITY_TABLE) + " where id = '" + id + "'";
+    return jdbcTemplate.query(sql, rs -> {
+      if (rs.next()) {
+        return rs.getInt("_version");
+      } else {
+        return null;
+      }
+    });
+  }
+
   public Integer queryAuthoritySourceFileSequenceCurrentValue(String tenant, UUID id) {
     var sql = "SELECT last_value FROM " + metadata.getDBSchemaName(tenant) + "."
         + queryAuthoritySourceFileSequenceName(tenant, id);
