@@ -4,9 +4,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import org.bouncycastle.util.Arrays;
 import org.folio.entlinks.domain.dto.FieldChange;
@@ -55,34 +55,47 @@ public class FieldChangeHolder {
   }
 
   private List<SubfieldChange> toSubfieldsChange() {
-    // create subfield changes for subfields that exist in authority
-    var subfieldChanges = authSubfields.stream()
-      .map(subfield -> new SubfieldChange()
-        .code(Character.toString(subfield.getCode()))
-        .value(subfield.getData()))
-      .collect(Collectors.groupingBy(subfieldChange -> subfieldChange.getCode().charAt(0)));
+    var result = new ArrayList<SubfieldChange>();
+    var subfieldCodes = new HashSet<Character>();
 
-    // create subfield changes for subfields that missing in authority but still could be controlled
-    for (char subfieldCode : linkingRule.getAuthoritySubfields()) {
-      var code = getCode(subfieldCode);
-      subfieldChanges.putIfAbsent(code, List.of(new SubfieldChange().code(Character.toString(code)).value(EMPTY)));
+    // create subfield changes for subfields that exist in authority
+    for (var subfield : authSubfields) {
+      var code = subfield.getCode();
+      var change = new SubfieldChange()
+        .code(Character.toString(code))
+        .value(subfield.getData());
+      subfieldCodes.add(code);
+      result.add(change);
     }
 
-    return subfieldChanges.values().stream()
-      .flatMap(List::stream)
-      .sorted(Comparator.comparing(SubfieldChange::getCode))
-      .collect(Collectors.toCollection(ArrayList::new));
+    // create subfield changes for subfields that missing in authority but still could be controlled
+    for (char controlledSubfield : linkingRule.getAuthoritySubfields()) {
+      var code = getCode(controlledSubfield);
+      if (!subfieldCodes.contains(code)) {
+        result.add(new SubfieldChange().code(Character.toString(code)).value(EMPTY));
+      }
+    }
+
+    return result;
   }
 
   private List<Subfield> getAuthSubfields(List<Subfield> subfields) {
-    return subfields.stream()
-      .filter(subfield -> Arrays.contains(linkingRule.getAuthoritySubfields(), subfield.getCode()))
-      .map(subfield -> {
+    var usualSubfields = new ArrayList<Subfield>();
+    var modifiedSubfields = new ArrayList<Subfield>();
+    for (var subfield : subfields) {
+      if (Arrays.contains(linkingRule.getAuthoritySubfields(), subfield.getCode())) {
         var code = getCode(subfield);
-        return (Subfield) new SubfieldImpl(code, subfield.getData());
-      })
-      .sorted(Comparator.comparing(Subfield::getCode))
-      .toList();
+        if (code == subfield.getCode()) {
+          usualSubfields.add(subfield);
+        } else {
+          modifiedSubfields.add(new SubfieldImpl(code, subfield.getData()));
+        }
+      }
+    }
+    var newSubfields = new ArrayList<Subfield>();
+    newSubfields.addAll(modifiedSubfields);
+    newSubfields.addAll(usualSubfields);
+    return newSubfields;
   }
 
   private List<Subfield> getAuthSubfieldsForContent(List<Map<String, String>> subfields) {

@@ -1,6 +1,7 @@
 package org.folio.entlinks.controller.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.support.TestUtils.mapOf;
 import static org.folio.support.base.TestConstants.TEST_ID;
 import static org.folio.support.base.TestConstants.TEST_PROPERTY_VALUE;
 
@@ -19,6 +20,7 @@ import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.ParsedSubfield;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.folio.spring.testing.type.UnitTest;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +44,7 @@ class SourceContentMapperTest {
     FieldContentValue tag = contentCollection.getRecords().get(0).getFields().get(0).get("tag");
     assertThat(tag.getInd1()).isEqualTo(content.getFields().get(0).getInd1());
     assertThat(tag.getInd2()).isEqualTo(content.getFields().get(0).getInd2());
-    var subFieldValue = content.getFields().get(0).getSubfields().get("a").get(0);
+    var subFieldValue = content.getFields().get(0).getSubfields('a').get(0).value();
     assertThat(tag.getSubfields().get(0)).containsEntry("a", subFieldValue);
 
   }
@@ -68,11 +70,11 @@ class SourceContentMapperTest {
     var authoritySourceFile = new AuthoritySourceFile();
     authoritySourceFile.setId(UUID.randomUUID());
     var authority = Authority.builder()
-        .id(TEST_ID)
-        .source(TEST_PROPERTY_VALUE)
-        .naturalId(TEST_ID.toString())
-        .authoritySourceFile(authoritySourceFile)
-        .build();
+      .id(TEST_ID)
+      .source(TEST_PROPERTY_VALUE)
+      .naturalId(TEST_ID.toString())
+      .authoritySourceFile(authoritySourceFile)
+      .build();
     var authorities = List.of(authority);
 
     List<AuthorityParsedContent> resultList = mapper.convertToAuthorityParsedContent(recordCollection, authorities);
@@ -87,11 +89,10 @@ class SourceContentMapperTest {
     assertThat(parsedContent.getInd2()).isEqualTo(field.get("tag").getInd2());
     assertThat(parsedContent.getLinkDetails()).isEqualTo(field.get("tag").getLinkDetails());
     assertThat(authorityParsedContent.getLeader())
-        .isEqualTo(strippedParsedRecord.getParsedRecord().getContent().getLeader());
-    assertThat(parsedContent.getSubfields().get("a").get(0))
-        .isEqualTo(field.get("tag").getSubfields().get(0).get("a"));
+      .isEqualTo(strippedParsedRecord.getParsedRecord().getContent().getLeader());
+    assertThat(parsedContent.getSubfields('a').get(0).value())
+      .isEqualTo(field.get("tag").getSubfields().get(0).get("a"));
   }
-
 
   @Test
   void testConvertToParsedContent_ContentCollection() {
@@ -108,9 +109,8 @@ class SourceContentMapperTest {
     assertThat(parsedContent.getInd1()).isEqualTo(contentMap.get("tag").getInd1());
     assertThat(parsedContent.getInd2()).isEqualTo(contentMap.get("tag").getInd2());
     assertThat(parsedContent.getLinkDetails()).isEqualTo(contentMap.get("tag").getLinkDetails());
-    assertThat(parsedContent.getSubfields().get("a").get(0))
-        .isEqualTo(contentMap.get("tag").getSubfields().get(0).get("a"));
-
+    assertThat(parsedContent.getSubfields('a').get(0).value())
+      .isEqualTo(contentMap.get("tag").getSubfields().get(0).get("a"));
   }
 
   @NotNull
@@ -132,17 +132,18 @@ class SourceContentMapperTest {
     FieldContentValue fieldContent = new FieldContentValue();
     fieldContent.setInd1("ind1");
     fieldContent.setInd2("ind2");
-    fieldContent.setSubfields(List.of(Map.of("a", "a1", "b", "b1")));
+    fieldContent.setSubfields(List.of(mapOf("a", "a1"), mapOf("b", "b1")));
     fieldContent.setLinkDetails(new LinkDetails());
-    Map<String, FieldContentValue> fields = Map.of("tag", fieldContent);
+    Map<String, FieldContentValue> fields = mapOf("tag", fieldContent);
     return new ParsedRecordContent(List.of(fields), "leader");
   }
 
   @NotNull
   private static SourceParsedContent createSourceParsedContent() {
     FieldParsedContent fieldContent =
-        new FieldParsedContent("tag", "ind1", "ind2",
-            Map.of("a", List.of("a1", "a2")), new LinkDetails());
+      new FieldParsedContent("tag", "ind1", "ind2",
+        List.of(new ParsedSubfield('a', "a1"),
+          new ParsedSubfield('a', "a2")), new LinkDetails());
     return new SourceParsedContent(TEST_ID, TEST_PROPERTY_VALUE, List.of(fieldContent));
   }
 }

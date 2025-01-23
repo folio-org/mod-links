@@ -27,7 +27,8 @@ class FieldChangeHolderTest {
     var dataField = new DataFieldImpl("100", '0', '0');
     dataField.addSubfield(new SubfieldImpl('a', "a-data"));
     dataField.addSubfield(new SubfieldImpl('d', "d-data"));
-    dataField.addSubfield(new SubfieldImpl('h', "h-data"));
+    dataField.addSubfield(new SubfieldImpl('h', "h-data1"));
+    dataField.addSubfield(new SubfieldImpl('h', "h-data2"));
     dataField.addSubfield(new SubfieldImpl('t', "t-data"));
     var linkingRule = new InstanceAuthorityLinkingRule();
     linkingRule.setAuthorityField("100");
@@ -43,9 +44,10 @@ class FieldChangeHolderTest {
       .extracting(FieldChange::getField, FieldChange::getSubfields)
       .containsExactly(linkingRule.getBibField(), List.of(
         valueChange("a", "t-data"),
+        valueChange("h", "h-data1"),
+        valueChange("h", "h-data2"),
         valueChangeEmpty("f"),
         valueChangeEmpty("g"),
-        valueChange("h", "h-data"),
         valueChangeEmpty("k"),
         valueChangeEmpty("l"),
         valueChangeEmpty("m"),
@@ -73,9 +75,9 @@ class FieldChangeHolderTest {
     assertThat(actual)
       .extracting(FieldChange::getField, FieldChange::getSubfields)
       .containsExactly(linkingRule.getBibField(), List.of(
+        valueChange("h", "h-data"),
         valueChange("a", "a-data"),
         valueChangeEmpty("g"),
-        valueChange("h", "h-data"),
         valueChangeEmpty("k"),
         valueChange("0", "0-data")
       ));
@@ -101,9 +103,9 @@ class FieldChangeHolderTest {
     assertThat(actual)
       .extracting(FieldChange::getField, FieldChange::getSubfields)
       .containsExactly(linkingRule.getBibField(), List.of(
+        valueChange("h", "h-data"),
         valueChange("a", "a-data"),
         valueChangeEmpty("g"),
-        valueChange("h", "h-data"),
         valueChangeEmpty("k")
       ));
   }

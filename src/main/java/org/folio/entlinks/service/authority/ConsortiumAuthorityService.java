@@ -2,10 +2,9 @@ package org.folio.entlinks.service.authority;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.ConsortiumIllegalActionException;
 import org.springframework.stereotype.Service;
 
@@ -13,27 +12,29 @@ import org.springframework.stereotype.Service;
 public class ConsortiumAuthorityService extends AuthorityService {
 
   private final AuthorityRepository repository;
+  private final AuthoritySourceFileRepository sourceFileRepository;
 
-  public ConsortiumAuthorityService(AuthorityRepository repository) {
-    super(repository);
+  public ConsortiumAuthorityService(AuthorityRepository repository,
+                                    AuthoritySourceFileRepository sourceFileRepository) {
+    super(repository, sourceFileRepository);
     this.repository = repository;
+    this.sourceFileRepository = sourceFileRepository;
   }
 
   @Override
-  protected Authority updateInner(Authority modified, boolean forced,
-                                  BiConsumer<Authority, Authority> authorityConsumer) {
+  protected AuthorityUpdateResult updateInner(Authority modified, boolean forced) {
     if (!forced) {
       validate(modified.getId(), "Update");
     }
-    return super.updateInner(modified, forced, authorityConsumer);
+    return super.updateInner(modified, forced);
   }
 
   @Override
-  protected void deleteByIdInner(UUID id, boolean forced, Consumer<Authority> authorityCallback) {
+  protected Authority deleteByIdInner(UUID id, boolean forced) {
     if (!forced) {
       validate(id, "Delete");
     }
-    super.deleteByIdInner(id, forced, authorityCallback);
+    return super.deleteByIdInner(id, forced);
   }
 
   private void validate(UUID id, String actionName) {

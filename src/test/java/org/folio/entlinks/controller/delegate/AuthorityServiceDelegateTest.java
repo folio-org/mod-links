@@ -7,8 +7,8 @@ import static org.folio.entlinks.service.consortium.propagation.ConsortiumPropag
 import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
@@ -19,8 +19,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import org.folio.entlinks.controller.converter.AuthorityMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.AuthorityIdDto;
@@ -28,6 +26,7 @@ import org.folio.entlinks.domain.dto.AuthorityIdDtoCollection;
 import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.service.authority.AuthorityDomainEventPublisher;
 import org.folio.entlinks.service.authority.AuthorityService;
+import org.folio.entlinks.service.authority.AuthorityUpdateResult;
 import org.folio.entlinks.service.consortium.UserTenantsService;
 import org.folio.entlinks.service.consortium.propagation.ConsortiumAuthorityPropagationService;
 import org.folio.spring.FolioExecutionContext;
@@ -97,13 +96,7 @@ class AuthorityServiceDelegateTest {
     var expectedDto = new AuthorityDto().id(id);
     var dto = new AuthorityDto().id(id);
     when(mapper.toEntity(any(AuthorityDto.class))).thenReturn(entity);
-    when(service.create(eq(entity), any())).thenAnswer(invocation -> {
-      var authority = (Authority) invocation.getArgument(0);
-      @SuppressWarnings("unchecked")
-      var authorityConsumer = (Consumer<Authority>) invocation.getArgument(1);
-      authorityConsumer.accept(authority);
-      return authority;
-    });
+    when(service.create(entity)).thenReturn(entity);
     doNothing().when(propagationService).propagate(entity, CREATE, TENANT_ID);
     when(mapper.toDto(any(Authority.class))).thenReturn(expectedDto);
 
@@ -131,13 +124,8 @@ class AuthorityServiceDelegateTest {
 
     when(mapper.toEntity(modificationDto)).thenReturn(modifiedEntity);
     when(mapper.toDto(any(Authority.class))).thenReturn(oldDto).thenReturn(newDto);
-    when(service.update(eq(modifiedEntity), any())).thenAnswer(invocation -> {
-      var authority = (Authority) invocation.getArgument(0);
-      @SuppressWarnings("unchecked")
-      var authorityConsumer = (BiConsumer<Authority, Authority>) invocation.getArgument(1);
-      authorityConsumer.accept(authority, authority);
-      return authority;
-    });
+    when(service.update(eq(modifiedEntity), anyBoolean()))
+      .thenReturn(new AuthorityUpdateResult(existingEntity, modifiedEntity));
     doNothing().when(propagationService).propagate(modifiedEntity, UPDATE, TENANT_ID);
     var captor2 = ArgumentCaptor.forClass(AuthorityDto.class);
 
@@ -148,7 +136,7 @@ class AuthorityServiceDelegateTest {
     verify(eventPublisher).publishUpdateEvent(captor.capture(), captor2.capture());
     assertEquals(oldDto, captor.getValue());
     assertEquals(newDto, captor2.getValue());
-    verify(service).update(any(Authority.class), any());
+    verify(service).update(any(Authority.class), anyBoolean());
     verifyNoMoreInteractions(service);
     verify(mapper, times(2)).toDto(any(Authority.class));
     verify(mapper).toEntity(any(AuthorityDto.class));
@@ -164,12 +152,7 @@ class AuthorityServiceDelegateTest {
     entity.setId(id);
     var dto = new AuthorityDto().id(id);
     when(mapper.toDto(entity)).thenReturn(dto);
-    doAnswer(invocation -> {
-      @SuppressWarnings("unchecked")
-      var authorityConsumer = (Consumer<Authority>) invocation.getArgument(1);
-      authorityConsumer.accept(entity);
-      return null;
-    }).when(service).deleteById(eq(id), any());
+    when(service.deleteById(id)).thenReturn(entity);
     doNothing().when(propagationService).propagate(entity, DELETE, TENANT_ID);
 
     // when
@@ -178,7 +161,7 @@ class AuthorityServiceDelegateTest {
     // then
     verify(eventPublisher).publishSoftDeleteEvent(captor.capture());
     assertEquals(dto, captor.getValue());
-    verify(service).deleteById(eq(id), any());
+    verify(service).deleteById(id);
     verifyNoMoreInteractions(service);
     verify(mapper).toDto(any(Authority.class));
     verify(propagationService).propagate(entity, DELETE, TENANT_ID);

@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +22,7 @@ import org.folio.entlinks.domain.entity.AuthorityNote;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.domain.entity.HeadingRef;
 import org.folio.entlinks.domain.repository.AuthorityRepository;
+import org.folio.entlinks.domain.repository.AuthoritySourceFileRepository;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.spring.testing.type.UnitTest;
@@ -38,6 +40,8 @@ import org.springframework.data.domain.Pageable;
 class AuthorityServiceTest {
   @Mock
   private AuthorityRepository repository;
+  @Mock
+  private AuthoritySourceFileRepository sourceFileRepository;
 
   @InjectMocks
   private AuthorityService service;
@@ -150,10 +154,12 @@ class AuthorityServiceTest {
     modified.setAuthoritySourceFile(sourceFileNew);
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
+    when(sourceFileRepository.existsById(any(UUID.class))).thenReturn(true);
     when(repository.saveAndFlush(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    var updated = service.update(modified);
+    var updated = service.update(modified, false);
 
-    assertThat(updated).isEqualTo(modified);
+    assertThat(updated.oldEntity()).isEqualTo(existed);
+    assertThat(updated.newEntity()).isEqualTo(modified);
     verify(repository).findByIdAndDeletedFalse(id);
     verify(repository).saveAndFlush(argThat(authorityMatch(modified)));
   }
@@ -175,12 +181,13 @@ class AuthorityServiceTest {
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existed));
     when(repository.saveAndFlush(any(Authority.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    var updated = service.update(modified);
+    var updated = service.update(modified, false);
 
-    assertThat(updated.getAuthoritySourceFile()).isNull();
+    assertThat(updated.newEntity().getAuthoritySourceFile()).isNull();
     verify(repository).findByIdAndDeletedFalse(id);
     verify(repository).saveAndFlush(existed);
     verifyNoMoreInteractions(repository);
+    verifyNoInteractions(sourceFileRepository);
   }
 
   @Test
@@ -194,7 +201,7 @@ class AuthorityServiceTest {
 
     when(repository.findByIdAndDeletedFalse(id)).thenReturn(Optional.of(existing));
 
-    var thrown = assertThrows(OptimisticLockingException.class, () -> service.update(modified));
+    var thrown = assertThrows(OptimisticLockingException.class, () -> service.update(modified, false));
 
     assertThat(thrown.getMessage())
       .isEqualTo("Cannot update record " + id + " because it has been changed (optimistic locking): "
@@ -208,7 +215,7 @@ class AuthorityServiceTest {
     when(repository.findByIdAndDeletedFalse(any(UUID.class))).thenReturn(Optional.of(authority));
     when(repository.save(any(Authority.class))).thenReturn(authority);
 
-    service.deleteById(UUID.randomUUID());
+    service.deleteById(UUID.randomUUID(), false);
 
     verify(repository).findByIdAndDeletedFalse(any(UUID.class));
     verify(repository).save(any(Authority.class));
@@ -219,7 +226,7 @@ class AuthorityServiceTest {
     var id = UUID.randomUUID();
     when(repository.findByIdAndDeletedFalse(any(UUID.class))).thenReturn(Optional.empty());
 
-    var thrown = assertThrows(AuthorityNotFoundException.class, () -> service.deleteById(id));
+    var thrown = assertThrows(AuthorityNotFoundException.class, () -> service.deleteById(id, false));
 
     assertThat(thrown.getMessage()).containsOnlyOnce(id.toString());
     verify(repository).findByIdAndDeletedFalse(any(UUID.class));

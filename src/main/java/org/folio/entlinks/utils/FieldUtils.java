@@ -5,9 +5,13 @@ import static java.util.Objects.nonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
+import org.folio.entlinks.integration.dto.ParsedSubfield;
 
 @UtilityClass
 public class FieldUtils {
+
+  public static final char ID_SUBFIELD_CODE = '9';
+  public static final char NATURAL_ID_SUBFIELD_CODE = '0';
 
   /**
    * Extract naturalId from subfield $0.
@@ -38,5 +42,17 @@ public class FieldUtils {
       subfield0Value = StringUtils.appendIfMissing(sourceFile.getFullBaseUrl(), "/");
     }
     return subfield0Value + naturalId;
+  }
+
+  public static boolean isSystemSubfield(char subfield) {
+    return ID_SUBFIELD_CODE == subfield || NATURAL_ID_SUBFIELD_CODE == subfield;
+  }
+
+  public static ParsedSubfield createIdSubfield(String subfieldValue) {
+    return new ParsedSubfield(ID_SUBFIELD_CODE, subfieldValue);
+  }
+
+  public static ParsedSubfield createNaturalIdSubfield(String subfieldValue) {
+    return new ParsedSubfield(NATURAL_ID_SUBFIELD_CODE, subfieldValue);
   }
 }

@@ -1,13 +1,8 @@
 package org.folio.entlinks.controller.converter;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.folio.entlinks.domain.dto.FieldContentValue;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
@@ -17,6 +12,7 @@ import org.folio.entlinks.domain.entity.Authority;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
 import org.folio.entlinks.integration.dto.AuthorityParsedContent;
 import org.folio.entlinks.integration.dto.FieldParsedContent;
+import org.folio.entlinks.integration.dto.ParsedSubfield;
 import org.folio.entlinks.integration.dto.SourceParsedContent;
 import org.mapstruct.Mapper;
 
@@ -79,41 +75,34 @@ public interface SourceContentMapper {
       .toList();
   }
 
-  private List<Map<String, String>> convertSubfieldsToListOfMaps(Map<String, List<String>> subfields) {
-    return subfields.entrySet().stream()
-      .map(subfieldsByTag -> subfieldsByTag.getValue().stream()
-        .map(subfieldValue -> Map.of(subfieldsByTag.getKey(), subfieldValue))
-        .toList())
-      .flatMap(List::stream)
-      .toList();
-  }
-
-  private Map<String, List<String>> convertSubfieldsToOneMap(List<Map<String, String>> subfields) {
-    return subfields.stream()
-      .flatMap(map -> map.entrySet().stream())
-      .collect(groupingBy(Map.Entry::getKey, LinkedHashMap::new, mapping(Map.Entry::getValue, Collectors.toList())));
-  }
-
   private FieldParsedContent convertFieldContent(Map.Entry<String, FieldContentValue> fieldContent) {
     var ind1 = fieldContent.getValue().getInd1();
     var ind2 = fieldContent.getValue().getInd2();
     var linkDetails = fieldContent.getValue().getLinkDetails();
-    var subfields = convertSubfieldsToOneMap(fieldContent.getValue().getSubfields());
-
-    return new FieldParsedContent(fieldContent.getKey(), ind1, ind2, subfields, linkDetails);
+    var subfieldsList = fieldContent.getValue().getSubfields().stream()
+      .map(map -> map.entrySet().iterator().next())
+      .map(entry -> new ParsedSubfield(entry.getKey().charAt(0), entry.getValue()))
+      .toList();
+    return new FieldParsedContent(fieldContent.getKey(), ind1, ind2, subfieldsList, linkDetails);
   }
 
   private Map<String, FieldContentValue> convertParsedContent(FieldParsedContent field) {
     var ind1 = field.getInd1();
     var ind2 = field.getInd2();
     var linkDetails = field.getLinkDetails();
-    var subfields = convertSubfieldsToListOfMaps(field.getSubfields());
+    var subfields = convertSubfieldsToListOfMaps(field.getSubfieldList());
 
     var fieldContent = new FieldContentValue().ind1(ind1).ind2(ind2)
       .linkDetails(linkDetails)
       .subfields(subfields);
 
     return Map.of(field.getTag(), fieldContent);
+  }
+
+  private List<Map<String, String>> convertSubfieldsToListOfMaps(List<ParsedSubfield> subfields) {
+    return subfields.stream()
+      .map(subfield -> Map.of(String.valueOf(subfield.code()), subfield.value()))
+      .toList();
   }
 
   private Authority extractAuthority(List<Authority> authorities, UUID authorityId) {

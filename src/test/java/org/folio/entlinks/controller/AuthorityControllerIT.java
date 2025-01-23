@@ -61,6 +61,7 @@ import org.folio.entlinks.domain.entity.AuthorityArchive;
 import org.folio.entlinks.domain.entity.AuthoritySourceFile;
 import org.folio.entlinks.exception.AuthoritiesRequestNotSupportedMediaTypeException;
 import org.folio.entlinks.exception.AuthorityNotFoundException;
+import org.folio.entlinks.exception.AuthoritySourceFileNotFoundException;
 import org.folio.entlinks.exception.OptimisticLockingException;
 import org.folio.entlinks.exception.RequestBodyValidationException;
 import org.folio.entlinks.integration.dto.event.AuthorityDeleteEventSubType;
@@ -183,7 +184,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
   void getCollectionOfIdsOnly_positive_authorityArchivesFound() throws Exception {
     var createdEntities = createAuthorityArchives();
     var expectedCollection = new AuthorityDtoCollection(
-      createdEntities.stream().map(archive -> new AuthorityDto().id(archive.getId())).collect(Collectors.toList()),
+      createdEntities.stream().map(archive -> new AuthorityDto().id(archive.getId())).toList(),
       createdEntities.size()
     );
 
@@ -583,9 +584,9 @@ class AuthorityControllerIT extends IntegrationTestBase {
     expected.setSourceFileId(sourceFileId);
 
     tryPut(authorityEndpoint(expected.getId()), expected)
-      .andExpect(status().isUnprocessableEntity())
-      .andExpect(errorMessageMatch(is("Authority Source File with the given 'id' does not exists.")))
-      .andExpect(exceptionMatch(InvalidDataAccessApiUsageException.class));
+      .andExpect(status().isNotFound())
+      .andExpect(errorMessageMatch(is("Authority Source File with ID [" + sourceFileId + "] was not found")))
+      .andExpect(exceptionMatch(AuthoritySourceFileNotFoundException.class));
   }
 
   @Test
@@ -638,7 +639,7 @@ class AuthorityControllerIT extends IntegrationTestBase {
     doDelete(authorityEndpoint(authority.getId()));
     var event = getConsumedEvent();
     assertEquals(AuthorityDeleteEventSubType.SOFT_DELETE, event.value().getDeleteEventSubType());
-    verifyConsumedAuthorityEvent(event, DELETE, expectedDto);
+    verifyConsumedAuthorityEvent(event, DELETE, expectedDto.version(1));
 
     awaitUntilAsserted(() ->
       assertEquals(1, databaseHelper.countRows(AUTHORITY_DATA_STAT_TABLE, TENANT_ID)));

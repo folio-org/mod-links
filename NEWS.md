@@ -1,9 +1,38 @@
-## v3.1.0 YYYY-mm-DD - In progress
+## v3.2.0 YYYY-mm-DD
 ### Breaking changes
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
 
 ### New APIs versions
 * Provides `API_NAME vX.Y`
+* Requires `API_NAME vX.Y`
+
+### Features
+* Refactor subfield handling and improve link suggestion logic ([MODELINKS-268](https://folio-org.atlassian.net/browse/MODELINKS-268))
+* Keep subfield order in authority control logic ([MODELINKS-277](https://folio-org.atlassian.net/browse/MODELINKS-277))
+* Filter full specification updated event based on specification `family` and `profile` ([MODELINKS-276](https://folio-org.atlassian.net/browse/MODELINKS-276))
+* Add aatfg to the list of prefixes for Art & Architecture authority file ([MODELINKS-272](https://folio-org.atlassian.net/browse/MODELINKS-272))
+
+### Bug fixes
+* Fix context mix-up on data propagation ([MODELINKS-273](https://folio-org.atlassian.net/browse/MODELINKS-273))
+* Close input stream on s3 file read ([MODELINKS-278](https://folio-org.atlassian.net/browse/MODELINKS-278))
+* Shadow copies of deleted Shared MARC authority from Central tenant are not deleted from Member tenants
+  after specified retention period ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
+* Fix persisting createdBy and updatedBy user id for shadow copies in ECS ([MODELINKS-244](https://folio-org.atlassian.net/browse/MODELINKS-244))
+
+### Tech Dept
+* Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))
+* Add migration for deleted authorities ([MODELINKS-270](https://folio-org.atlassian.net/browse/MODELINKS-270))
+
+### Dependencies
+* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
+* Add `LIB_NAME VERSION`
+* Remove `LIB_NAME`
+
+---
+
+## v3.1.0 2024-11-01
+
+### New APIs versions
 * Requires `instance-storage v10.0 or v11.0`
 
 ### Features
@@ -21,11 +50,6 @@
 
 ### Tech Dept
 * Fix issue that causes repeated update of same entity with latest Hibernate versions ([MODELINKS-237](https://issues.folio.org/browse/MODELINKS-227))
-
-### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME` `VERSION`
-* Remove `LIB_NAME`
 
 ## v3.0.0 2024-03-19
 ### Breaking changes

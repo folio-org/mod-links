@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +27,6 @@ import org.folio.entlinks.domain.dto.LinkStatus;
 import org.folio.entlinks.domain.dto.ParsedRecordContent;
 import org.folio.entlinks.domain.dto.ParsedRecordContentCollection;
 import org.folio.entlinks.domain.entity.AuthoritySourceFileCode;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -37,7 +35,6 @@ import org.folio.support.base.IntegrationTestBase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpHeaders;
 
 @IntegrationTest
 @DatabaseCleanup(tables = {DatabaseHelper.AUTHORITY_TABLE, DatabaseHelper.AUTHORITY_SOURCE_FILE_CODE_TABLE,
@@ -97,13 +94,14 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldActualizeLinkAndSubfieldsForMemberTenant() {
+  void suggestLinksForMarcRecord_shouldActualizeLinkAndSubfieldsForMemberTenant() {
     var givenSubfields = Map.of("a", "old $a value", "0", FULL_BASE_URL + NATURAL_ID);
     var givenLinkDetails = getLinkDetails(ACTUAL);
     var givenRecord = getRecord("100", givenLinkDetails, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(ACTUAL);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -115,12 +113,13 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLinkForMemberTenant() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLinkForMemberTenant() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -132,12 +131,13 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldSuggestNewLinkByAuthorityIdForMemberTenant() {
+  void suggestLinksForMarcRecord_shouldSuggestNewLinkByAuthorityIdForMemberTenant() {
     var givenSubfields = Map.of("9", LINKABLE_AUTHORITY_ID);
     var givenRecord = getRecord("100", null, givenSubfields);
 
     var expectedLinkDetails = getLinkDetails(NEW);
-    var expectedSubfields = Map.of("a", "new $a value", "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
+    var expectedSubfields = Map.of("a", "new $a value", "q", "new $q value", "b", "new $b value",
+      "0", FULL_BASE_URL + NATURAL_ID, "9", LINKABLE_AUTHORITY_ID);
     var expectedRecord = getRecord("100", expectedLinkDetails, expectedSubfields);
 
     var requestBody = new ParsedRecordContentCollection().records(List.of(givenRecord));
@@ -149,7 +149,7 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
 
   @Test
   @SneakyThrows
-  void getAuthDataStat_shouldFillErrorDetails_whenNoSuggestionsFound() {
+  void suggestLinksForMarcRecord_shouldFillErrorDetails_whenNoSuggestionsFound() {
     var givenSubfields = Map.of("0", NATURAL_ID);
     var givenRecord = getRecord("110", null, givenSubfields);
 
@@ -179,11 +179,5 @@ class ConsortiumLinksSuggestionsIT extends IntegrationTestBase {
         .authorityId(UUID.fromString(LINKABLE_AUTHORITY_ID))
         .authorityNaturalId(NATURAL_ID)
         .status(linkStatus);
-  }
-
-  private HttpHeaders tenantHeaders(String tenant) {
-    var httpHeaders = defaultHeaders();
-    httpHeaders.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
-    return httpHeaders;
   }
 }
