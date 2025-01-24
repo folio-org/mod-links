@@ -264,7 +264,7 @@ public class AuthoritySourceFileService implements AuthoritySourceFileServiceI {
     jdbcRepository.dropSequence(sequenceName);
   }
 
-  protected void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
+  private void updateSequenceStartNumber(AuthoritySourceFile existing, AuthoritySourceFile modified) {
     if (!Objects.equals(existing.getHridStartNumber(), modified.getHridStartNumber())
         && existing.getHridStartNumber() != null && modified.getHridStartNumber() != null) {
       var sequenceName = existing.getSequenceName();

@@ -83,8 +83,6 @@ public class PropagationAuthoritySourceFileService extends AuthoritySourceFileSe
           id, existingEntity.getVersion(), modified.getVersion());
     }
 
-    updateSequenceStartNumber(existingEntity, modified);
-
     jdbcRepository.update(modified, existingEntity.getVersion());
 
     if (publishConsumer != null) {
