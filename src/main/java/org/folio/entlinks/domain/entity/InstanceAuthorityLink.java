@@ -44,7 +44,8 @@ public class InstanceAuthorityLink extends AuditableEntity {
   private Long id;
 
   @ToString.Exclude
-  @ManyToOne(optional = false, cascade = {CascadeType.ALL})
+  @ManyToOne(optional = false,
+      cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.DETACH})
   @JoinColumn(name = "authority_id", nullable = false)
   private Authority authority;
 

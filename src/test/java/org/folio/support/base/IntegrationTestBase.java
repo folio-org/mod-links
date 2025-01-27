@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,6 +174,14 @@ public class IntegrationTestBase {
     httpHeaders.add(URL, okapi.getOkapiUrl());
 
     return httpHeaders;
+  }
+
+  protected static Map<String, Collection<String>> okapiHeaders() {
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(TENANT, List.of(TENANT_ID));
+    okapiHeaders.put(XOkapiHeaders.USER_ID, List.of(USER_ID));
+    okapiHeaders.put(URL, List.of(okapi.getOkapiUrl()));
+    return okapiHeaders;
   }
 
   protected static HttpHeaders tenantHeaders(String tenant) {

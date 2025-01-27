@@ -18,6 +18,7 @@
 * Shadow copies of deleted Shared MARC authority from Central tenant are not deleted from Member tenants
   after specified retention period ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
 * Fix persisting createdBy and updatedBy user id for authority source file shadow copies in ECS ([MODELINKS-244](https://folio-org.atlassian.net/browse/MODELINKS-244))
+* Prevent Authority version increment after Instance Links update in ECS ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
 
 ### Tech Dept
 * Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))
