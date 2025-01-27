@@ -1,38 +1,33 @@
-package org.folio.entlinks.controller;
+package org.folio.entlinks.service.links;
 
 import static java.util.UUID.randomUUID;
 import static org.folio.support.DatabaseHelper.AUTHORITY_TABLE;
 import static org.folio.support.KafkaTestUtils.createAndStartTestConsumer;
 import static org.folio.support.TestDataUtils.linksDto;
 import static org.folio.support.TestDataUtils.linksDtoCollection;
-import static org.folio.support.base.TestConstants.CENTRAL_TENANT_ID;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_1;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_10;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_11;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_2;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_3;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_4;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_5;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_6;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_7;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_8;
-import static org.folio.support.base.TestConstants.MEMBER_TENANT_9;
+import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.folio.support.base.TestConstants.authorityTopic;
-import static org.folio.support.base.TestConstants.linksInstanceEndpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.entlinks.controller.converter.InstanceAuthorityLinkMapper;
 import org.folio.entlinks.domain.dto.AuthorityDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDto;
 import org.folio.entlinks.domain.dto.InstanceLinkDtoCollection;
 import org.folio.entlinks.integration.dto.event.AuthorityDomainEvent;
+import org.folio.spring.DefaultFolioExecutionContext;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.testing.extension.DatabaseCleanup;
 import org.folio.spring.testing.type.IntegrationTest;
 import org.folio.support.DatabaseHelper;
@@ -49,20 +44,21 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 @IntegrationTest
 @DatabaseCleanup(tables = {
   DatabaseHelper.INSTANCE_AUTHORITY_LINK_TABLE,
-  DatabaseHelper.AUTHORITY_TABLE},
-    tenants = {CENTRAL_TENANT_ID, MEMBER_TENANT_1, MEMBER_TENANT_2, MEMBER_TENANT_3, MEMBER_TENANT_4, MEMBER_TENANT_5,
-      MEMBER_TENANT_6, MEMBER_TENANT_7, MEMBER_TENANT_8, MEMBER_TENANT_9, MEMBER_TENANT_10, MEMBER_TENANT_11})
-public class InstanceAuthorityLinksConsortiumIT extends IntegrationTestBase {
+  AUTHORITY_TABLE},
+  tenants = TENANT_ID)
+class InstanceAuthorityLinkingServiceIT extends IntegrationTestBase {
 
-  public static final List<String> MEMBER_TENANTS = List.of(MEMBER_TENANT_1, MEMBER_TENANT_2, MEMBER_TENANT_3,
-      MEMBER_TENANT_4, MEMBER_TENANT_5, MEMBER_TENANT_6, MEMBER_TENANT_7, MEMBER_TENANT_8, MEMBER_TENANT_9,
-      MEMBER_TENANT_10, MEMBER_TENANT_11);
   private KafkaMessageListenerContainer<String, AuthorityDomainEvent> container;
   private BlockingQueue<ConsumerRecord<String, AuthorityDomainEvent>> consumerRecords;
+  private FolioExecutionContext context;
+  @Autowired
+  private InstanceAuthorityLinkingService linkingService;
+  @Autowired
+  private InstanceAuthorityLinkMapper mapper;
 
   @BeforeAll
   static void prepare() {
-    setUpConsortium(CENTRAL_TENANT_ID, MEMBER_TENANTS, true);
+    setUpTenant();
   }
 
   @BeforeEach
@@ -70,6 +66,7 @@ public class InstanceAuthorityLinksConsortiumIT extends IntegrationTestBase {
     consumerRecords = new LinkedBlockingQueue<>();
     container = createAndStartTestConsumer(
         authorityTopic(), consumerRecords, kafkaProperties, AuthorityDomainEvent.class);
+    context = getFolioExecutionContext();
   }
 
   @AfterEach
@@ -82,27 +79,42 @@ public class InstanceAuthorityLinksConsortiumIT extends IntegrationTestBase {
   @SneakyThrows
   void shouldNotChangeAuthorityVersionAfterInstanceLinksUpdateTwice() {
     var instanceId = randomUUID();
-    var existedLinks = createLinkDtoCollection(instanceId);
-    createAuthorityForConsortium(existedLinks.getLinks().get(0));
+    var existedLinks = createLinkDtoCollection(instanceId).getLinks();
 
-    awaitUntilAsserted(() -> {
-      MEMBER_TENANTS.forEach(tenantId -> {
-        assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, tenantId));
+    createAuthority(existedLinks.get(0));
+    awaitUntilAsserted(() -> assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, TENANT_ID)));
+
+    var incomingLinks = mapper.convertDto(existedLinks);
+
+    context.execute(() -> {
+      ExecutorService executorService = Executors.newFixedThreadPool(2);
+      var future1 = executorService.submit(() -> linkingService.updateLinks(instanceId, incomingLinks));
+      var future2 = executorService.submit(() -> linkingService.updateLinks(instanceId, incomingLinks));
+
+      assertThrows(ExecutionException.class, () -> {
+        future1.get();
+        future2.get();
       });
-      assertEquals(1, databaseHelper.countRows(AUTHORITY_TABLE, CENTRAL_TENANT_ID));
+      executorService.shutdown();
+      return null;
     });
 
-    doPut(linksInstanceEndpoint(), existedLinks, tenantHeaders(CENTRAL_TENANT_ID), instanceId);
-    doPut(linksInstanceEndpoint(), existedLinks, tenantHeaders(CENTRAL_TENANT_ID), instanceId);
+    awaitUntilAsserted(() ->
+        assertEquals(0, databaseHelper.queryAuthorityVersion(TENANT_ID, existedLinks.get(0).getAuthorityId())));
+  }
 
-    awaitUntilAsserted(() -> {
-      MEMBER_TENANTS.forEach(tenantId -> {
-        assertEquals(0, databaseHelper.queryAuthorityVersion(
-            tenantId, existedLinks.getLinks().get(0).getAuthorityId()));
-      });
-      assertEquals(0, databaseHelper.queryAuthorityVersion(
-          CENTRAL_TENANT_ID, existedLinks.getLinks().get(0).getAuthorityId()));
-    });
+  private FolioExecutionContext getFolioExecutionContext() {
+    return new DefaultFolioExecutionContext(new FolioModuleMetadata() {
+      @Override
+      public String getModuleName() {
+        return "mod-entities-links";
+      }
+
+      @Override
+      public String getDBSchemaName(String tenantId) {
+        return String.format("%s_mod_entities_links", tenantId);
+      }
+    }, okapiHeaders());
   }
 
   private InstanceLinkDtoCollection createLinkDtoCollection(UUID instanceId) {
@@ -112,13 +124,13 @@ public class InstanceAuthorityLinksConsortiumIT extends IntegrationTestBase {
     return linksDtoCollection(linksDto(instanceId, links));
   }
 
-  private void createAuthorityForConsortium(InstanceLinkDto link) {
+  private void createAuthority(InstanceLinkDto link) {
     var dto = new AuthorityDto()
         .id(link.getAuthorityId())
         .version(0)
         .source("MARC")
         .naturalId(link.getAuthorityNaturalId())
         .personalName("Nikola Tesla1");
-    doPost(authorityEndpoint(), dto, tenantHeaders(CENTRAL_TENANT_ID));
+    doPost(authorityEndpoint(), dto, tenantHeaders(TENANT_ID));
   }
 }
