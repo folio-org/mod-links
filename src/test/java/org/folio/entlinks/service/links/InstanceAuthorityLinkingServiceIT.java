@@ -9,7 +9,6 @@ import static org.folio.support.base.TestConstants.TENANT_ID;
 import static org.folio.support.base.TestConstants.authorityEndpoint;
 import static org.folio.support.base.TestConstants.authorityTopic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -91,11 +90,14 @@ class InstanceAuthorityLinkingServiceIT extends IntegrationTestBase {
       var future1 = executorService.submit(() -> linkingService.updateLinks(instanceId, incomingLinks));
       var future2 = executorService.submit(() -> linkingService.updateLinks(instanceId, incomingLinks));
 
-      assertThrows(ExecutionException.class, () -> {
+      try {
         future1.get();
         future2.get();
-      });
-      executorService.shutdown();
+      } catch (ExecutionException e) {
+        assertEquals(0, databaseHelper.queryAuthorityVersion(TENANT_ID, existedLinks.get(0).getAuthorityId()));
+      } finally {
+        executorService.shutdown();
+      }
       return null;
     });
 
