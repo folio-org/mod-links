@@ -19,6 +19,7 @@
   after specified retention period ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
 * Fix persisting createdBy and updatedBy user id for authority source file shadow copies in ECS ([MODELINKS-244](https://folio-org.atlassian.net/browse/MODELINKS-244))
 * Prevent Authority version increment after Instance Links update in ECS ([MODELINKS-279](https://folio-org.atlassian.net/browse/MODELINKS-279))
+* Fix documentation generation github workflow  ([MODELINKS-291](https://folio-org.atlassian.net/browse/MODELINKS-291))
 
 ### Tech Dept
 * Add missing interface `source-storage-batch` dependency in module descriptor ([MODELINKS-275](https://folio-org.atlassian.net/browse/MODELINKS-275))
