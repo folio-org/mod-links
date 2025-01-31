@@ -388,6 +388,7 @@
           "modulePermissions": [
             "users.collection.get",
             "users.item.post",
+            "users.item.put",
             "login.item.post",
             "login.item.delete",
             "perms.users.get",
@@ -685,6 +686,7 @@
         "mapping-rules.get",
         "source-storage.source-records.item.get",
         "users.collection.get",
+        "users.item.put",
         "user-tenants.collection.get",
         "source-storage.parsed-records.fetch.collection.post"
       ]
