@@ -686,7 +686,6 @@
         "mapping-rules.get",
         "source-storage.source-records.item.get",
         "users.collection.get",
-        "users.item.put",
         "user-tenants.collection.get",
         "source-storage.parsed-records.fetch.collection.post"
       ]
